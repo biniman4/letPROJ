@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const Login = () => {
+const Login = ({ onLogin }: { onLogin: () => void }) => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -19,22 +19,31 @@ const Login = () => {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
-      setError('Both fields are required');
+      setError("Both fields are required");
       return;
     }
 
-    console.log('Login Form Submitted:', formData);
-    navigate('/dashboard'); // Navigate to a protected page (e.g., Dashboard)
+    console.log("Login Form Submitted:", formData);
+    onLogin(); // Call the login handler passed as a prop
+    navigate("/dashboard"); // Navigate to the dashboard
   };
-
-  const goHome = () => navigate('/');
+  const goHome = () => navigate("/");
 
   return (
     <div className="h-screen bg-gradient-to-br from-blue-500 via-teal-500 to-indigo-500 flex items-center justify-center">
-      <div className="w-full max-w-4xl bg-white p-10 rounded-3xl shadow-2xl border border-gray-200" style={{ height: '90%' }}>
-        <h2 className="text-4xl font-bold text-center text-teal-700 mb-8">Log In to Your Account</h2>
+      <div
+        className="w-full max-w-4xl bg-white p-10 rounded-3xl shadow-2xl border border-gray-200"
+        style={{ height: "90%" }}
+      >
+        <h2 className="text-4xl font-bold text-center text-teal-700 mb-8">
+          Log In to Your Account
+        </h2>
 
-        {error && <p className="text-red-600 bg-red-100 p-3 rounded text-center mb-6">{error}</p>}
+        {error && (
+          <p className="text-red-600 bg-red-100 p-3 rounded text-center mb-6">
+            {error}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <InputField
@@ -45,7 +54,7 @@ const Login = () => {
             onChange={handleChange}
             placeholder="john@example.com"
           />
-          
+
           <InputField
             label="Password"
             id="password"
@@ -73,8 +82,13 @@ const Login = () => {
             </button>
 
             <p className="text-center text-gray-600 text-sm mt-4">
-              Don't have an account?{' '}
-              <a href="/signup" className="underline text-teal-600 hover:text-teal-800 transition">Sign up</a>
+              Don't have an account?{" "}
+              <a
+                href="/signup"
+                className="underline text-teal-600 hover:text-teal-800 transition"
+              >
+                Sign up
+              </a>
             </p>
           </div>
         </form>
@@ -86,10 +100,10 @@ const Login = () => {
 const InputField = ({
   label,
   id,
-  type = 'text',
+  type = "text",
   value,
   onChange,
-  placeholder
+  placeholder,
 }: {
   label: string;
   id: string;
@@ -99,7 +113,9 @@ const InputField = ({
   placeholder?: string;
 }) => (
   <div>
-    <label htmlFor={id} className="block text-gray-700 font-medium mb-1">{label}</label>
+    <label htmlFor={id} className="block text-gray-700 font-medium mb-1">
+      {label}
+    </label>
     <input
       type={type}
       id={id}
