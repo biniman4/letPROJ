@@ -1,83 +1,73 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+
 export const PublicFooter = () => {
-  return <footer className="bg-white border-t border-gray-200">
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+  return (
+    <footer className="bg-white border-t border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-gray-700">
           <div>
-            <h3 className="text-sm font-semibold text-gray-500 tracking-wider uppercase">
-              Product
+            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">
+              About SSGI
             </h3>
-            <ul className="mt-4 space-y-4">
+            <ul className="mt-4 space-y-3">
               <li>
-                <a href="#features" className="text-base text-gray-600 hover:text-gray-900">
-                  Features
-                </a>
+                <Link to="/about" className="hover:text-blue-700">Institute Overview</Link>
               </li>
               <li>
-                <a href="#pricing" className="text-base text-gray-600 hover:text-gray-900">
-                  Pricing
-                </a>
+                <Link to="/mission" className="hover:text-blue-700">Mission & Vision</Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:text-blue-700">Contact Us</Link>
               </li>
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-gray-500 tracking-wider uppercase">
-              Company
+            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">
+              Resources
             </h3>
-            <ul className="mt-4 space-y-4">
+            <ul className="mt-4 space-y-3">
               <li>
-                <a href="#about" className="text-base text-gray-600 hover:text-gray-900">
-                  About
-                </a>
+                <Link to="/services" className="hover:text-blue-700">Our Services</Link>
               </li>
               <li>
-                <Link to="/contact" className="text-base text-gray-600 hover:text-gray-900">
-                  Contact
-                </Link>
+                <Link to="/docs" className="hover:text-blue-700">Documentation</Link>
+              </li>
+              <li>
+                <Link to="/faq" className="hover:text-blue-700">FAQs</Link>
               </li>
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-gray-500 tracking-wider uppercase">
+            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">
               Legal
             </h3>
-            <ul className="mt-4 space-y-4">
+            <ul className="mt-4 space-y-3">
               <li>
-                <Link to="/privacy" className="text-base text-gray-600 hover:text-gray-900">
-                  Privacy
-                </Link>
+                <Link to="/privacy" className="hover:text-blue-700">Privacy Policy</Link>
               </li>
               <li>
-                <Link to="/terms" className="text-base text-gray-600 hover:text-gray-900">
-                  Terms
-                </Link>
+                <Link to="/terms" className="hover:text-blue-700">Terms of Use</Link>
               </li>
             </ul>
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-gray-500 tracking-wider uppercase">
-              Connect
+            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">
+              Location
             </h3>
-            <ul className="mt-4 space-y-4">
-              <li>
-                <a href="https://twitter.com" className="text-base text-gray-600 hover:text-gray-900">
-                  Twitter
-                </a>
-              </li>
-              <li>
-                <a href="https://linkedin.com" className="text-base text-gray-600 hover:text-gray-900">
-                  LinkedIn
-                </a>
-              </li>
-            </ul>
+            <p className="mt-4 text-sm text-gray-500">
+              Space Science and Geospatial Institute (SSGI)<br />
+              Addis Ababa, Ethiopia<br />
+              <a href="https://ssgi.gov.et" className="text-blue-600 hover:text-blue-800">
+                www.ssgi.gov.et
+              </a>
+            </p>
           </div>
         </div>
-        <div className="mt-8 border-t border-gray-200 pt-8">
-          <p className="text-base text-gray-500">
-            &copy; {new Date().getFullYear()} LetterFlow. All rights reserved.
-          </p>
+        <div className="mt-12 border-t pt-6 text-center text-sm text-gray-500">
+          &copy; {new Date().getFullYear()} Space Science and Geospatial Institute. All rights reserved.
         </div>
       </div>
-    </footer>;
+    </footer>
+  );
 };
