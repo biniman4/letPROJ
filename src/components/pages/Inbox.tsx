@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { SearchIcon, FilterIcon, CheckCircleIcon, ClockIcon, AlertCircleIcon, FileTextIcon, StarIcon } from 'lucide-react';
+import { useState } from 'react';  //React, 
+import { SearchIcon, FilterIcon, FileTextIcon, StarIcon } from 'lucide-react'; //  CheckCircleIcon, ClockIcon, AlertCircleIcon,
 const inboxLetters = [{
   id: 1,
   subject: 'Q4 Budget Planning Meeting',

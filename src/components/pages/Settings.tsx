@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import { SettingsIcon } from 'lucide-react';
 const Settings = () => {
   return <div>

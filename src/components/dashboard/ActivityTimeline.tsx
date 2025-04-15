@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import { CheckCircleIcon, FileTextIcon, MailIcon, UserIcon } from 'lucide-react';
 const activities = [{
   id: 1,

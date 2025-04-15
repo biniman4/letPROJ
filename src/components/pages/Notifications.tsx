@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import { BellIcon } from 'lucide-react';
 const Notifications = () => {
   return <div>

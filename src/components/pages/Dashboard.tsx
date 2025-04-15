@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import { LetterStats } from '../dashboard/LetterStats';
 import { RecentLetters } from '../dashboard/RecentLetters';
 import { ActivityTimeline } from '../dashboard/ActivityTimeline';

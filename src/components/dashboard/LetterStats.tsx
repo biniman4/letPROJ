@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import { MailIcon, CheckCircleIcon, ClockIcon, AlertCircleIcon } from 'lucide-react';
 const stats = [{
   icon: MailIcon,

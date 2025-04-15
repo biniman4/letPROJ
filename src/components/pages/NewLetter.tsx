@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileTextIcon, UserIcon, CalendarIcon, TagIcon, PaperclipIcon, SendIcon, SaveIcon } from 'lucide-react';
+import {PaperclipIcon, SendIcon, SaveIcon } from 'lucide-react'; //  FileTextIcon, UserIcon, CalendarIcon, TagIcon,
 const NewLetter = () => {
   const [letterData, setLetterData] = useState({
     subject: '',

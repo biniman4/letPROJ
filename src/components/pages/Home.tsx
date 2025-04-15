@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { PublicNavbar } from '../layout/PublicNavbar';
 import { PublicFooter } from '../layout/PublicFooter';
@@ -8,7 +7,10 @@ import {
   ShieldCheckIcon,
   SearchIcon,
   CheckCircleIcon,
-  BarChartIcon
+  BarChartIcon,
+  FileTextIcon,
+  LayersIcon,
+  SendIcon
 } from 'lucide-react';
 
 const features = [
@@ -41,6 +43,24 @@ const features = [
     name: 'Analytics & Insights',
     description: 'Gain valuable insights into your document workflows.',
     icon: BarChartIcon
+  }
+];
+
+const services = [
+  {
+    name: 'Letter Processing',
+    description: 'Efficient handling of incoming and outgoing official correspondence.',
+    icon: FileTextIcon
+  },
+  {
+    name: 'Document Archiving',
+    description: 'Secure long-term storage and retrieval of institutional documents.',
+    icon: LayersIcon
+  },
+  {
+    name: 'Approval Workflows',
+    description: 'Streamlined routing for authorization and signatures.',
+    icon: SendIcon
   }
 ];
 
@@ -119,6 +139,42 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                     </h3>
                     <p className="mt-2 text-base text-gray-500">
                       {feature.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Services Section */}
+        <div className="py-24 bg-white" id="services">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+                Our Professional Services
+              </h2>
+              <p className="mt-4 text-lg text-gray-500">
+                Specialized solutions for SSGI's communication needs
+              </p>
+            </div>
+            <div className="mt-20">
+              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                {services.map((service) => (
+                  <div
+                    key={service.name}
+                    className="bg-gray-50 pt-6 px-6 pb-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
+                  >
+                    <div>
+                      <span className="p-3 bg-blue-50 rounded-lg inline-block">
+                        <service.icon className="h-6 w-6 text-blue-600" />
+                      </span>
+                    </div>
+                    <h3 className="mt-4 text-lg font-medium text-gray-900">
+                      {service.name}
+                    </h3>
+                    <p className="mt-2 text-base text-gray-500">
+                      {service.description}
                     </p>
                   </div>
                 ))}
