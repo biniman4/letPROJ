@@ -20,6 +20,7 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 export const loginUser = async (req, res) => {
   console.log("Request Body:", req.body); // Debugging line
   const { email, password } = req.body;

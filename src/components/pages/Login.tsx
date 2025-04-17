@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"; // Import axios
 
 const Login = ({ onLogin }: { onLogin: () => void }) => {
   const [formData, setFormData] = useState({
@@ -15,7 +16,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
@@ -23,10 +24,20 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
       return;
     }
 
-    console.log("Login Form Submitted:", formData);
-    onLogin(); // Call the login handler passed as a prop
-    navigate("/dashboard"); // Navigate to the dashboard
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/users/login",
+        formData
+      );
+      console.log("Login successful:", response.data);
+      setError("");
+      onLogin(); // Call the login handler passed as a prop
+      navigate("/dashboard"); // Navigate to the dashboard
+    } catch (err) {
+      setError(err.response?.data?.message || "An error occurred");
+    }
   };
+
   const goHome = () => navigate("/");
 
   return (

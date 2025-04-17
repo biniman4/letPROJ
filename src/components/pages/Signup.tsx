@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"; // Import axios
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -8,10 +9,11 @@ const Signup = () => {
     password: "",
     confirmPassword: "",
     phone: "",
-    departmentOrSector: "", // New department or sector field
+    departmentOrSector: "",
   });
 
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (
@@ -21,7 +23,7 @@ const Signup = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
@@ -40,8 +42,18 @@ const Signup = () => {
       return;
     }
 
-    console.log("Form Submitted:", formData);
-    navigate("/login");
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/users/register",
+        formData
+      );
+      setSuccess(response.data.message);
+      setError("");
+      navigate("/login"); // Redirect to login page after successful registration
+    } catch (err) {
+      setError(err.response?.data?.error || "An error occurred");
+      setSuccess("");
+    }
   };
 
   const goHome = () => navigate("/");
@@ -59,6 +71,11 @@ const Signup = () => {
         {error && (
           <p className="text-red-600 bg-red-100 p-3 rounded text-center mb-6">
             {error}
+          </p>
+        )}
+        {success && (
+          <p className="text-green-600 bg-green-100 p-3 rounded text-center mb-6">
+            {success}
           </p>
         )}
 
