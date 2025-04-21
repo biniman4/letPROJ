@@ -17,41 +17,36 @@ import Notifications from "./components/pages/Notifications";
 import Users from "./components/pages/Users";
 import Settings from "./components/pages/Settings";
 import Signup from "./components/pages/Signup"; // Added Signup page
+import Login from "./components/pages/Login"; // Import Login component
 
 export function App() {
-  // Set isAuthenticated to true for now
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true); // Always true for now
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false); // Default to false
 
-  // Handle login
   const handleLogin = () => {
-    setIsAuthenticated(true); // Set to true explicitly for now
+    setIsAuthenticated(true);
   };
 
-  // Handle logout
   const handleLogout = () => {
-    setIsAuthenticated(false); // Update authentication state
+    setIsAuthenticated(false);
   };
 
-  // PrivateRoute Component for authenticated routes
   const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-    const navigate = useNavigate(); // useNavigate hook inside PrivateRoute
+    const navigate = useNavigate();
     useEffect(() => {
       if (!isAuthenticated) {
-        navigate("/"); // Redirect to home if not authenticated
+        navigate("/login"); // Redirect to login if not authenticated
       }
-    }, [isAuthenticated, navigate]); // Run when authentication state changes
+    }, [isAuthenticated, navigate]);
 
     if (!isAuthenticated) {
       return null;
-      // Donot render protected content if not
     }
 
     return (
       <div className="flex w-full min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 overflow-hidden">
-          <Header onLogout={handleLogout} />{" "}
-          {/* Pass logout handler to header */}
+          <Header onLogout={handleLogout} /> {/* Pass logout handler */}
           <main
             className="p-6 overflow-auto"
             style={{ height: "calc(100vh - 64px)" }}
@@ -66,9 +61,10 @@ export function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/login" element={<Login onLogin={handleLogin} />} />{" "}
+        {/* Login route */}
         <Route path="/" element={<Home onLogin={handleLogin} />} />
-        <Route path="/signup" element={<Signup />} /> {/* Signup route */}
-        {/* Protected Routes */}
+        <Route path="/signup" element={<Signup />} />
         <Route
           path="/dashboard"
           element={

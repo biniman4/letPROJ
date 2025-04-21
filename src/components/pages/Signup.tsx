@@ -1,51 +1,88 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios"; // Import axios
 
 const Signup = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    phone: '',
-    departmentOrSector: '',  // New department or sector field
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    phone: "",
+    departmentOrSector: "",
   });
 
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
-    if (!formData.name || !formData.email || !formData.password || !formData.phone || !formData.departmentOrSector) {
-      setError('All fields are required');
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.password ||
+      !formData.phone ||
+      !formData.departmentOrSector
+    ) {
+      setError("All fields are required");
       return;
     }
 
-    console.log('Form Submitted:', formData);
-    navigate('/login');
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/users/register",
+        formData
+      );
+      setSuccess(response.data.message);
+      setError("");
+      navigate("/login"); // Redirect to login page after successful registration
+    } catch (err) {
+      setError(err.response?.data?.error || "An error occurred");
+      setSuccess("");
+    }
   };
 
-  const goHome = () => navigate('/');
+  const goHome = () => navigate("/");
 
   return (
     <div className="h-screen bg-gradient-to-br from-blue-500 via-teal-500 to-indigo-500 flex items-center justify-center">
-      <div className="w-full max-w-4xl bg-white p-10 rounded-3xl shadow-2xl border border-gray-200" style={{ height: '90%' }}>
-        <h2 className="text-4xl font-bold text-center text-teal-700 mb-8">Create Your Account</h2>
+      <div
+        className="w-full max-w-4xl bg-white p-10 rounded-3xl shadow-2xl border border-gray-200"
+        style={{ height: "90%" }}
+      >
+        <h2 className="text-4xl font-bold text-center text-teal-700 mb-8">
+          Create Your Account
+        </h2>
 
-        {error && <p className="text-red-600 bg-red-100 p-3 rounded text-center mb-6">{error}</p>}
+        {error && (
+          <p className="text-red-600 bg-red-100 p-3 rounded text-center mb-6">
+            {error}
+          </p>
+        )}
+        {success && (
+          <p className="text-green-600 bg-green-100 p-3 rounded text-center mb-6">
+            {success}
+          </p>
+        )}
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-8"
+        >
           {/* Left Column */}
           <div className="space-y-5">
             <InputField
@@ -74,7 +111,12 @@ const Signup = () => {
 
             {/* Department or Sector Dropdown */}
             <div>
-              <label htmlFor="departmentOrSector" className="block text-gray-700 font-medium mb-1">Department or Sector</label>
+              <label
+                htmlFor="departmentOrSector"
+                className="block text-gray-700 font-medium mb-1"
+              >
+                Department or Sector
+              </label>
               <select
                 id="departmentOrSector"
                 name="departmentOrSector"
@@ -114,10 +156,20 @@ const Signup = () => {
             />
 
             <div className="flex items-start space-x-2 text-sm text-gray-700">
-              <input type="checkbox" id="terms" required className="mt-1 accent-teal-600" />
+              <input
+                type="checkbox"
+                id="terms"
+                required
+                className="mt-1 accent-teal-600"
+              />
               <label htmlFor="terms">
-                I agree to the{' '}
-                <a href="#" className="underline text-teal-600 hover:text-teal-800 transition">Terms and Conditions</a>
+                I agree to the{" "}
+                <a
+                  href="#"
+                  className="underline text-teal-600 hover:text-teal-800 transition"
+                >
+                  Terms and Conditions
+                </a>
               </label>
             </div>
           </div>
@@ -140,8 +192,13 @@ const Signup = () => {
             </button>
 
             <p className="text-center text-gray-600 text-sm mt-4">
-              Already have an account?{' '}
-              <a href="/login" className="underline text-teal-600 hover:text-teal-800 transition">Log in</a>
+              Already have an account?{" "}
+              <a
+                href="/login"
+                className="underline text-teal-600 hover:text-teal-800 transition"
+              >
+                Log in
+              </a>
             </p>
           </div>
         </form>
@@ -153,10 +210,10 @@ const Signup = () => {
 const InputField = ({
   label,
   id,
-  type = 'text',
+  type = "text",
   value,
   onChange,
-  placeholder
+  placeholder,
 }: {
   label: string;
   id: string;
@@ -166,7 +223,9 @@ const InputField = ({
   placeholder?: string;
 }) => (
   <div>
-    <label htmlFor={id} className="block text-gray-700 font-medium mb-1">{label}</label>
+    <label htmlFor={id} className="block text-gray-700 font-medium mb-1">
+      {label}
+    </label>
     <input
       type={type}
       id={id}

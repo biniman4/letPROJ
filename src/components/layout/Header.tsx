@@ -1,12 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from "react";
 import {
   SearchIcon,
   BellIcon,
   UserIcon,
   LogOutIcon,
   SettingsIcon,
-  XIcon
-} from 'lucide-react';
+  XIcon,
+} from "lucide-react";
 
 export const Header = () => {
   const [open, setOpen] = useState(false);
@@ -14,25 +14,28 @@ export const Header = () => {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleLogout = () => {
     // Log out logic (e.g., clear session, tokens, etc.)
-    alert('Logged out!');
+    alert("Logged out!");
     setOpen(false);
 
     // Redirect to the homepage after logout
-    window.location.href = '/';  // Redirect to the home page
+    window.location.href = "/"; // Redirect to the home page
   };
 
   const handleExit = () => {
-    alert('Exiting...');
+    alert("Exiting...");
     setOpen(false);
   };
 
@@ -68,7 +71,11 @@ export const Header = () => {
         {/* Dropdown */}
         <div
           className={`absolute top-14 right-0 w-56 bg-white shadow-xl rounded-lg overflow-hidden transform transition-all duration-300 ease-out z-50
-            ${open ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-4 scale-95 pointer-events-none'}`}
+            ${
+              open
+                ? "opacity-100 translate-y-0 scale-100"
+                : "opacity-0 -translate-y-4 scale-95 pointer-events-none"
+            }`}
         >
           <div className="divide-y divide-gray-100">
             <button className="w-full flex items-center px-4 py-3 text-sm hover:bg-gray-50 transition">
