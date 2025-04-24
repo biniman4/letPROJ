@@ -8,7 +8,11 @@ import {
   XIcon
 } from 'lucide-react';
 
-export const Header = () => {
+type HeaderProps = {
+  onLogout: () => void;
+};
+
+export const Header = ({ onLogout }: HeaderProps) => {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
@@ -21,15 +25,6 @@ export const Header = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const handleLogout = () => {
-    // Log out logic (e.g., clear session, tokens, etc.)
-    alert('Logged out!');
-    setOpen(false);
-
-    // Redirect to the homepage after logout
-    window.location.href = '/';  // Redirect to the home page
-  };
 
   const handleExit = () => {
     alert('Exiting...');
@@ -80,7 +75,10 @@ export const Header = () => {
               Settings
             </button>
             <button
-              onClick={handleLogout}
+              onClick={() => {
+                onLogout(); // Call the prop from parent
+                setOpen(false);
+              }}
               className="w-full flex items-center px-4 py-3 text-sm hover:bg-gray-50 transition"
             >
               <LogOutIcon className="w-4 h-4 mr-2 text-gray-500" />

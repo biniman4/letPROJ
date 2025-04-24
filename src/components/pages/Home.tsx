@@ -1,6 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { PublicNavbar } from '../layout/PublicNavbar';
 import { PublicFooter } from '../layout/PublicFooter';
+import { TypewriterText } from "../TypewriterText";
 import {
   MailIcon,
   ClockIcon,
@@ -81,10 +82,9 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
         <div className="bg-white">
           <div className="max-w-7xl mx-auto pt-16 pb-24 px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                <span className="block">Letter Management System</span>
-                <span className="block text-blue-600">Space Science and Geospatial Institute (SSGI)</span>
-              </h1>
+
+            <TypewriterText />
+
               <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
                 A centralized platform designed for SSGI to manage, track, and organize official correspondence with precision, security, and efficiency.
               </p>

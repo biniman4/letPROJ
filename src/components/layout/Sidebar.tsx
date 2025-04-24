@@ -4,7 +4,7 @@ import { LayoutDashboardIcon, MailPlusIcon, InboxIcon, ArchiveIcon, BellIcon, Us
 const navItems = [{
   icon: LayoutDashboardIcon,
   label: 'Dashboard',
-  path: '/'
+  path: '/dashboard' 
 }, {
   icon: MailPlusIcon,
   label: 'New Letter',
