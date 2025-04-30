@@ -22,10 +22,10 @@ const Employees = ({ letterData, setLetterData }) => {
 
   return (
     <div className="mb-6">
-      <label className="block text-sm font-medium text-gray-700 mb-2">Employees</label>
+      <label className="block text-sm font-medium text-gray-700 mb-2"> Sector /Department</label>
       <input
         type="text"
-        placeholder="Search Employees..."
+        placeholder="Search Department..."
         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm mb-2"
         onChange={(e) => {
           const search = e.target.value.toLowerCase();
