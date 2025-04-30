@@ -53,7 +53,7 @@ const Employees = ({ letterData, setLetterData }) => {
       </div>
       {letterData.cc.length > 0 && (
         <div className="mt-3">
-          <span className="text-sm text-gray-600">Selected Employees:</span>
+          <span className="text-sm text-gray-600">Selected departments:</span>
           <div className="mt-1 flex flex-wrap gap-2">
             {letterData.cc.map((ccVal) => {
               const employee = employeesList.find((e) => e.value === ccVal);
@@ -105,6 +105,20 @@ const Employees = ({ letterData, setLetterData }) => {
                     <span>{emp}</span>
                   </label>
                 ))}
+            </div>
+          )}
+          
+          {/* Show selected employees under each department */}
+          {letterData.ccEmployees[categoryVal]?.length > 0 && (
+            <div className="mt-2">
+              <span className="text-sm text-gray-600">Selected Employees:</span>
+              <div className="mt-1 flex flex-wrap gap-2">
+                {letterData.ccEmployees[categoryVal].map((emp) => (
+                  <span key={emp} className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm">
+                    {emp}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
         </div>
