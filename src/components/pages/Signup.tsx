@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // Import axios
+import axios from "axios";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -49,7 +49,7 @@ const Signup = () => {
       );
       setSuccess(response.data.message);
       setError("");
-      navigate("/login"); // Redirect to login page after successful registration
+      navigate("/login");
     } catch (err) {
       setError(err.response?.data?.error || "An error occurred");
       setSuccess("");
@@ -60,10 +60,7 @@ const Signup = () => {
 
   return (
     <div className="h-screen bg-gradient-to-br from-blue-500 via-teal-500 to-indigo-500 flex items-center justify-center">
-      <div
-        className="w-full max-w-4xl bg-white p-10 rounded-3xl shadow-2xl border border-gray-200"
-        style={{ height: "90%" }}
-      >
+      <div className="w-full max-w-4xl bg-white p-10 rounded-3xl shadow-2xl border border-gray-200" style={{ height: "90%" }}>
         <h2 className="text-4xl font-bold text-center text-teal-700 mb-8">
           Create Your Account
         </h2>
@@ -79,10 +76,7 @@ const Signup = () => {
           </p>
         )}
 
-        <form
-          onSubmit={handleSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-8"
-        >
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Left Column */}
           <div className="space-y-5">
             <InputField
@@ -109,12 +103,8 @@ const Signup = () => {
               placeholder="+1234567890"
             />
 
-            {/* Department or Sector Dropdown */}
             <div>
-              <label
-                htmlFor="departmentOrSector"
-                className="block text-gray-700 font-medium mb-1"
-              >
+              <label htmlFor="departmentOrSector" className="block text-gray-700 font-medium mb-1">
                 Department or Sector
               </label>
               <select
@@ -156,25 +146,17 @@ const Signup = () => {
             />
 
             <div className="flex items-start space-x-2 text-sm text-gray-700">
-              <input
-                type="checkbox"
-                id="terms"
-                required
-                className="mt-1 accent-teal-600"
-              />
+              <input type="checkbox" id="terms" required className="mt-1 accent-teal-600" />
               <label htmlFor="terms">
                 I agree to the{" "}
-                <a
-                  href="#"
-                  className="underline text-teal-600 hover:text-teal-800 transition"
-                >
+                <a href="#" className="underline text-teal-600 hover:text-teal-800 transition">
                   Terms and Conditions
                 </a>
               </label>
             </div>
           </div>
 
-          {/* Buttons & Redirect */}
+          {/* Buttons */}
           <div className="col-span-1 md:col-span-2 mt-4 space-y-5">
             <button
               type="submit"
@@ -193,10 +175,7 @@ const Signup = () => {
 
             <p className="text-center text-gray-600 text-sm mt-4">
               Already have an account?{" "}
-              <a
-                href="/login"
-                className="underline text-teal-600 hover:text-teal-800 transition"
-              >
+              <a href="/login" className="underline text-teal-600 hover:text-teal-800 transition">
                 Log in
               </a>
             </p>
@@ -207,6 +186,7 @@ const Signup = () => {
   );
 };
 
+// Reusable Input Field Component with Password Toggle
 const InputField = ({
   label,
   id,
@@ -221,22 +201,37 @@ const InputField = ({
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
-}) => (
-  <div>
-    <label htmlFor={id} className="block text-gray-700 font-medium mb-1">
-      {label}
-    </label>
-    <input
-      type={type}
-      id={id}
-      name={id}
-      value={value}
-      onChange={onChange}
-      className="w-full px-4 py-3 rounded-lg bg-gray-100 text-gray-800 border border-gray-300 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
-      placeholder={placeholder}
-      required
-    />
-  </div>
-);
+}) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === "password";
+
+  return (
+    <div className="relative">
+      <label htmlFor={id} className="block text-gray-700 font-medium mb-1">
+        {label}
+      </label>
+      <input
+        type={isPassword && showPassword ? "text" : type}
+        id={id}
+        name={id}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full px-4 py-3 pr-12 rounded-lg bg-gray-100 text-gray-800 border border-gray-300 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+        required
+      />
+      {isPassword && (
+        <button
+          type="button"
+          onClick={() => setShowPassword((prev) => !prev)}
+          className="absolute top-9 right-4 text-gray-600 hover:text-gray-800"
+          tabIndex={-1}
+        >
+          {showPassword ? "🙈" : "👁️"}
+        </button>
+      )}
+    </div>
+  );
+};
 
 export default Signup;
