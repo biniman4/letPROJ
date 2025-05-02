@@ -16,11 +16,13 @@ import Archive from "./components/pages/Archive";
 import Notifications from "./components/pages/Notifications";
 import Users from "./components/pages/Users";
 import Settings from "./components/pages/Settings";
-import Signup from "./components/pages/Signup"; // Added Signup page
-import Login from "./components/pages/Login"; // Import Login component
+import Signup from "./components/pages/Signup";
+import Login from "./components/pages/Login";
+
+import { LanguageProvider } from "./components/pages/LanguageContext"; // ✅ Import your provider
 
 export function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false); // Default to false
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
@@ -34,7 +36,7 @@ export function App() {
     const navigate = useNavigate();
     useEffect(() => {
       if (!isAuthenticated) {
-        navigate("/login"); // Redirect to login if not authenticated
+        navigate("/login");
       }
     }, [isAuthenticated, navigate]);
 
@@ -46,7 +48,7 @@ export function App() {
       <div className="flex w-full min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 overflow-hidden">
-          <Header onLogout={handleLogout} /> {/* Pass logout handler */}
+          <Header onLogout={handleLogout} />
           <main
             className="p-6 overflow-auto"
             style={{ height: "calc(100vh - 64px)" }}
@@ -59,69 +61,70 @@ export function App() {
   };
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />{" "}
-        {/* Login route */}
-        <Route path="/" element={<Home onLogin={handleLogin} />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/new-letter"
-          element={
-            <PrivateRoute>
-              <NewLetter />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/inbox"
-          element={
-            <PrivateRoute>
-              <Inbox />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/archive"
-          element={
-            <PrivateRoute>
-              <Archive />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/notifications"
-          element={
-            <PrivateRoute>
-              <Notifications />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/users"
-          element={
-            <PrivateRoute>
-              <Users />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <PrivateRoute>
-              <Settings />
-            </PrivateRoute>
-          }
-        />
-      </Routes>
-    </Router>
+    <LanguageProvider> {/* ✅ Wrap everything inside LanguageProvider */}
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login onLogin={handleLogin} />} />
+          <Route path="/" element={<Home onLogin={handleLogin} />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/new-letter"
+            element={
+              <PrivateRoute>
+                <NewLetter />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/inbox"
+            element={
+              <PrivateRoute>
+                <Inbox />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/archive"
+            element={
+              <PrivateRoute>
+                <Archive />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <PrivateRoute>
+                <Notifications />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <PrivateRoute>
+                <Users />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <PrivateRoute>
+                <Settings />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </LanguageProvider>
   );
 }
