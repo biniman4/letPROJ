@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // Import axios
+import axios from "axios";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -26,17 +26,29 @@ const Signup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!formData.email.trim() || !emailRegex.test(formData.email)) {
+      setError("Invalid email format");
+      return;
+    }
+
+    if (formData.password.trim().length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
     if (
-      !formData.name ||
-      !formData.email ||
-      !formData.password ||
-      !formData.phone ||
-      !formData.departmentOrSector
+      !formData.name.trim() ||
+      !formData.email.trim() ||
+      !formData.password.trim() ||
+      !formData.phone.trim() ||
+      !formData.departmentOrSector.trim()
     ) {
       setError("All fields are required");
       return;
@@ -49,9 +61,9 @@ const Signup = () => {
       );
       setSuccess(response.data.message);
       setError("");
-      navigate("/login"); // Redirect to login page after successful registration
+      navigate("/login");
     } catch (err) {
-      setError(err.response?.data?.error || "An error occurred");
+      setError(err.response?.data?.message || "An error occurred");
       setSuccess("");
     }
   };
@@ -83,7 +95,6 @@ const Signup = () => {
           onSubmit={handleSubmit}
           className="grid grid-cols-1 md:grid-cols-2 gap-8"
         >
-          {/* Left Column */}
           <div className="space-y-5">
             <InputField
               label="Full Name"
@@ -108,8 +119,6 @@ const Signup = () => {
               onChange={handleChange}
               placeholder="+1234567890"
             />
-
-            {/* Department or Sector Dropdown */}
             <div>
               <label
                 htmlFor="departmentOrSector"
@@ -136,7 +145,6 @@ const Signup = () => {
             </div>
           </div>
 
-          {/* Right Column */}
           <div className="space-y-5">
             <InputField
               label="Password"
@@ -154,7 +162,6 @@ const Signup = () => {
               onChange={handleChange}
               placeholder="••••••••"
             />
-
             <div className="flex items-start space-x-2 text-sm text-gray-700">
               <input
                 type="checkbox"
@@ -174,7 +181,6 @@ const Signup = () => {
             </div>
           </div>
 
-          {/* Buttons & Redirect */}
           <div className="col-span-1 md:col-span-2 mt-4 space-y-5">
             <button
               type="submit"
@@ -182,7 +188,6 @@ const Signup = () => {
             >
               Sign Up
             </button>
-
             <button
               type="button"
               onClick={goHome}
@@ -190,7 +195,6 @@ const Signup = () => {
             >
               Back to Home
             </button>
-
             <p className="text-center text-gray-600 text-sm mt-4">
               Already have an account?{" "}
               <a

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // Import axios
+import axios from "axios";
 
 const Login = ({ onLogin }: { onLogin: () => void }) => {
   const [formData, setFormData] = useState({
@@ -19,8 +19,15 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.email || !formData.password) {
-      setError("Both fields are required");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!formData.email.trim() || !emailRegex.test(formData.email)) {
+      setError("Invalid email format");
+      return;
+    }
+
+    if (!formData.password.trim() || formData.password.trim().length < 6) {
+      setError("Password must be at least 6 characters long");
       return;
     }
 
@@ -31,8 +38,8 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
       );
       console.log("Login successful:", response.data);
       setError("");
-      onLogin(); // Call the login handler passed as a prop
-      navigate("/dashboard"); // Navigate to the dashboard
+      onLogin();
+      navigate("/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "An error occurred");
     }
@@ -75,7 +82,6 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
             placeholder="••••••••"
           />
 
-          {/* Buttons & Redirect */}
           <div className="mt-6 space-y-5">
             <button
               type="submit"
