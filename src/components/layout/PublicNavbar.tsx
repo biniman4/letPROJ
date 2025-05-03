@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MenuIcon, XIcon } from 'lucide-react';
 
+
 export const PublicNavbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export const PublicNavbar = () => {
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
   <img 
-  src="maaterial/logo.png"  // note: no /src/public
+  src= "src\img icon\logo.png"  // note: no /src/public
   alt="LetterFlow logo" 
   className="h-6 w-auto object-contain"
 />
