@@ -1,14 +1,15 @@
-// filepath: backend/models/Letter.js
 import mongoose from "mongoose";
 
 const letterSchema = new mongoose.Schema({
   subject: { type: String, required: true },
   reference: { type: String, required: true },
   to: { type: String, required: true },
-  department: String,
+  department: { type: String, required: true }, // Updated to required
   priority: { type: String, default: "normal" },
-  content: String,
+  content: { type: String, required: true }, // Updated to required
   attachments: [String],
+  cc: [String], // Added cc field
+  ccEmployees: { type: Map, of: String }, // Added ccEmployees field
   createdAt: { type: Date, default: Date.now },
 });
 
