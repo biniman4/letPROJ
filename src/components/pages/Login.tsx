@@ -31,6 +31,8 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
       );
       console.log("Login successful:", response.data);
       setError("");
+      // Save userId to localStorage
+      localStorage.setItem("userId", response.data.user._id); // <-- Add this line
       onLogin(); // Call the login handler passed as a prop
       navigate("/dashboard"); // Navigate to the dashboard
     } catch (err) {
