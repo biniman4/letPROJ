@@ -184,37 +184,25 @@ const Inbox = () => {
                   {openLetter.attachments.map((file, idx) => (
                     <li key={idx} className="flex items-center space-x-2">
                       <a
-                        href={`http://localhost:5000/api/letters/download/${encodeURIComponent(
-                          file
-                        )}`}
+                        href={`http://localhost:5000/api/letters/download/${
+                          openLetter._id
+                        }/${encodeURIComponent(file.filename)}`}
                         className="text-blue-600 hover:text-blue-800 underline"
-                        download={file}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          // Create a temporary link and trigger download
-                          const link = document.createElement("a");
-                          link.href = `http://localhost:5000/api/letters/download/${encodeURIComponent(
-                            file
-                          )}`;
-                          link.download = file;
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                        }}
+                        download={file.filename}
                       >
                         Download
                       </a>
                       <a
-                        href={`http://localhost:5000/uploads/${encodeURIComponent(
-                          file
-                        )}`}
+                        href={`http://localhost:5000/api/letters/view/${
+                          openLetter._id
+                        }/${encodeURIComponent(file.filename)}`}
                         className="text-green-600 hover:text-green-800 underline"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
                         View
                       </a>
-                      <span className="text-gray-700">{file}</span>
+                      <span className="text-gray-700">{file.filename}</span>
                     </li>
                   ))}
                 </ul>

@@ -70,10 +70,15 @@ export const createLetter = async (req, res) => {
       }
     }
 
-    // Handle file attachment (multer puts it in req.file)
+    // Handle file attachment for MongoDB storage
     let attachmentsArr = [];
     if (req.file) {
-      attachmentsArr.push(req.file.filename); // Use filename, not originalname
+      attachmentsArr.push({
+        filename: req.file.originalname,
+        contentType: req.file.mimetype,
+        data: req.file.buffer,
+        uploadDate: new Date(),
+      });
     }
 
     // Prepare letter data, only include ccEmployees if it's a valid object
@@ -83,7 +88,7 @@ export const createLetter = async (req, res) => {
       fromName: sender.name,
       fromEmail: sender.email,
       toEmail: recipient.email,
-      attachments: attachmentsArr, // Save file name(s) in DB
+      attachments: attachmentsArr,
     };
     letterData.ccEmployees = ccEmployees;
 
@@ -100,8 +105,6 @@ export const createLetter = async (req, res) => {
       },
     });
 
-    // ...existing code...
-    // ... existing code ...
     const mailOptions = {
       from: `"${sender.name} (${req.body.department})" <${sender.email}>`,
       to: recipient.email,
@@ -125,14 +128,11 @@ export const createLetter = async (req, res) => {
         ? [
             {
               filename: req.file.originalname,
-              path: req.file.path, // Use the file path instead of buffer
-              contentType: req.file.mimetype, // Explicitly set content type
+              content: req.file.buffer,
             },
           ]
         : [],
     };
-    // ... existing code ...
-    // ...existing code...
 
     await transporter.sendMail(mailOptions);
     console.log("Email sent to:", recipient.email);
@@ -155,17 +155,27 @@ export const getLetters = async (req, res) => {
 
 export const downloadFile = async (req, res) => {
   try {
-    const filename = req.params.filename;
-    const filePath = path.join(__dirname, "../uploads", filename);
+    const { letterId, filename } = req.params;
 
-    // Set headers to force download
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    res.download(filePath, filename, (err) => {
-      if (err) {
-        console.error("Error downloading file:", err);
-        res.status(404).json({ error: "File not found" });
-      }
-    });
+    const letter = await Letter.findById(letterId);
+    if (!letter) {
+      return res.status(404).json({ error: "Letter not found" });
+    }
+
+    const attachment = letter.attachments.find(
+      (att) => att.filename === filename
+    );
+
+    if (!attachment) {
+      return res.status(404).json({ error: "File not found" });
+    }
+
+    res.setHeader("Content-Type", attachment.contentType);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${attachment.filename}"`
+    );
+    res.send(attachment.data);
   } catch (error) {
     console.error("Error in downloadFile:", error);
     res.status(500).json({ error: error.message });
@@ -174,17 +184,24 @@ export const downloadFile = async (req, res) => {
 
 export const viewFile = async (req, res) => {
   try {
-    const filename = req.params.filename;
-    const filePath = path.join(__dirname, "../uploads", filename);
+    const { letterId, filename } = req.params;
 
-    // Set headers to display in browser
+    const letter = await Letter.findById(letterId);
+    if (!letter) {
+      return res.status(404).json({ error: "Letter not found" });
+    }
+
+    const attachment = letter.attachments.find(
+      (att) => att.filename === filename
+    );
+
+    if (!attachment) {
+      return res.status(404).json({ error: "File not found" });
+    }
+
+    res.setHeader("Content-Type", attachment.contentType);
     res.setHeader("Content-Disposition", "inline");
-    res.sendFile(filePath, (err) => {
-      if (err) {
-        console.error("Error viewing file:", err);
-        res.status(404).json({ error: "File not found" });
-      }
-    });
+    res.send(attachment.data);
   } catch (error) {
     console.error("Error in viewFile:", error);
     res.status(500).json({ error: error.message });

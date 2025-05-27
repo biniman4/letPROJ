@@ -1,3 +1,4 @@
+// backend/routes/letterRoutes.js
 import express from "express";
 import multer from "multer";
 import {
@@ -9,22 +10,31 @@ import {
 
 const router = express.Router();
 
-// Use disk storage for multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
+// Configure multer to store files in memory
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
   },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname); // You may want to use a unique name in production
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(
+        new Error(
+          "Invalid file type. Only PDF, JPEG, and PNG files are allowed."
+        ),
+        false
+      );
+    }
   },
 });
-const upload = multer({ storage });
 
-// Use upload.single('attachment') for single file upload
+// Keep your existing routes
 router.post("/", upload.single("attachment"), createLetter);
 router.get("/", getLetters);
-
-router.get("/download/:filename", downloadFile);
-router.get("/view/:filename", viewFile);
+router.get("/download/:letterId/:filename", downloadFile);
+router.get("/view/:letterId/:filename", viewFile);
 
 export default router;
