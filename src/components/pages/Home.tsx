@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { PublicNavbar } from '../layout/PublicNavbar';
 import { PublicFooter } from '../layout/PublicFooter';
+import { Modal } from 'react-responsive-modal';
+import axios from 'axios';
 import {
   MailIcon,
   ClockIcon,
@@ -11,9 +13,11 @@ import {
   BarChartIcon,
   FileTextIcon,
   LayersIcon,
-  SendIcon
+  SendIcon,
+  UserIcon,
+  LockIcon
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion'; // Added imports
+import { motion, AnimatePresence } from 'framer-motion';
 
 const translations = {
   am: {
@@ -40,7 +44,6 @@ const translations = {
   }
 };
 
-// Letter animation variants
 const letterVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({
@@ -53,7 +56,6 @@ const letterVariants = {
   })
 };
 
-// Word animation variants
 const wordVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -118,7 +120,6 @@ const features = [
   }
 ];
 
-
 const services = [
   {
     name: {
@@ -155,10 +156,12 @@ const services = [
   }
 ];
 
-
 const Home = ({ onLogin }: { onLogin: () => void }) => {
   const [lang, setLang] = useState<'am' | 'en'>('am');
   const navigate = useNavigate();
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [adminCredentials, setAdminCredentials] = useState({ email: '', password: '' });
+  const [loginError, setLoginError] = useState('');
 
   const t = translations[lang];
 
@@ -167,10 +170,35 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
     navigate('/dashboard');
   };
 
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    
+    try {
+      const response = await axios.post('http://localhost:5000/api/users/login', adminCredentials);
+      
+      if (response.data.user.role === 'admin') {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        onLogin();
+        navigate('/admin');
+      } else {
+        setLoginError('Access denied. Admin privileges required.');
+      }
+    } catch (error) {
+      setLoginError('Invalid credentials');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Language Switcher */}
-      <div className="bg-gray-200 p-2 text-right pr-4">
+      <div className="bg-gray-200 p-2 text-right pr-4 flex justify-between items-center">
+        <button 
+          onClick={() => setShowAdminLogin(true)}
+          className="text-gray-600 hover:text-gray-800 flex items-center"
+        >
+          <LockIcon className="w-4 h-4 mr-1" />
+          Admin Login
+        </button>
         <button onClick={() => setLang(lang === 'am' ? 'en' : 'am')}>
           {lang === 'am' ? 'Switch to English' : 'ወደ አማርኛ ቀይር'}
         </button>
@@ -182,7 +210,6 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
         <div className="bg-white">
           <div className="max-w-7xl mx-auto pt-16 pb-24 px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              {/* Animated Title Section */}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={lang + "-title"}
@@ -255,7 +282,6 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
           </div>
         </div>
 
-        {/* Features Section */}
         <div className="bg-gray-50 py-24" id="features">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
@@ -304,7 +330,6 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
           </div>
         </div>
 
-        {/* Services Section */}
         <div className="py-24 bg-white" id="services">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
@@ -353,7 +378,6 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
           </div>
         </div>
 
-        {/* CTA Section */}
         <div className="bg-blue-600">
           <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between">
             <motion.div
@@ -385,6 +409,65 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
         </div>
       </main>
       <PublicFooter />
+
+      <Modal 
+        open={showAdminLogin} 
+        onClose={() => setShowAdminLogin(false)}
+        center
+        classNames={{
+          modal: 'rounded-lg p-6 w-full max-w-md'
+        }}
+      >
+        <div className="mb-4">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Admin Login</h2>
+          <p className="text-gray-600">Please enter your admin credentials</p>
+        </div>
+
+        {loginError && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+            {loginError}
+          </div>
+        )}
+
+        <form onSubmit={handleAdminLogin} className="space-y-4">
+          <div>
+            <label className="block text-gray-700 mb-2">Email</label>
+            <div className="relative">
+              <UserIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <input
+                type="email"
+                className="pl-10 w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                placeholder="admin@example.com"
+                value={adminCredentials.email}
+                onChange={(e) => setAdminCredentials({ ...adminCredentials, email: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-gray-700 mb-2">Password</label>
+            <div className="relative">
+              <LockIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <input
+                type="password"
+                className="pl-10 w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                placeholder="••••••••"
+                value={adminCredentials.password}
+                onChange={(e) => setAdminCredentials({ ...adminCredentials, password: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-200"
+          >
+            Login as Admin
+          </button>
+        </form>
+      </Modal>
     </div>
   );
 };
