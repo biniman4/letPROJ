@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboardIcon, MailPlusIcon, InboxIcon,
   ArchiveIcon, BellIcon, UsersIcon, SettingsIcon,
-  MenuIcon, XIcon
+  MenuIcon, XIcon, ShieldIcon
 } from 'lucide-react';
 
 const navItems = [
@@ -16,8 +16,14 @@ const navItems = [
   { icon: SettingsIcon, label: 'Settings', path: '/settings' }
 ];
 
-export const Sidebar = () => {
+const adminItems = [
+  { icon: ShieldIcon, label: 'Admin Panel', path: '/admin' }
+];
+
+export const Sidebar = ({ isAdmin = false }) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const items = isAdmin ? [...navItems, ...adminItems] : navItems;
 
   return (
     <>
@@ -36,11 +42,11 @@ export const Sidebar = () => {
           <h1 className="text-xl font-semibold text-gray-800">LetterFlow</h1>
         </div>
         <nav className="flex flex-col pt-4 mt-12 md:mt-0">
-          {navItems.map(item => (
+          {items.map(item => (
             <NavLink
               key={item.label}
               to={item.path}
-              onClick={() => setIsOpen(false)} // Close sidebar on mobile link click
+              onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
                 `w-full flex items-center space-x-3 px-6 py-3 text-sm transition-all
                 ${isActive ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50'}`
