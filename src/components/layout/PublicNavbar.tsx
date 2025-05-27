@@ -30,7 +30,7 @@ export const PublicNavbar = () => {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
             <a href="#features" className="text-gray-600 hover:text-gray-900">Features</a>
-            <a href="#pricing" className="text-gray-600 hover:text-gray-900">services</a>
+            <a href="#services" className="text-gray-600 hover:text-gray-900">services</a>
             <button
               onClick={handleLogin}
               className="text-blue-600 hover:text-blue-700 font-medium"
