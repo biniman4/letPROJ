@@ -1,6 +1,11 @@
 import Letter from "../models/Letter.js";
 import User from "../models/User.js";
 import nodemailer from "nodemailer";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ...existing code...
 export const createLetter = async (req, res) => {
@@ -68,8 +73,7 @@ export const createLetter = async (req, res) => {
     // Handle file attachment (multer puts it in req.file)
     let attachmentsArr = [];
     if (req.file) {
-      console.log("Received file:", req.file.originalname); // <-- Add this line
-      attachmentsArr.push(req.file.originalname);
+      attachmentsArr.push(req.file.filename); // Use filename, not originalname
     }
 
     // Prepare letter data, only include ccEmployees if it's a valid object
@@ -97,8 +101,9 @@ export const createLetter = async (req, res) => {
     });
 
     // ...existing code...
+    // ... existing code ...
     const mailOptions = {
-      from: `"${sender.name} (${req.body.department})" <${sender.email}>`, // Show sender name and department
+      from: `"${sender.name} (${req.body.department})" <${sender.email}>`,
       to: recipient.email,
       cc: ccEmails,
       subject: req.body.subject,
@@ -108,23 +113,25 @@ export const createLetter = async (req, res) => {
         `Subject: ${req.body.subject}\n\n` +
         `${req.body.content}`,
       html: `
-        <div>
-          <p><strong>From:</strong> ${sender.name} &lt;${sender.email}&gt;</p>
-          <p><strong>Department:</strong> ${req.body.department}</p>
-          <p><strong>Subject:</strong> ${req.body.subject}</p>
-          <hr>
-          <p>${req.body.content.replace(/\n/g, "<br>")}</p>
-        </div>
-      `,
+      <div>
+        <p><strong>From:</strong> ${sender.name} &lt;${sender.email}&gt;</p>
+        <p><strong>Department:</strong> ${req.body.department}</p>
+        <p><strong>Subject:</strong> ${req.body.subject}</p>
+        <hr>
+        <p>${req.body.content.replace(/\n/g, "<br>")}</p>
+      </div>
+    `,
       attachments: req.file
         ? [
             {
               filename: req.file.originalname,
-              content: req.file.buffer,
+              path: req.file.path, // Use the file path instead of buffer
+              contentType: req.file.mimetype, // Explicitly set content type
             },
           ]
         : [],
     };
+    // ... existing code ...
     // ...existing code...
 
     await transporter.sendMail(mailOptions);
@@ -142,6 +149,44 @@ export const getLetters = async (req, res) => {
     const letters = await Letter.find();
     res.status(200).json(letters);
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const downloadFile = async (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const filePath = path.join(__dirname, "../uploads", filename);
+
+    // Set headers to force download
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.download(filePath, filename, (err) => {
+      if (err) {
+        console.error("Error downloading file:", err);
+        res.status(404).json({ error: "File not found" });
+      }
+    });
+  } catch (error) {
+    console.error("Error in downloadFile:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const viewFile = async (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const filePath = path.join(__dirname, "../uploads", filename);
+
+    // Set headers to display in browser
+    res.setHeader("Content-Disposition", "inline");
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error("Error viewing file:", err);
+        res.status(404).json({ error: "File not found" });
+      }
+    });
+  } catch (error) {
+    console.error("Error in viewFile:", error);
     res.status(500).json({ error: error.message });
   }
 };
