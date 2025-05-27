@@ -170,24 +170,35 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
     navigate('/dashboard');
   };
 
+
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoginError('');
     
-    try {
-      const response = await axios.post('http://localhost:5000/api/users/login', adminCredentials);
-      
-      if (response.data.user.role === 'admin') {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        onLogin();
-        navigate('/admin');
-      } else {
-        setLoginError('Access denied. Admin privileges required.');
-      }
-    } catch (error) {
-      setLoginError('Invalid credentials');
-    }
+    // TEMPORARY BYPASS FOR DEV
+    // Remove/comment this after testing!
+    localStorage.setItem('user', JSON.stringify({ role: 'admin', email: 'dev@admin' }));
+    onLogin();
+    navigate('/admin');
+    return;
+    
+    // --- Original code below ---
+    // setLoginError('');
+    // try {
+    //   const response = await axios.post('http://localhost:5000/api/users/login', adminCredentials);
+    //   if (response.data.user.role === 'admin') {
+    //     localStorage.setItem('user', JSON.stringify(response.data.user));
+    //     onLogin();
+    //     navigate('/admin');
+    //   } else {
+    //     setLoginError('Access denied. Admin privileges required.');
+    //   }
+    // } catch (error) {
+    //   setLoginError('Invalid credentials');
+    // }
   };
+
+
+
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -261,14 +272,7 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                 transition={{ delay: 0.7 }}
                 className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8"
               >
-                <div className="rounded-md shadow">
-                  <Link
-                    to="/signup"
-                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10"
-                  >
-                    {t.getStarted}
-                  </Link>
-                </div>
+          
                 <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
                   <button
                     onClick={handleLogin}
@@ -396,14 +400,7 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
               viewport={{ once: true }}
               className="mt-8 flex lg:mt-0 lg:flex-shrink-0"
             >
-              <div className="inline-flex rounded-md shadow">
-                <Link
-                  to="/signup"
-                  className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50"
-                >
-                  {t.getStarted}
-                </Link>
-              </div>
+
             </motion.div>
           </div>
         </div>
@@ -459,6 +456,19 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
               />
             </div>
           </div>
+
+          <div className="flex justify-between items-center">
+  <button
+    type="button"
+    className="text-sm text-blue-600 hover:underline focus:outline-none"
+    onClick={() => {
+      // You can set a state to show a 'Forgot Password' modal or navigate to a reset page
+      alert("Forgot Password functionality coming soon!");
+    }}
+  >
+    Forgot Password?
+  </button>
+</div>
 
           <button
             type="submit"

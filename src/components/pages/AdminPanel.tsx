@@ -1,197 +1,215 @@
-import React, { useState, useEffect } from 'react';
-import { UserPlus, Trash2, Edit, Save, X } from 'lucide-react';
-import axios from 'axios';
+import React, { useState } from 'react';
+import { Edit, Trash2, Eye, CheckCircle2, UserPlus, Home } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  departmentOrSector: string;
-  phone: string;
-}
+const initialMockUsers = [
+  {
+    _id: 'u1',
+    name: 'Alice Demo',
+    email: 'alice@example.com',
+    departmentOrSector: 'HR',
+    phone: '123-456-7890',
+    priority: 'Normal',
+  },
+  {
+    _id: 'u2',
+    name: 'Bob Sample',
+    email: 'bob@example.com',
+    departmentOrSector: 'IT',
+    phone: '098-765-4321',
+    priority: 'High',
+  },
+];
+
+const initialMockLetters = [
+  {
+    _id: 'l1',
+    subject: 'Welcome Letter',
+    toEmail: 'alice@example.com',
+    department: 'HR',
+    priority: 'high',
+    approved: false,
+  },
+  {
+    _id: 'l2',
+    subject: 'IT Policy Update',
+    toEmail: 'bob@example.com',
+    department: 'IT',
+    priority: 'normal',
+    approved: false,
+  },
+];
 
 const AdminPanel = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [editingUser, setEditingUser] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<Partial<User>>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [users, setUsers] = useState(initialMockUsers);
+  const [letters, setLetters] = useState(initialMockLetters);
+  const [successMsg, setSuccessMsg] = useState('');
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/api/users');
-      setUsers(response.data);
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to fetch users');
-      setLoading(false);
-    }
+  // Approve & send for high-priority letter
+  const handleApproveAndSend = (letterId: string) => {
+    setLetters(prev =>
+      prev.map(l =>
+        l._id === letterId ? { ...l, approved: true } : l
+      )
+    );
+    setSuccessMsg('Letter approved and sent!');
+    setTimeout(() => setSuccessMsg(''), 2000);
   };
 
-  const handleEdit = (user: User) => {
-    setEditingUser(user._id);
-    setEditForm(user);
+  // Delete user
+  const handleDeleteUser = (id: string) => {
+    setUsers(prev => prev.filter(u => u._id !== id));
+    setSuccessMsg('User deleted!');
+    setTimeout(() => setSuccessMsg(''), 2000);
   };
 
-  const handleSave = async (userId: string) => {
-    try {
-      await axios.put(`http://localhost:5000/api/users/${userId}`, editForm);
-      setEditingUser(null);
-      fetchUsers();
-    } catch (err) {
-      setError('Failed to update user');
-    }
+  // Change user priority
+  const handleChangePriority = (id: string, priority: string) => {
+    setUsers(prev =>
+      prev.map(u => (u._id === id ? { ...u, priority } : u))
+    );
+    setSuccessMsg('User priority updated!');
+    setTimeout(() => setSuccessMsg(''), 2000);
   };
 
-  const handleDelete = async (userId: string) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) return;
-    
-    try {
-      await axios.delete(`http://localhost:5000/api/users/${userId}`);
-      fetchUsers();
-    } catch (err) {
-      setError('Failed to delete user');
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditForm({
-      ...editForm,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
+  // Unified button style
+  const buttonStyle =
+    "flex items-center gap-2 px-4 py-2 rounded font-semibold shadow transition " +
+    "bg-blue-600 text-white hover:bg-blue-700";
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800">Admin Panel</h2>
-        <p className="text-gray-600">Manage users and system settings</p>
+      <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
+        <h2 className="text-2xl font-semibold text-gray-800 mb-2 md:mb-0">
+          Admin Panel: Users & Letters (Demo)
+        </h2>
+        <div className="flex gap-2">
+          <button
+            className={buttonStyle}
+            onClick={() => navigate("/signup")}
+          >
+            <UserPlus className="w-4 h-4" />
+            Register User
+          </button>
+          <button
+            className={buttonStyle}
+            onClick={() => navigate("/")}
+          >
+            <Home className="w-4 h-4" />
+            Back to Home Page
+          </button>
+        </div>
       </div>
-
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">User Management</h3>
-            <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-              <UserPlus className="w-4 h-4 mr-2" />
-              Add User
-            </button>
-          </div>
+      {successMsg && (
+        <div className="mb-4 p-3 rounded bg-green-100 text-green-700 border border-green-300 transition">
+          {successMsg}
         </div>
+      )}
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200 bg-white rounded-lg">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name/Subject</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone/Priority</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {/* Users section header */}
+            <tr>
+              <td colSpan={6} className="bg-blue-50 text-blue-800 font-bold px-6 py-2">
+                Users
+              </td>
+            </tr>
+            {users.map((user) => (
+              <tr key={'user-' + user._id} className="hover:bg-blue-50 transition">
+                <td className="px-6 py-4">User</td>
+                <td className="px-6 py-4">{user.name}</td>
+                <td className="px-6 py-4">{user.email}</td>
+                <td className="px-6 py-4">{user.departmentOrSector}</td>
+                <td className="px-6 py-4">
+                  <select
+                    value={user.priority}
+                    onChange={e => handleChangePriority(user._id, e.target.value)}
+                    className={`px-2 py-1 rounded border ${
+                      user.priority === 'High'
+                        ? 'bg-red-200 text-red-800'
+                        : user.priority === 'Admin'
+                        ? 'bg-yellow-200 text-yellow-900'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
+                    <option>Normal</option>
+                    <option>High</option>
+                    <option>Admin</option>
+                  </select>
+                </td>
+                <td className="px-6 py-4 space-x-2">
+                  <button className="text-blue-600 hover:text-blue-900 mr-2">
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    className="text-red-600 hover:text-red-900"
+                    onClick={() => handleDeleteUser(user._id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {users.map(user => (
-                <tr key={user._id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {editingUser === user._id ? (
-                      <input
-                        type="text"
-                        name="name"
-                        value={editForm.name || ''}
-                        onChange={handleChange}
-                        className="border rounded px-2 py-1 w-full"
-                      />
-                    ) : (
-                      user.name
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {editingUser === user._id ? (
-                      <input
-                        type="email"
-                        name="email"
-                        value={editForm.email || ''}
-                        onChange={handleChange}
-                        className="border rounded px-2 py-1 w-full"
-                      />
-                    ) : (
-                      user.email
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {editingUser === user._id ? (
-                      <input
-                        type="text"
-                        name="departmentOrSector"
-                        value={editForm.departmentOrSector || ''}
-                        onChange={handleChange}
-                        className="border rounded px-2 py-1 w-full"
-                      />
-                    ) : (
-                      user.departmentOrSector
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {editingUser === user._id ? (
-                      <input
-                        type="text"
-                        name="phone"
-                        value={editForm.phone || ''}
-                        onChange={handleChange}
-                        className="border rounded px-2 py-1 w-full"
-                      />
-                    ) : (
-                      user.phone
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex space-x-2">
-                      {editingUser === user._id ? (
-                        <>
-                          <button
-                            onClick={() => handleSave(user._id)}
-                            className="text-green-600 hover:text-green-900"
-                          >
-                            <Save className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() => setEditingUser(null)}
-                            className="text-gray-600 hover:text-gray-900"
-                          >
-                            <X className="w-5 h-5" />
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => handleEdit(user)}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            <Edit className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(user._id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+
+            {/* Letters section header */}
+            <tr>
+              <td colSpan={6} className="bg-green-50 text-green-800 font-bold px-6 py-2">
+                Letters
+              </td>
+            </tr>
+            {letters.map((letter) => (
+              <tr key={'letter-' + letter._id} className="hover:bg-green-50 transition">
+                <td className="px-6 py-4">Letter</td>
+                <td className="px-6 py-4">{letter.subject}</td>
+                <td className="px-6 py-4">{letter.toEmail}</td>
+                <td className="px-6 py-4">{letter.department}</td>
+                <td className="px-6 py-4">
+                  {letter.priority === 'high' ? (
+                    <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-red-200 text-red-800">
+                      High
+                    </span>
+                  ) : (
+                    letter.priority.charAt(0).toUpperCase() + letter.priority.slice(1)
+                  )}
+                  {letter.approved && (
+                    <span className="ml-2 inline-flex items-center text-green-700">
+                      <CheckCircle2 className="w-4 h-4 mr-1" />
+                      Approved
+                    </span>
+                  )}
+                </td>
+                <td className="px-6 py-4 space-x-2">
+                  <button className="text-green-600 hover:text-green-900 mr-2">
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button className="text-red-600 hover:text-red-900 mr-2">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  {letter.priority === 'high' && !letter.approved && (
+                    <button
+                      className="bg-green-600 text-white px-3 py-1 rounded text-xs font-medium hover:bg-green-700 transition"
+                      onClick={() => handleApproveAndSend(letter._id)}
+                    >
+                      Approve &amp; Send
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
