@@ -7,3 +7,7 @@
 .amharic {
   font-family: 'Noto Sans Ethiopic', sans-serif;
 }
+
+html {
+  scroll-behavior: smooth;
+}

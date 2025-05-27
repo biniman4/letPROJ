@@ -176,20 +176,45 @@ const Inbox = () => {
             <div className="mb-4 text-gray-800 whitespace-pre-line">
               {openLetter.content}
             </div>
+
             {openLetter.attachments && openLetter.attachments.length > 0 && (
               <div className="mb-2">
                 <strong>Attachment:</strong>
                 <ul>
                   {openLetter.attachments.map((file, idx) => (
-                    <li key={idx}>
-                      {/* You need to implement file download logic on backend for real download */}
+                    <li key={idx} className="flex items-center space-x-2">
                       <a
-                        href={`#`}
-                        className="text-blue-600 underline"
-                        onClick={() => alert("Download not implemented")}
+                        href={`http://localhost:5000/api/letters/download/${encodeURIComponent(
+                          file
+                        )}`}
+                        className="text-blue-600 hover:text-blue-800 underline"
+                        download={file}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          // Create a temporary link and trigger download
+                          const link = document.createElement("a");
+                          link.href = `http://localhost:5000/api/letters/download/${encodeURIComponent(
+                            file
+                          )}`;
+                          link.download = file;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
                       >
-                        {file}
+                        Download
                       </a>
+                      <a
+                        href={`http://localhost:5000/uploads/${encodeURIComponent(
+                          file
+                        )}`}
+                        className="text-green-600 hover:text-green-800 underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View
+                      </a>
+                      <span className="text-gray-700">{file}</span>
                     </li>
                   ))}
                 </ul>

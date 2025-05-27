@@ -28,7 +28,8 @@ mongoose
 app.use("/api/users", userRoutes);
 app.use("/api/letters", letterRoutes);
 
-app.use("/uploads", express.static(path.resolve("uploads")));
+// Serve uploads folder statically
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // Start Server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
