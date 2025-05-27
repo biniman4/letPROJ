@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { SearchIcon, FilterIcon, FileTextIcon, StarIcon } from "lucide-react";
 import axios from "axios";
+import { Modal } from "react-responsive-modal"; // You can use any modal library or a custom modal
+import "react-responsive-modal/styles.css";
 
 const Inbox = () => {
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [letters, setLetters] = useState([]);
   const [search, setSearch] = useState("");
-  // Replace this with your actual logged-in user's email (from auth context or similar)
-  // Get user email from localStorage (set this after login)
+  const [openLetter, setOpenLetter] = useState(null); // For modal
+
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const userEmail = user.email || ""; // fallback to empty string if not logged in
+  const userEmail = user.email || "";
 
   useEffect(() => {
     const fetchLetters = async () => {
@@ -23,18 +25,17 @@ const Inbox = () => {
     fetchLetters();
   }, [userEmail]);
 
-  // Filtering logic
   const filteredLetters = letters
     .filter((letter) => {
       if (selectedFilter === "unread") return letter.unread;
       if (selectedFilter === "starred") return letter.starred;
-      if (selectedFilter === "urgent") return letter.status === "urgent";
+      if (selectedFilter === "urgent") return letter.priority === "urgent";
       return true;
     })
     .filter(
       (letter) =>
         letter.subject.toLowerCase().includes(search.toLowerCase()) ||
-        letter.sender.toLowerCase().includes(search.toLowerCase())
+        (letter.fromName || "").toLowerCase().includes(search.toLowerCase())
     );
 
   return (
@@ -89,9 +90,10 @@ const Inbox = () => {
           {filteredLetters.map((letter) => (
             <div
               key={letter._id || letter.id}
-              className={`p-4 hover:bg-gray-50 flex items-center ${
+              className={`p-4 hover:bg-gray-50 flex items-center cursor-pointer ${
                 letter.unread ? "bg-blue-50/30" : ""
               }`}
+              onClick={() => setOpenLetter(letter)}
             >
               <div className="flex-1 flex items-center min-w-0">
                 <div className="flex items-center space-x-4">
@@ -116,18 +118,18 @@ const Inbox = () => {
                       {letter.subject}
                     </h4>
                     <div className="flex items-center space-x-2">
-                      {letter.status === "urgent" && (
+                      {letter.priority === "urgent" && (
                         <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
                           Urgent
                         </span>
                       )}
                       <span className="text-sm text-gray-500">
-                        {letter.date}
+                        {new Date(letter.createdAt).toLocaleString()}
                       </span>
                     </div>
                   </div>
                   <p className="text-sm text-gray-500 truncate">
-                    {letter.sender}
+                    {letter.fromName} ({letter.department})
                   </p>
                 </div>
               </div>
@@ -151,8 +153,79 @@ const Inbox = () => {
           </div>
         </div>
       </div>
+
+      {/* Letter Details Modal */}
+      {openLetter && (
+        <Modal open={!!openLetter} onClose={() => setOpenLetter(null)} center>
+          <div className="p-4">
+            <h3 className="text-xl font-semibold mb-2">{openLetter.subject}</h3>
+            <div className="mb-2 text-gray-700">
+              <strong>From:</strong> {openLetter.fromName} (
+              {openLetter.fromEmail})
+            </div>
+            <div className="mb-2 text-gray-700">
+              <strong>Department:</strong> {openLetter.department}
+            </div>
+            <div className="mb-2 text-gray-700">
+              <strong>Priority:</strong> {openLetter.priority}
+            </div>
+            <div className="mb-2 text-gray-700">
+              <strong>Date:</strong>{" "}
+              {new Date(openLetter.createdAt).toLocaleString()}
+            </div>
+            <div className="mb-4 text-gray-800 whitespace-pre-line">
+              {openLetter.content}
+            </div>
+
+            {openLetter.attachments && openLetter.attachments.length > 0 && (
+              <div className="mb-2">
+                <strong>Attachment:</strong>
+                <ul>
+                  {openLetter.attachments.map((file, idx) => (
+                    <li key={idx} className="flex items-center space-x-2">
+                      <a
+                        href={`http://localhost:5000/api/letters/download/${encodeURIComponent(
+                          file
+                        )}`}
+                        className="text-blue-600 hover:text-blue-800 underline"
+                        download={file}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          // Create a temporary link and trigger download
+                          const link = document.createElement("a");
+                          link.href = `http://localhost:5000/api/letters/download/${encodeURIComponent(
+                            file
+                          )}`;
+                          link.download = file;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
+                      >
+                        Download
+                      </a>
+                      <a
+                        href={`http://localhost:5000/uploads/${encodeURIComponent(
+                          file
+                        )}`}
+                        className="text-green-600 hover:text-green-800 underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View
+                      </a>
+                      <span className="text-gray-700">{file}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
 
 export default Inbox;
+// ...existing code...

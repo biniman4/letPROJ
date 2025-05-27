@@ -18,35 +18,44 @@ import Users from "./components/pages/Users";
 import Settings from "./components/pages/Settings";
 import Signup from "./components/pages/Signup";
 import Login from "./components/pages/Login";
+import AdminPanel from "./components/pages/AdminPanel";
 
-import { LanguageProvider } from "./components/pages/LanguageContext"; // ✅ Import your provider
+import { LanguageProvider } from "./components/pages/LanguageContext";
 
 export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
+    // Check if user is admin - you'll need to implement this logic
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    setIsAdmin(user.role === "admin");
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setIsAdmin(false);
   };
 
-  const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const PrivateRoute = ({ children, adminRequired = false }: { children: React.ReactNode, adminRequired?: boolean }) => {
     const navigate = useNavigate();
+    
     useEffect(() => {
       if (!isAuthenticated) {
         navigate("/login");
+      } else if (adminRequired && !isAdmin) {
+        navigate("/dashboard");
       }
-    }, [isAuthenticated, navigate]);
+    }, [isAuthenticated, isAdmin, navigate]);
 
-    if (!isAuthenticated) {
+    if (!isAuthenticated || (adminRequired && !isAdmin)) {
       return null;
     }
 
     return (
       <div className="flex w-full min-h-screen bg-gray-50">
-        <Sidebar />
+        <Sidebar isAdmin={isAdmin} />
         <div className="flex-1 overflow-hidden">
           <Header onLogout={handleLogout} />
           <main
@@ -61,7 +70,7 @@ export function App() {
   };
 
   return (
-    <LanguageProvider> {/* ✅ Wrap everything inside LanguageProvider */}
+    <LanguageProvider>
       <Router>
         <Routes>
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
@@ -120,6 +129,14 @@ export function App() {
             element={
               <PrivateRoute>
                 <Settings />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute adminRequired={true}>
+                <AdminPanel />
               </PrivateRoute>
             }
           />

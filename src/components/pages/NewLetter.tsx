@@ -34,6 +34,9 @@ const NewLetter = () => {
   const [loadingEmployees, setLoadingEmployees] = useState(false);
   const [searchEmployee, setSearchEmployee] = useState("");
 
+  const [attachment, setAttachment] = useState<File | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+
   // Fetch employees grouped by department
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -73,7 +76,6 @@ const NewLetter = () => {
       return;
     }
 
-    // Get userId (MongoDB ObjectId) from localStorage (update this key as needed)
     const currentUserId = localStorage.getItem("userId");
     if (!currentUserId) {
       alert("User not logged in. Please log in again.");
@@ -81,10 +83,35 @@ const NewLetter = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/letters", {
-        ...letterData,
-        from: currentUserId, // <-- Send ObjectId string
-      });
+      let response;
+
+      if (attachment) {
+        const formData = new FormData();
+        Object.entries(letterData).forEach(([key, value]) => {
+          if (key === "ccEmployees") {
+            formData.append("ccEmployees", JSON.stringify(value)); // <-- Fix here
+          } else if (key !== "attachments") {
+            formData.append(key, value as string);
+          }
+        });
+        formData.append("from", currentUserId);
+        formData.append("attachment", attachment); // <-- Field name must match backend
+
+        response = await axios.post(
+          "http://localhost:5000/api/letters",
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+      } else {
+        response = await axios.post("http://localhost:5000/api/letters", {
+          ...letterData,
+          from: currentUserId,
+          ccEmployees: JSON.stringify(letterData.ccEmployees), // <-- Fix here
+        });
+      }
+
       console.log("Letter saved successfully:", response.data);
 
       setLetterData({
@@ -101,6 +128,7 @@ const NewLetter = () => {
       });
       setToDepartment("");
       setToEmployee("");
+      setAttachment(null); // Clear the file after submit
       alert("Letter sent successfully!");
     } catch (error) {
       console.error(
@@ -110,7 +138,46 @@ const NewLetter = () => {
       alert("Failed to send the letter. Please try again.");
     }
   };
-  // ...existing code...
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setAttachment(e.target.files[0]);
+      setLetterData((prev) => ({
+        ...prev,
+        attachments: [e.target.files[0].name], // Store file name for display
+      }));
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      setAttachment(e.dataTransfer.files[0]);
+      setLetterData((prev) => ({
+        ...prev,
+        attachments: [e.dataTransfer.files[0].name],
+      }));
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragActive(false);
+  };
+
+  const removeAttachment = () => {
+    setAttachment(null);
+    setLetterData((prev) => ({
+      ...prev,
+      attachments: [],
+    }));
+  };
 
   const t = {
     title: {
@@ -338,10 +405,17 @@ const NewLetter = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t.attachments[lang]}
             </label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+            <div
+              className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md transition-colors ${
+                dragActive ? "border-blue-500 bg-blue-50" : ""
+              }`}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+            >
               <div className="space-y-1 text-center">
                 <PaperclipIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <div className="flex text-sm text-gray-600">
+                <div className="flex text-sm text-gray-600 justify-center">
                   <label
                     htmlFor="file-upload"
                     className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500"
@@ -352,11 +426,27 @@ const NewLetter = () => {
                       name="file-upload"
                       type="file"
                       className="sr-only"
+                      onChange={handleFileChange}
+                      accept=".pdf,.doc,.docx"
                     />
                   </label>
                   <p className="pl-1">{t.orDrag[lang]}</p>
                 </div>
                 <p className="text-xs text-gray-500">{t.uploadHint[lang]}</p>
+                {attachment && (
+                  <div className="mt-2 flex items-center justify-center space-x-2">
+                    <span className="text-green-600 font-medium">
+                      {attachment.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={removeAttachment}
+                      className="text-red-500 hover:underline text-xs"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

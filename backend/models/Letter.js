@@ -4,8 +4,8 @@ const letterSchema = new mongoose.Schema({
   subject: { type: String, required: true },
   reference: { type: String, required: true },
   from: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  fromName: { type: String, required: true }, // Add this
-  fromEmail: { type: String, required: true }, // Add this
+  fromName: { type: String, required: true },
+  fromEmail: { type: String, required: true },
   to: { type: String, required: true },
   department: { type: String, required: true },
   priority: { type: String, default: "normal" },
@@ -13,7 +13,7 @@ const letterSchema = new mongoose.Schema({
   attachments: [String],
   cc: [String],
   ccEmployees: { type: Map, of: [String] },
-  toEmail: { type: String, required: true }, // Already present in controller
+  toEmail: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
 });
 

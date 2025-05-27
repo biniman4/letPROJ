@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
 import letterRoutes from "./routes/letterRoutes.js";
+import path from "path";
 
 dotenv.config();
 
@@ -26,6 +27,9 @@ mongoose
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/letters", letterRoutes);
+
+// Serve uploads folder statically
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // Start Server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
