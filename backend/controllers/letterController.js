@@ -1,5 +1,6 @@
 import Letter from "../models/Letter.js";
 import User from "../models/User.js";
+import Notification from "../models/Notification.js";
 import nodemailer from "nodemailer";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -95,6 +96,17 @@ export const createLetter = async (req, res) => {
     const letter = new Letter(letterData);
     await letter.save();
     console.log("Letter saved to DB:", letter);
+
+    // Create notification for the recipient
+    const notification = new Notification({
+      recipient: recipient._id,
+      type: "new_letter",
+      title: "New Letter Received",
+      message: `You have received a new letter from ${sender.name} regarding "${req.body.subject}"`,
+      relatedLetter: letter._id,
+      priority: req.body.priority === "urgent" ? "high" : "medium",
+    });
+    await notification.save();
 
     // Send email to recipient and cc, with attachment if present
     const transporter = nodemailer.createTransport({
@@ -225,6 +237,31 @@ export const updateLetterStatus = async (req, res) => {
 
     if (!updatedLetter) {
       return res.status(404).json({ message: "Letter not found" });
+    }
+
+    // Create notification for letter status changes
+    if (unread === false) {
+      const notification = new Notification({
+        recipient: updatedLetter.from,
+        type: "letter_read",
+        title: "Letter Read",
+        message: `${updatedLetter.to} has read your letter regarding "${updatedLetter.subject}"`,
+        relatedLetter: updatedLetter._id,
+        priority: "low",
+      });
+      await notification.save();
+    }
+
+    if (starred === true) {
+      const notification = new Notification({
+        recipient: updatedLetter.from,
+        type: "letter_starred",
+        title: "Letter Starred",
+        message: `${updatedLetter.to} has starred your letter regarding "${updatedLetter.subject}"`,
+        relatedLetter: updatedLetter._id,
+        priority: "low",
+      });
+      await notification.save();
     }
 
     res.json(updatedLetter);

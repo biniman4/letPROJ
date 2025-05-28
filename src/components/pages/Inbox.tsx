@@ -3,6 +3,7 @@ import { SearchIcon, FilterIcon, FileTextIcon, StarIcon } from "lucide-react";
 import axios from "axios";
 import { Modal } from "react-responsive-modal"; // You can use any modal library or a custom modal
 import "react-responsive-modal/styles.css";
+import { useNotifications } from "../../context/NotificationContext";
 
 interface Letter {
   _id: string;
@@ -29,12 +30,12 @@ const Inbox = () => {
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user.email || "";
+  const { updateUnreadLetters } = useNotifications();
 
   useEffect(() => {
     const fetchLetters = async () => {
       try {
         const res = await axios.get("http://localhost:5000/api/letters");
-        // Ensure we have the correct data structure and sort by date
         const formattedLetters = res.data
           .filter((letter: Letter) => letter.toEmail === userEmail)
           .map((letter: Letter) => ({
@@ -47,15 +48,21 @@ const Inbox = () => {
           .sort(
             (a: Letter, b: Letter) =>
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          ); // Sort by newest first
+          );
         setLetters(formattedLetters);
+
+        // Update unread count
+        const unreadCount = formattedLetters.filter(
+          (l: Letter) => l.unread
+        ).length;
+        updateUnreadLetters(unreadCount);
       } catch (err) {
         console.error("Error fetching letters:", err);
         setLetters([]);
       }
     };
     fetchLetters();
-  }, [userEmail]);
+  }, [userEmail, selectedFilter, updateUnreadLetters]);
 
   const handleLetterOpen = async (letter: Letter) => {
     try {
@@ -72,6 +79,12 @@ const Inbox = () => {
           l._id === letter._id ? { ...l, unread: false, starred: true } : l
         )
       );
+
+      // Update unread count
+      const unreadCount = letters.filter(
+        (l) => l.unread && l._id !== letter._id
+      ).length;
+      updateUnreadLetters(unreadCount);
 
       // Finally, open the letter
       setOpenLetter({ ...letter, unread: false, starred: true });
@@ -182,33 +195,6 @@ const Inbox = () => {
       hour12: true,
     });
   };
-
-  // Add a useEffect to refresh letters when filter changes
-  useEffect(() => {
-    const fetchLetters = async () => {
-      try {
-        const res = await axios.get("http://localhost:5000/api/letters");
-        const formattedLetters = res.data
-          .filter((letter: Letter) => letter.toEmail === userEmail)
-          .map((letter: Letter) => ({
-            ...letter,
-            unread: letter.unread ?? true,
-            starred: letter.starred ?? false,
-            priority: letter.priority ?? "normal",
-            createdAt: letter.createdAt || new Date().toISOString(),
-          }))
-          .sort(
-            (a: Letter, b: Letter) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-        setLetters(formattedLetters);
-      } catch (err) {
-        console.error("Error fetching letters:", err);
-        setLetters([]);
-      }
-    };
-    fetchLetters();
-  }, [userEmail, selectedFilter]); // Add selectedFilter as dependency
 
   return (
     <div>

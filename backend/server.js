@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
 import letterRoutes from "./routes/letterRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 import path from "path";
 
 dotenv.config();
@@ -27,6 +28,7 @@ mongoose
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/letters", letterRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Serve uploads folder statically
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
