@@ -207,3 +207,29 @@ export const viewFile = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const updateLetterStatus = async (req, res) => {
+  try {
+    const { letterId, unread, starred } = req.body;
+
+    const updatedLetter = await Letter.findByIdAndUpdate(
+      letterId,
+      {
+        $set: {
+          unread: unread !== undefined ? unread : undefined,
+          starred: starred !== undefined ? starred : undefined,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedLetter) {
+      return res.status(404).json({ message: "Letter not found" });
+    }
+
+    res.json(updatedLetter);
+  } catch (error) {
+    console.error("Error updating letter status:", error);
+    res.status(500).json({ message: "Error updating letter status" });
+  }
+};

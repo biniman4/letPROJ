@@ -4,11 +4,28 @@ import axios from "axios";
 import { Modal } from "react-responsive-modal"; // You can use any modal library or a custom modal
 import "react-responsive-modal/styles.css";
 
+interface Letter {
+  _id: string;
+  subject: string;
+  fromName: string;
+  fromEmail: string;
+  toEmail: string;
+  department: string;
+  priority: string;
+  content: string;
+  createdAt: string;
+  unread: boolean;
+  starred: boolean;
+  attachments?: Array<{ filename: string }>;
+}
+
 const Inbox = () => {
   const [selectedFilter, setSelectedFilter] = useState("all");
-  const [letters, setLetters] = useState([]);
+  const [letters, setLetters] = useState<Letter[]>([]);
   const [search, setSearch] = useState("");
-  const [openLetter, setOpenLetter] = useState(null); // For modal
+  const [openLetter, setOpenLetter] = useState<Letter | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user.email || "";
@@ -17,26 +34,181 @@ const Inbox = () => {
     const fetchLetters = async () => {
       try {
         const res = await axios.get("http://localhost:5000/api/letters");
-        setLetters(res.data.filter((letter) => letter.toEmail === userEmail));
+        // Ensure we have the correct data structure and sort by date
+        const formattedLetters = res.data
+          .filter((letter: Letter) => letter.toEmail === userEmail)
+          .map((letter: Letter) => ({
+            ...letter,
+            unread: letter.unread ?? true,
+            starred: letter.starred ?? false,
+            priority: letter.priority ?? "normal",
+            createdAt: letter.createdAt || new Date().toISOString(),
+          }))
+          .sort(
+            (a: Letter, b: Letter) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          ); // Sort by newest first
+        setLetters(formattedLetters);
       } catch (err) {
+        console.error("Error fetching letters:", err);
         setLetters([]);
       }
     };
     fetchLetters();
   }, [userEmail]);
 
+  const handleLetterOpen = async (letter: Letter) => {
+    try {
+      // First update the backend
+      await axios.post(`http://localhost:5000/api/letters/status`, {
+        letterId: letter._id,
+        unread: false,
+        starred: true,
+      });
+
+      // Then update local state
+      setLetters((prevLetters) =>
+        prevLetters.map((l) =>
+          l._id === letter._id ? { ...l, unread: false, starred: true } : l
+        )
+      );
+
+      // Finally, open the letter
+      setOpenLetter({ ...letter, unread: false, starred: true });
+    } catch (error) {
+      console.error("Error updating letter status:", error);
+      // If the update fails, still update the local state to maintain UI consistency
+      setLetters((prevLetters) =>
+        prevLetters.map((l) =>
+          l._id === letter._id ? { ...l, unread: false, starred: true } : l
+        )
+      );
+      setOpenLetter({ ...letter, unread: false, starred: true });
+    }
+  };
+
+  const handleStarToggle = async (letter: Letter, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent letter from opening when clicking star
+
+    try {
+      const newStarredState = !letter.starred;
+
+      // Update backend
+      await axios.post(`http://localhost:5000/api/letters/status`, {
+        letterId: letter._id,
+        starred: newStarredState,
+      });
+
+      // Update local state
+      setLetters((prevLetters) =>
+        prevLetters.map((l) =>
+          l._id === letter._id ? { ...l, starred: newStarredState } : l
+        )
+      );
+
+      // If the letter is open in the modal, update it too
+      if (openLetter && openLetter._id === letter._id) {
+        setOpenLetter((prev) =>
+          prev ? { ...prev, starred: newStarredState } : null
+        );
+      }
+    } catch (error) {
+      console.error("Error toggling star:", error);
+      // If the update fails, still update the local state to maintain UI consistency
+      setLetters((prevLetters) =>
+        prevLetters.map((l) =>
+          l._id === letter._id ? { ...l, starred: !l.starred } : l
+        )
+      );
+    }
+  };
+
   const filteredLetters = letters
     .filter((letter) => {
-      if (selectedFilter === "unread") return letter.unread;
-      if (selectedFilter === "starred") return letter.starred;
-      if (selectedFilter === "urgent") return letter.priority === "urgent";
-      return true;
+      switch (selectedFilter) {
+        case "unread":
+          return letter.unread === true;
+        case "starred":
+          return letter.starred === true;
+        case "urgent":
+          return letter.priority === "urgent";
+        default:
+          return true;
+      }
     })
     .filter(
       (letter) =>
         letter.subject.toLowerCase().includes(search.toLowerCase()) ||
         (letter.fromName || "").toLowerCase().includes(search.toLowerCase())
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredLetters.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentLetters = filteredLetters.slice(startIndex, endIndex);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  // Reset to first page when filter or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedFilter, search]);
+
+  // Format date function
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    });
+  };
+
+  // Add a useEffect to refresh letters when filter changes
+  useEffect(() => {
+    const fetchLetters = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/letters");
+        const formattedLetters = res.data
+          .filter((letter: Letter) => letter.toEmail === userEmail)
+          .map((letter: Letter) => ({
+            ...letter,
+            unread: letter.unread ?? true,
+            starred: letter.starred ?? false,
+            priority: letter.priority ?? "normal",
+            createdAt: letter.createdAt || new Date().toISOString(),
+          }))
+          .sort(
+            (a: Letter, b: Letter) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        setLetters(formattedLetters);
+      } catch (err) {
+        console.error("Error fetching letters:", err);
+        setLetters([]);
+      }
+    };
+    fetchLetters();
+  }, [userEmail, selectedFilter]); // Add selectedFilter as dependency
 
   return (
     <div>
@@ -87,17 +259,20 @@ const Inbox = () => {
               No letters found.
             </div>
           )}
-          {filteredLetters.map((letter) => (
+          {currentLetters.map((letter) => (
             <div
-              key={letter._id || letter.id}
+              key={letter._id}
               className={`p-4 hover:bg-gray-50 flex items-center cursor-pointer ${
                 letter.unread ? "bg-blue-50/30" : ""
               }`}
-              onClick={() => setOpenLetter(letter)}
+              onClick={() => handleLetterOpen(letter)}
             >
               <div className="flex-1 flex items-center min-w-0">
                 <div className="flex items-center space-x-4">
-                  <button className="text-gray-400 hover:text-yellow-400">
+                  <button
+                    className="text-gray-400 hover:text-yellow-400"
+                    onClick={(e) => handleStarToggle(letter, e)}
+                  >
                     <StarIcon
                       className={`h-5 w-5 ${
                         letter.starred ? "text-yellow-400 fill-yellow-400" : ""
@@ -112,7 +287,9 @@ const Inbox = () => {
                   <div className="flex items-center justify-between">
                     <h4
                       className={`text-sm font-medium ${
-                        letter.unread ? "text-gray-900" : "text-gray-600"
+                        letter.unread
+                          ? "text-gray-900 font-semibold"
+                          : "text-gray-600"
                       }`}
                     >
                       {letter.subject}
@@ -124,7 +301,7 @@ const Inbox = () => {
                         </span>
                       )}
                       <span className="text-sm text-gray-500">
-                        {new Date(letter.createdAt).toLocaleString()}
+                        {formatDate(letter.createdAt)}
                       </span>
                     </div>
                   </div>
@@ -139,15 +316,34 @@ const Inbox = () => {
         {/* Pagination */}
         <div className="p-4 border-t border-gray-200 flex items-center justify-between">
           <p className="text-sm text-gray-700">
-            Showing <span className="font-medium">1</span> to{" "}
-            <span className="font-medium">{filteredLetters.length}</span> of{" "}
-            <span className="font-medium">{letters.length}</span> letters
+            Showing <span className="font-medium">{startIndex + 1}</span> to{" "}
+            <span className="font-medium">
+              {Math.min(endIndex, filteredLetters.length)}
+            </span>{" "}
+            of <span className="font-medium">{filteredLetters.length}</span>{" "}
+            letters
           </p>
           <div className="flex space-x-2">
-            <button className="px-3 py-1 border rounded text-sm text-gray-600 hover:bg-gray-50">
+            <button
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+              className={`px-3 py-1 border rounded text-sm ${
+                currentPage === 1
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
               Previous
             </button>
-            <button className="px-3 py-1 border rounded text-sm text-gray-600 hover:bg-gray-50">
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className={`px-3 py-1 border rounded text-sm ${
+                currentPage === totalPages
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
               Next
             </button>
           </div>
@@ -170,8 +366,7 @@ const Inbox = () => {
               <strong>Priority:</strong> {openLetter.priority}
             </div>
             <div className="mb-2 text-gray-700">
-              <strong>Date:</strong>{" "}
-              {new Date(openLetter.createdAt).toLocaleString()}
+              <strong>Date:</strong> {formatDate(openLetter.createdAt)}
             </div>
             <div className="mb-4 text-gray-800 whitespace-pre-line">
               {openLetter.content}
@@ -216,4 +411,3 @@ const Inbox = () => {
 };
 
 export default Inbox;
-// ...existing code...

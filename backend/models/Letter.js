@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { Buffer } from "buffer";
 
 const letterSchema = new mongoose.Schema(
   {
@@ -11,6 +12,8 @@ const letterSchema = new mongoose.Schema(
     department: { type: String, required: true },
     priority: { type: String, default: "normal" },
     content: { type: String, required: true },
+    unread: { type: Boolean, default: true },
+    starred: { type: Boolean, default: false },
     attachments: [
       {
         filename: String,

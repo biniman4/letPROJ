@@ -6,6 +6,7 @@ import {
   getLetters,
   downloadFile,
   viewFile,
+  updateLetterStatus,
 } from "../controllers/letterController.js";
 
 const router = express.Router();
@@ -36,5 +37,6 @@ router.post("/", upload.single("attachment"), createLetter);
 router.get("/", getLetters);
 router.get("/download/:letterId/:filename", downloadFile);
 router.get("/view/:letterId/:filename", viewFile);
+router.post("/status", updateLetterStatus);
 
 export default router;
