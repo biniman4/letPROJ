@@ -158,10 +158,10 @@ const services = [
 
 const Home = ({ onLogin }: { onLogin: () => void }) => {
   const [lang, setLang] = useState<'am' | 'en'>('am');
-  const navigate = useNavigate();
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [adminCredentials, setAdminCredentials] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
+  const navigate = useNavigate();
 
   const t = translations[lang];
 
@@ -201,82 +201,91 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
 
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="bg-gray-200 p-2 text-right pr-4 flex justify-between items-center">
-        <button 
-          onClick={() => setShowAdminLogin(true)}
-          className="text-gray-600 hover:text-gray-800 flex items-center"
-        >
-          <LockIcon className="w-4 h-4 mr-1" />
-          Admin Login
-        </button>
-        <button onClick={() => setLang(lang === 'am' ? 'en' : 'am')}>
-          {lang === 'am' ? 'Switch to English' : 'ወደ አማርኛ ቀይር'}
-        </button>
-      </div>
-
-      <PublicNavbar />
+    <div className="min-h-screen flex flex-col bg-[#FAFBFF]">
+      <PublicNavbar 
+        lang={lang}
+        onLanguageChange={setLang}
+        onAdminLogin={() => setShowAdminLogin(true)}
+      />
 
       <main className="flex-grow">
-        <div className="bg-white">
-          <div className="max-w-7xl mx-auto pt-16 pb-24 px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden bg-gradient-to-b from-[#F5F8FF] via-[#FAFBFF] to-white">
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-[radial-gradient(#E4E9FF_1px,transparent_1px)] [background-size:20px_20px] opacity-30"></div>
+            <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+            <div className="absolute top-0 -right-4 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+            <div className="absolute -bottom-8 left-20 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+          </div>
+
+          <div className="max-w-7xl mx-auto pt-20 pb-32 px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={lang + "-title"}
-                  initial="hidden"
-                  animate="visible"
-                  variants={wordVariants}
-                >
-                  <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                    <span className="block">
-                      {t.title.split("").map((char, i) => (
-                        <motion.span
-                          key={i}
-                          custom={i}
-                          variants={letterVariants}
-                          className="inline-block"
-                        >
-                          {char === " " ? "\u00A0" : char}
-                        </motion.span>
-                      ))}
-                    </span>
-                    <span className="block text-blue-600">
-                      {t.subtitle.split("").map((char, i) => (
-                        <motion.span
-                          key={i}
-                          custom={i}
-                          variants={letterVariants}
-                          className="inline-block"
-                        >
-                          {char === " " ? "\u00A0" : char}
-                        </motion.span>
-                      ))}
-                    </span>
-                  </h1>
-                </motion.div>
-              </AnimatePresence>
+              <motion.div
+                key={lang + "-title"}
+                initial="hidden"
+                animate="visible"
+                variants={wordVariants}
+                className="relative"
+              >
+                <h1 className="text-5xl md:text-6xl lg:text-7xl tracking-tight font-extrabold text-gray-900 mb-8">
+                  <span className="block bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                    {t.title.split("").map((char, i) => (
+                      <motion.span
+                        key={i}
+                        custom={i}
+                        variants={letterVariants}
+                        className="inline-block"
+                      >
+                        {char === " " ? "\u00A0" : char}
+                      </motion.span>
+                    ))}
+                  </span>
+                  <span className="block mt-4 text-3xl md:text-4xl lg:text-5xl text-blue-600">
+                    {t.subtitle.split("").map((char, i) => (
+                      <motion.span
+                        key={i}
+                        custom={i}
+                        variants={letterVariants}
+                        className="inline-block"
+                      >
+                        {char === " " ? "\u00A0" : char}
+                      </motion.span>
+                    ))}
+                  </span>
+                </h1>
+              </motion.div>
 
               <motion.p 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl"
+                className="mt-6 max-w-2xl mx-auto text-xl text-gray-500 leading-relaxed"
               >
                 {t.description}
               </motion.p>
 
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
-                className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8"
+                className="mt-10 max-w-md mx-auto sm:flex sm:justify-center md:mt-12 gap-4"
               >
+
+                <div className="rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                  <Link
+                    to="/signup"
+                    className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-xl text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transform hover:-translate-y-0.5 transition-all duration-200"
+                  >
+                    {t.getStarted}
+                  </Link>
+                </div>
+                <div className="mt-3 sm:mt-0 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+
           
                 <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
+
                   <button
                     onClick={handleLogin}
-                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
+                    className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-xl text-blue-600 bg-white hover:bg-gray-50 transform hover:-translate-y-0.5 transition-all duration-200"
                   >
                     {t.login}
                   </button>
@@ -286,14 +295,18 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
           </div>
         </div>
 
-        <div className="bg-gray-50 py-24" id="features">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="py-24 bg-white relative" id="features">
+          <div className="absolute inset-0">
+            <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-blue-50 to-transparent"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(#E4E9FF_1px,transparent_1px)] [background-size:40px_40px] opacity-20"></div>
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center">
               <motion.h2 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="text-3xl font-extrabold text-gray-900 sm:text-4xl"
+                className="text-4xl font-extrabold text-gray-900 sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600"
               >
                 {t.featuresHeading}
               </motion.h2>
@@ -302,7 +315,7 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
-                className="mt-4 text-lg text-gray-500"
+                className="mt-4 text-xl text-gray-500"
               >
                 {t.featuresSub}
               </motion.p>
@@ -315,17 +328,17 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-white pt-6 px-6 pb-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
+                  className="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-100"
                 >
                   <div>
-                    <span className="p-3 bg-blue-50 rounded-lg inline-block">
+                    <span className="p-3 bg-blue-50 rounded-xl inline-block group-hover:bg-blue-100 transition-colors duration-200">
                       <feature.icon className="h-6 w-6 text-blue-600" />
                     </span>
                   </div>
-                  <h3 className="mt-4 text-lg font-medium text-gray-900">
+                  <h3 className="mt-6 text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
                     {feature.name[lang]}
                   </h3>
-                  <p className="mt-2 text-base text-gray-500">
+                  <p className="mt-4 text-gray-500 leading-relaxed">
                     {feature.description[lang]}
                   </p>
                 </motion.div>
@@ -334,14 +347,18 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
           </div>
         </div>
 
-        <div className="py-24 bg-white" id="services">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="py-24 relative" id="services">
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#F8FAFF] to-white"></div>
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#8B5CF6_1px,transparent_1px),linear-gradient(to_bottom,#8B5CF6_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)] opacity-[0.02]"></div>
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center">
               <motion.h2
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="text-3xl font-extrabold text-gray-900 sm:text-4xl"
+                className="text-4xl font-extrabold text-gray-900 sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600"
               >
                 {lang === 'am' ? 'የሙያተኛ አገልግሎቶቻችን' : 'Our Professional Services'}
               </motion.h2>
@@ -350,7 +367,7 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
-                className="mt-4 text-lg text-gray-500"
+                className="mt-4 text-xl text-gray-500"
               >
                 {lang === 'am' ? 'ለSSGI የግንኙነት ፍላጎቶች የተለዩ መፍትሄዎች' : 'Specialized solutions for SSGI\'s communication needs'}
               </motion.p>
@@ -363,17 +380,17 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-gray-50 pt-6 px-6 pb-8 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
+                  className="group bg-gradient-to-br from-white to-blue-50/50 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-100/20 hover:border-blue-200"
                 >
                   <div>
-                    <span className="p-3 bg-blue-50 rounded-lg inline-block">
-                      <service.icon className="h-6 w-6 text-blue-600" />
+                    <span className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl inline-block shadow-md group-hover:shadow-lg transition-all duration-200">
+                      <service.icon className="h-7 w-7 text-white" />
                     </span>
                   </div>
-                  <h3 className="mt-4 text-lg font-medium text-gray-900">
+                  <h3 className="mt-6 text-2xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
                     {service.name[lang]}
                   </h3>
-                  <p className="mt-2 text-base text-gray-500">
+                  <p className="mt-4 text-gray-600 leading-relaxed text-lg">
                     {service.description[lang]}
                   </p>
                 </motion.div>
@@ -382,16 +399,24 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
           </div>
         </div>
 
-        <div className="bg-blue-600">
-          <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between">
+        <div className="relative py-24" id="cta">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_100%_200px,rgba(255,255,255,0.1),transparent)]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_0%_300px,rgba(255,255,255,0.08),transparent)]"></div>
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-[0.02]"></div>
+          </div>
+
+          <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between relative z-10">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
+              className="max-w-2xl"
             >
               <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
                 <span className="block">{t.ctaTitle}</span>
-                <span className="block text-blue-200">{t.ctaSubtitle}</span>
+                <span className="block mt-2 text-blue-200">{t.ctaSubtitle}</span>
               </h2>
             </motion.div>
             <motion.div
@@ -401,10 +426,20 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
               className="mt-8 flex lg:mt-0 lg:flex-shrink-0"
             >
 
+              <div className="inline-flex rounded-xl shadow">
+                <Link
+                  to="/signup"
+                  className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-xl text-blue-600 bg-white hover:bg-blue-50 transform hover:-translate-y-0.5 transition-all duration-200"
+                >
+                  {t.getStarted}
+                </Link>
+              </div>
+
             </motion.div>
           </div>
         </div>
       </main>
+
       <PublicFooter />
 
       <Modal 
@@ -412,28 +447,29 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
         onClose={() => setShowAdminLogin(false)}
         center
         classNames={{
-          modal: 'rounded-lg p-6 w-full max-w-md'
+          modal: 'rounded-2xl p-8 w-full max-w-md bg-white shadow-2xl',
+          overlay: 'bg-gray-900/50 backdrop-blur-sm'
         }}
       >
-        <div className="mb-4">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Admin Login</h2>
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Admin Login</h2>
           <p className="text-gray-600">Please enter your admin credentials</p>
         </div>
 
         {loginError && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-700 rounded-xl">
             {loginError}
           </div>
         )}
 
-        <form onSubmit={handleAdminLogin} className="space-y-4">
+        <form onSubmit={handleAdminLogin} className="space-y-6">
           <div>
-            <label className="block text-gray-700 mb-2">Email</label>
+            <label className="block text-gray-700 mb-2 font-medium">Email</label>
             <div className="relative">
-              <UserIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <UserIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
               <input
                 type="email"
-                className="pl-10 w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                className="pl-12 w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 placeholder="admin@example.com"
                 value={adminCredentials.email}
                 onChange={(e) => setAdminCredentials({ ...adminCredentials, email: e.target.value })}
@@ -443,12 +479,12 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2">Password</label>
+            <label className="block text-gray-700 mb-2 font-medium">Password</label>
             <div className="relative">
-              <LockIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <LockIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
               <input
                 type="password"
-                className="pl-10 w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                className="pl-12 w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 placeholder="••••••••"
                 value={adminCredentials.password}
                 onChange={(e) => setAdminCredentials({ ...adminCredentials, password: e.target.value })}
@@ -472,12 +508,40 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition duration-200"
+            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-indigo-700 transform hover:-translate-y-0.5 transition-all duration-200"
           >
             Login as Admin
           </button>
         </form>
       </Modal>
+
+      <style>
+        {`
+          @keyframes blob {
+            0% {
+              transform: translate(0px, 0px) scale(1);
+            }
+            33% {
+              transform: translate(30px, -50px) scale(1.1);
+            }
+            66% {
+              transform: translate(-20px, 20px) scale(0.9);
+            }
+            100% {
+              transform: translate(0px, 0px) scale(1);
+            }
+          }
+          .animate-blob {
+            animation: blob 7s infinite;
+          }
+          .animation-delay-2000 {
+            animation-delay: 2s;
+          }
+          .animation-delay-4000 {
+            animation-delay: 4s;
+          }
+        `}
+      </style>
     </div>
   );
 };
