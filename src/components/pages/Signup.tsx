@@ -1,70 +1,101 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+
+// You would probably split this out, but for clarity:
+const InputField = ({
+  label,
+  id,
+  type = "text",
+  value,
+  onChange,
+  placeholder,
+  isPassword = false,
+}: any) => {
+  const [showPassword, setShowPassword] = useState(false);
+  return (
+    <div className="relative">
+      <label htmlFor={id} className="block text-gray-700 font-medium mb-1">
+        {label}
+      </label>
+      <input
+        type={isPassword && showPassword ? "text" : type}
+        id={id}
+        name={id}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full px-4 py-3 pr-12 rounded-lg bg-gray-100 text-gray-800 border border-gray-300 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+        required
+      />
+      {isPassword && (
+        <button
+          type="button"
+          onClick={() => setShowPassword((prev) => !prev)}
+          className="absolute top-9 right-4 text-gray-600 hover:text-gray-800"
+          tabIndex={-1}
+        >
+          {showPassword ? "🙈" : "👁️"}
+        </button>
+      )}
+    </div>
+  );
+};
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    password: "",
-    confirmPassword: "",
     phone: "",
     departmentOrSector: "",
+    password: "",
+    confirmPassword: "",
   });
+  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const navigate = useNavigate();
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.id]: e.target.value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (!formData.name || !formData.email || !formData.phone || !formData.departmentOrSector || !formData.password || !formData.confirmPassword) {
+      setError("Please fill in all fields.");
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
+      setError("Passwords do not match.");
       return;
     }
 
-    if (
-      !formData.name ||
-      !formData.email ||
-      !formData.password ||
-      !formData.phone ||
-      !formData.departmentOrSector
-    ) {
-      setError("All fields are required");
-      return;
-    }
-
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/api/users/register",
-        formData
-      );
-      setSuccess(response.data.message);
-      setError("");
-      navigate("/login");
-    } catch (err) {
-      setError(err.response?.data?.error || "An error occurred");
-      setSuccess("");
-    }
+    // Demo: simulate backend registration
+    setTimeout(() => {
+      setSuccess("Registration successful!");
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        departmentOrSector: "",
+        password: "",
+        confirmPassword: "",
+      });
+    }, 1000);
   };
 
-  const goHome = () => navigate("/");
-
   return (
-    <div className="h-screen bg-gradient-to-br from-blue-500 via-teal-500 to-indigo-500 flex items-center justify-center">
-      <div className="w-full max-w-4xl bg-white p-10 rounded-3xl shadow-2xl border border-gray-200" style={{ height: "90%" }}>
-        <h2 className="text-4xl font-bold text-center text-teal-700 mb-8">
-          Create Your Account
+    <div className="min-h-screen flex flex-col justify-center bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl w-full mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h2 className="mb-6 text-center text-3xl font-extrabold text-gray-900">
+          Register New User
         </h2>
-
         {error && (
           <p className="text-red-600 bg-red-100 p-3 rounded text-center mb-6">
             {error}
@@ -102,7 +133,6 @@ const Signup = () => {
               onChange={handleChange}
               placeholder="+1234567890"
             />
-
             <div>
               <label htmlFor="departmentOrSector" className="block text-gray-700 font-medium mb-1">
                 Department or Sector
@@ -135,6 +165,7 @@ const Signup = () => {
               value={formData.password}
               onChange={handleChange}
               placeholder="••••••••"
+              isPassword={true}
             />
             <InputField
               label="Confirm Password"
@@ -143,8 +174,8 @@ const Signup = () => {
               value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="••••••••"
+              isPassword={true}
             />
-
             <div className="flex items-start space-x-2 text-sm text-gray-700">
               <input type="checkbox" id="terms" required className="mt-1 accent-teal-600" />
               <label htmlFor="terms">
@@ -164,72 +195,16 @@ const Signup = () => {
             >
               Sign Up
             </button>
-
             <button
               type="button"
-              onClick={goHome}
-              className="w-full py-2 bg-gray-100 text-teal-700 rounded-xl hover:bg-gray-200 transition border border-gray-300"
+              onClick={() => navigate("/admin")}
+              className="w-full py-3 bg-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-300 transition shadow-md"
             >
-              Back to Home
+              Back to Admin Page
             </button>
-
-            <p className="text-center text-gray-600 text-sm mt-4">
-              Already have an account?{" "}
-              <a href="/login" className="underline text-teal-600 hover:text-teal-800 transition">
-                Log in
-              </a>
-            </p>
           </div>
         </form>
       </div>
-    </div>
-  );
-};
-
-// Reusable Input Field Component with Password Toggle
-const InputField = ({
-  label,
-  id,
-  type = "text",
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  id: string;
-  type?: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  placeholder?: string;
-}) => {
-  const [showPassword, setShowPassword] = useState(false);
-  const isPassword = type === "password";
-
-  return (
-    <div className="relative">
-      <label htmlFor={id} className="block text-gray-700 font-medium mb-1">
-        {label}
-      </label>
-      <input
-        type={isPassword && showPassword ? "text" : type}
-        id={id}
-        name={id}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="w-full px-4 py-3 pr-12 rounded-lg bg-gray-100 text-gray-800 border border-gray-300 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
-        required
-      />
-      {isPassword && (
-        <button
-          type="button"
-          onClick={() => setShowPassword((prev) => !prev)}
-          className="absolute top-9 right-4 text-gray-600 hover:text-gray-800"
-          tabIndex={-1}
-        >
-          {showPassword ? "🙈" : "👁️"}
-        </button>
-      )}
     </div>
   );
 };
