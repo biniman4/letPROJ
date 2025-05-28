@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "../../services/api"; // Make sure this path is correct for your project
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+// @ts-ignore
+import { registerUser } from "../../services/api";
+import DepartmentSelector from "./DepartmentSelector";
 
 const InputField = ({
   label,
@@ -13,8 +16,8 @@ const InputField = ({
 }: any) => {
   const [showPassword, setShowPassword] = useState(false);
   return (
-    <div className="relative">
-      <label htmlFor={id} className="block text-gray-700 font-medium mb-1">
+    <div className="relative w-full">
+      <label htmlFor={id} className="block mb-1 text-sm font-semibold text-indigo-900">
         {label}
       </label>
       <input
@@ -24,17 +27,18 @@ const InputField = ({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full px-4 py-3 pr-12 rounded-lg bg-gray-100 text-gray-800 border border-gray-300 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+        className="w-full px-4 py-2 rounded-md border border-blue-200 bg-gradient-to-br from-indigo-50 via-blue-50 to-teal-50 text-indigo-900 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 shadow-sm transition"
         required
+        autoComplete="off"
       />
       {isPassword && (
         <button
           type="button"
           onClick={() => setShowPassword((prev) => !prev)}
-          className="absolute top-9 right-4 text-gray-600 hover:text-gray-800"
+          className="absolute top-8 right-4 text-indigo-400 hover:text-indigo-700"
           tabIndex={-1}
         >
-          {showPassword ? "🙈" : "👁️"}
+          {showPassword ? <MdVisibilityOff size={22} /> : <MdVisibility size={22} />}
         </button>
       )}
     </div>
@@ -84,7 +88,6 @@ const Signup = () => {
     }
 
     try {
-      // Call your actual backend API
       await registerUser({
         name: formData.name,
         email: formData.email,
@@ -104,115 +107,112 @@ const Signup = () => {
     } catch (err: any) {
       setError(
         "Registration failed: " +
-          (err.response?.data?.error || err.response?.data?.message || err.message)
+        (err.response?.data?.error || err.response?.data?.message || err.message)
       );
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl w-full mx-auto bg-white p-8 rounded-lg shadow-md">
-        <h2 className="mb-6 text-center text-3xl font-extrabold text-gray-900">
-          Register New User
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-indigo-400 via-blue-400 to-teal-300">
+      <div className="w-full max-w-4xl bg-gradient-to-br from-teal-50 via-blue-100 to-indigo-100/90 rounded-2xl shadow-2xl border border-blue-200 p-10">
+        <h2 className="text-3xl font-extrabold text-center text-indigo-900 mb-2 tracking-tight">
+          Create Your Account
         </h2>
-        {error && (
-          <p className="text-red-600 bg-red-100 p-3 rounded text-center mb-6">{error}</p>
+        <p className="text-center text-base text-indigo-800 mb-6">
+          Welcome! Fill in your details to join the platform.
+        </p>
+        {(error || success) && (
+          <div
+            className={`mx-auto mb-4 w-full max-w-md px-4 py-2 rounded text-center text-sm font-medium border ${
+              error
+                ? "bg-red-50 text-red-700 border-red-200"
+                : "bg-green-50 text-green-700 border-green-200"
+            }`}
+          >
+            {error || success}
+          </div>
         )}
-        {success && (
-          <p className="text-green-600 bg-green-100 p-3 rounded text-center mb-6">{success}</p>
-        )}
-
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Left Column */}
-          <div className="space-y-5">
-            <InputField
-              label="Full Name"
-              id="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="John Doe"
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6"
+        >
+          <InputField
+            label="Full Name"
+            id="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="John Doe"
+          />
+          <InputField
+            label="Email Address"
+            id="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="john@example.com"
+          />
+          <InputField
+            label="Phone Number"
+            id="phone"
+            type="tel"
+            value={formData.phone}
+            onChange={handleChange}
+            placeholder="+1234567890"
+          />
+          {/* DepartmentSelector occupies one column and two rows to align with your layout */}
+          <div className="w-full md:col-span-1 md:row-span-2 flex flex-col">
+            <DepartmentSelector
+              value={formData.departmentOrSector}
+              onChange={(val) =>
+                setFormData((prev) => ({ ...prev, departmentOrSector: val }))
+              }
             />
-            <InputField
-              label="Email Address"
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="john@example.com"
-            />
-            <InputField
-              label="Phone Number"
-              id="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="+1234567890"
-            />
-            <div>
-              <label htmlFor="departmentOrSector" className="block text-gray-700 font-medium mb-1">
-                Department or Sector
-              </label>
-              <select
-                id="departmentOrSector"
-                name="departmentOrSector"
-                value={formData.departmentOrSector}
+          </div>
+          {/* Password and Confirm Password side-by-side under DepartmentSelector on desktop */}
+          <div className="w-full md:col-span-1 flex flex-col md:flex-row gap-6">
+            <div className="flex-1">
+              <InputField
+                label="Password"
+                id="password"
+                type="password"
+                value={formData.password}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg bg-gray-100 text-gray-800 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
-                required
-              >
-                <option value="">Select Department or Sector</option>
-                <option value="IT">IT</option>
-                <option value="HR">HR</option>
-                <option value="Finance">Finance</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Sales">Sales</option>
-                <option value="Other">Other</option>
-              </select>
+                placeholder="••••••••"
+                isPassword={true}
+              />
+            </div>
+            <div className="flex-1">
+              <InputField
+                label="Confirm Password"
+                id="confirmPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
+                isPassword={true}
+              />
             </div>
           </div>
-          {/* Right Column */}
-          <div className="space-y-5">
-            <InputField
-              label="Password"
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="••••••••"
-              isPassword={true}
-            />
-            <InputField
-              label="Confirm Password"
-              id="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="••••••••"
-              isPassword={true}
-            />
-            <div className="flex items-start space-x-2 text-sm text-gray-700">
-              <input type="checkbox" id="terms" required className="mt-1 accent-teal-600" />
-              <label htmlFor="terms">
-                I agree to the{" "}
-                <a href="#" className="underline text-teal-600 hover:text-teal-800 transition">
-                  Terms and Conditions
-                </a>
-              </label>
-            </div>
+          <div className="md:col-span-2 flex items-center space-x-2 text-xs text-indigo-900 mt-2">
+            <input type="checkbox" id="terms" required className="accent-indigo-600" />
+            <label htmlFor="terms" className="select-none">
+              I agree to the{" "}
+              <a href="#" className="underline text-indigo-600 hover:text-teal-700 transition">
+                Terms and Conditions
+              </a>
+            </label>
           </div>
-
-          {/* Buttons */}
-          <div className="col-span-1 md:col-span-2 mt-4 space-y-5">
+          <div className="md:col-span-2 flex flex-col md:flex-row gap-4 mt-2">
             <button
               type="submit"
-              className="w-full py-3 bg-teal-600 text-white font-semibold rounded-xl hover:bg-teal-700 transition shadow-md"
+              className="w-full py-3 bg-gradient-to-r from-indigo-600 via-blue-500 to-teal-500 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-teal-600 transition-all shadow-md"
             >
               Sign Up
             </button>
             <button
               type="button"
               onClick={() => navigate("/admin")}
-              className="w-full py-3 bg-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-300 transition shadow-md"
+              className="w-full py-3 bg-white text-indigo-900 font-semibold rounded-xl hover:bg-indigo-100 shadow transition border border-indigo-200"
             >
               Back to Admin Page
             </button>
