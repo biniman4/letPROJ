@@ -3,6 +3,7 @@ import { PaperclipIcon, SendIcon, SaveIcon, GlobeIcon } from "lucide-react";
 import CCSection from "./Employees";
 import { LanguageContext } from "./LanguageContext";
 import axios from "axios";
+import TemplateMemoLetter from "./TemplateMemoLetter"; // Same folder import
 
 const departments = [
   { value: "finance", label: { en: "Finance", am: "ፋይናንስ" } },
@@ -27,12 +28,10 @@ const NewLetter = () => {
     from: "",
   });
 
-  // New state for employees by department
-  const [employeesByDepartment, setEmployeesByDepartment] = useState({});
+  const [employeesByDepartment, setEmployeesByDepartment] = useState<any>({});
   const [toDepartment, setToDepartment] = useState(""); // Selected department for "To"
   const [toEmployee, setToEmployee] = useState(""); // Selected employee for "To"
   const [loadingEmployees, setLoadingEmployees] = useState(false);
-  const [searchEmployee, setSearchEmployee] = useState("");
 
   const [attachment, setAttachment] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -43,8 +42,8 @@ const NewLetter = () => {
       setLoadingEmployees(true);
       try {
         const res = await axios.get("http://localhost:5000/api/users");
-        const grouped = {};
-        res.data.forEach((user) => {
+        const grouped: { [key: string]: string[] } = {};
+        res.data.forEach((user: any) => {
           const dept = user.departmentOrSector?.toLowerCase() || "other";
           if (!grouped[dept]) grouped[dept] = [];
           grouped[dept].push(user.name);
@@ -58,7 +57,7 @@ const NewLetter = () => {
     fetchEmployees();
   }, []);
 
-  // When "To" employee changes, update letterData.to
+  // When "To" employee or department changes, update letterData.to and department
   useEffect(() => {
     setLetterData((prev) => ({
       ...prev,
@@ -67,8 +66,7 @@ const NewLetter = () => {
     }));
   }, [toEmployee, toDepartment]);
 
-  // ...existing code...
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!letterData.content.trim()) {
@@ -89,13 +87,13 @@ const NewLetter = () => {
         const formData = new FormData();
         Object.entries(letterData).forEach(([key, value]) => {
           if (key === "ccEmployees") {
-            formData.append("ccEmployees", JSON.stringify(value)); // <-- Fix here
+            formData.append("ccEmployees", JSON.stringify(value));
           } else if (key !== "attachments") {
             formData.append(key, value as string);
           }
         });
         formData.append("from", currentUserId);
-        formData.append("attachment", attachment); // <-- Field name must match backend
+        formData.append("attachment", attachment);
 
         response = await axios.post(
           "http://localhost:5000/api/letters",
@@ -108,11 +106,9 @@ const NewLetter = () => {
         response = await axios.post("http://localhost:5000/api/letters", {
           ...letterData,
           from: currentUserId,
-          ccEmployees: JSON.stringify(letterData.ccEmployees), // <-- Fix here
+          ccEmployees: JSON.stringify(letterData.ccEmployees),
         });
       }
-
-      console.log("Letter saved successfully:", response.data);
 
       setLetterData({
         subject: "",
@@ -128,13 +124,9 @@ const NewLetter = () => {
       });
       setToDepartment("");
       setToEmployee("");
-      setAttachment(null); // Clear the file after submit
+      setAttachment(null);
       alert("Letter sent successfully!");
-    } catch (error) {
-      console.error(
-        "Error saving letter:",
-        error.response?.data || error.message
-      );
+    } catch (error: any) {
       alert("Failed to send the letter. Please try again.");
     }
   };
@@ -144,7 +136,7 @@ const NewLetter = () => {
       setAttachment(e.target.files[0]);
       setLetterData((prev) => ({
         ...prev,
-        attachments: [e.target.files[0].name], // Store file name for display
+        attachments: [e.target.files[0].name],
       }));
     }
   };
@@ -287,9 +279,7 @@ const NewLetter = () => {
                 />
               </div>
             </div>
-
             {/* To: Department and Employee */}
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t.to[lang]}
@@ -301,7 +291,6 @@ const NewLetter = () => {
                 onChange={(e) => {
                   setToDepartment(e.target.value);
                   setToEmployee("");
-                  setSearchEmployee("");
                 }}
               >
                 <option value="">{t.selectDepartment[lang]}</option>
@@ -324,10 +313,10 @@ const NewLetter = () => {
               />
               <datalist id="employee-list">
                 {(employeesByDepartment[toDepartment] || [])
-                  .filter((emp) =>
+                  .filter((emp: string) =>
                     emp.toLowerCase().includes(toEmployee.toLowerCase())
                   )
-                  .map((emp) => (
+                  .map((emp: string) => (
                     <option key={emp} value={emp} />
                   ))}
               </datalist>
@@ -382,22 +371,36 @@ const NewLetter = () => {
             </div>
           </div>
 
-          {/* Content */}
+          {/* Content - Use TemplateMemoLetter */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t.content[lang]}
             </label>
-            <textarea
-              rows={6}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder={
-                lang === "am" ? "የደብዳቤውን ይዘት ያስገቡ" : "Enter letter content"
+            <TemplateMemoLetter
+              subject={letterData.subject}
+              date={new Date().toLocaleDateString()}
+              recipient={letterData.to}
+              reference={letterData.reference}
+              body={
+                <textarea
+                  value={letterData.content}
+                  onChange={e =>
+                    setLetterData({ ...letterData, content: e.target.value })
+                  }
+                  placeholder={
+                    lang === "am"
+                      ? "የደብዳቤውን ይዘት ያስገቡ"
+                      : "Enter letter content"
+                  }
+                  className="w-full min-h-[180px] text-base outline-none border-none bg-transparent resize-vertical"
+                  style={{
+                    fontFamily: "'Noto Sans Ethiopic', Arial, sans-serif",
+                    lineHeight: 1.8,
+                    color: "#222",
+                  }}
+                />
               }
-              value={letterData.content}
-              onChange={(e) =>
-                setLetterData({ ...letterData, content: e.target.value })
-              }
-            ></textarea>
+            />
           </div>
 
           {/* Attachments */}
