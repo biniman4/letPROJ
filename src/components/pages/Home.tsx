@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { PublicNavbar } from '../layout/PublicNavbar';
-import { PublicFooter } from '../layout/PublicFooter';
-import { Modal } from 'react-responsive-modal';
-import axios from 'axios';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { PublicNavbar } from "../layout/PublicNavbar";
+import { PublicFooter } from "../layout/PublicFooter";
+import { Modal } from "react-responsive-modal";
+import axios from "axios";
 import {
   MailIcon,
   ClockIcon,
@@ -15,33 +15,34 @@ import {
   LayersIcon,
   SendIcon,
   UserIcon,
-  LockIcon
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+  LockIcon,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const translations = {
   am: {
-    title: 'የደብዳቤ አስተዳደር ስርዓት',
-    subtitle: 'የክፍል ሳይንስ እና ጀኦስፓሺያል ኢንስቲትዩት (SSGI)',
-    description: 'ለSSGI የተዘጋጀ መደበኛ መዝገብን በትክክል፣ በደህናነት እና በቀና ማድረግ የሚችል መድረክ።',
-    getStarted: 'መጀመሪያ ጀምር',
-    login: 'ግባ',
-    featuresHeading: 'የSSGI ኮሚዩኒኬሽን ፍሎውን በኃይል መሞላ',
-    featuresSub: 'የዲጂታል ለውጥዎን ዛሬ ይጀምሩ።',
-    ctaTitle: 'መጀመሪያ ለመጀመር ዝግጁ ነዎት?',
-    ctaSubtitle: 'የነፃ ሙከራዎን ዛሬ ይጀምሩ።'
+    title: "የደብዳቤ አስተዳደር ስርዓት",
+    subtitle: "የክፍል ሳይንስ እና ጀኦስፓሺያል ኢንስቲትዩት (SSGI)",
+    description: "ለSSGI የተዘጋጀ መደበኛ መዝገብን በትክክል፣ በደህናነት እና በቀና ማድረግ የሚችል መድረክ።",
+    getStarted: "መጀመሪያ ጀምር",
+    login: "ግባ",
+    featuresHeading: "የSSGI ኮሚዩኒኬሽን ፍሎውን በኃይል መሞላ",
+    featuresSub: "የዲጂታል ለውጥዎን ዛሬ ይጀምሩ።",
+    ctaTitle: "መጀመሪያ ለመጀመር ዝግጁ ነዎት?",
+    ctaSubtitle: "የነፃ ሙከራዎን ዛሬ ይጀምሩ።",
   },
   en: {
-    title: 'Letter Management System',
-    subtitle: 'Space Science and Geospatial Institute (SSGI)',
-    description: 'A centralized platform designed for SSGI to manage, track, and organize official correspondence with precision, security, and efficiency.',
-    getStarted: 'Get Started',
-    login: 'Log In',
+    title: "Letter Management System",
+    subtitle: "Space Science and Geospatial Institute (SSGI)",
+    description:
+      "A centralized platform designed for SSGI to manage, track, and organize official correspondence with precision, security, and efficiency.",
+    getStarted: "Get Started",
+    login: "Log In",
     featuresHeading: "Empowering SSGI's Communication Flow",
-    featuresSub: 'Launch your digital transformation journey today.',
-    ctaTitle: 'Ready to get started?',
-    ctaSubtitle: 'Start your free trial today.'
-  }
+    featuresSub: "Launch your digital transformation journey today.",
+    ctaTitle: "Ready to get started?",
+    ctaSubtitle: "Start your free trial today.",
+  },
 };
 
 const letterVariants = {
@@ -51,9 +52,9 @@ const letterVariants = {
     y: 0,
     transition: {
       delay: i * 0.05,
-      duration: 0.5
-    }
-  })
+      duration: 0.5,
+    },
+  }),
 };
 
 const wordVariants = {
@@ -61,126 +62,131 @@ const wordVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.05
-    }
-  }
+      staggerChildren: 0.05,
+    },
+  },
 };
 
 const features = [
   {
     name: {
-      am: 'አንድ ቦታ ውስጥ ደብዳቤዎችን ማስተዳደር',
-      en: 'Smart Document Management'
+      am: "አንድ ቦታ ውስጥ ደብዳቤዎችን ማስተዳደር",
+      en: "Smart Document Management",
     },
     description: {
-      am: 'በቀና እና በቅን እንዲያስተዳድሩ ሁሉንም ደብዳቤዎች ያንድ ቦታ ውስጥ ያደርጉ።',
-      en: 'Efficiently organize and manage all your business correspondence in one place.'
+      am: "በቀና እና በቅን እንዲያስተዳድሩ ሁሉንም ደብዳቤዎች ያንድ ቦታ ውስጥ ያደርጉ።",
+      en: "Efficiently organize and manage all your business correspondence in one place.",
     },
-    icon: MailIcon
+    icon: MailIcon,
   },
   {
-    name: { am: 'በእውነተኛው ጊዜ መከታተያ', en: 'Real-time Tracking' },
+    name: { am: "በእውነተኛው ጊዜ መከታተያ", en: "Real-time Tracking" },
     description: {
-      am: 'ደብዳቤዎችን በእውነተኛ ጊዜ ይከታተሉ።',
-      en: 'Track the status of your letters and documents in real-time.'
+      am: "ደብዳቤዎችን በእውነተኛ ጊዜ ይከታተሉ።",
+      en: "Track the status of your letters and documents in real-time.",
     },
-    icon: ClockIcon
+    icon: ClockIcon,
   },
   {
-    name: { am: 'የተፋጠነ ደህንነት', en: 'Advanced Security' },
+    name: { am: "የተፋጠነ ደህንነት", en: "Advanced Security" },
     description: {
-      am: 'በኢንተርፕላይዝ ደህንነት ደረጃ አስተዳደር ያድርጉ።',
-      en: 'Enterprise-grade security to keep your sensitive documents safe.'
+      am: "በኢንተርፕላይዝ ደህንነት ደረጃ አስተዳደር ያድርጉ።",
+      en: "Enterprise-grade security to keep your sensitive documents safe.",
     },
-    icon: ShieldCheckIcon
+    icon: ShieldCheckIcon,
   },
   {
-    name: { am: 'ኃይለኛ ፍለጋ', en: 'Powerful Search' },
+    name: { am: "ኃይለኛ ፍለጋ", en: "Powerful Search" },
     description: {
-      am: 'አንዱን ሰነድ በቅርብ ጊዜ ያግኙ።',
-      en: 'Find any document instantly with our advanced search capabilities.'
+      am: "አንዱን ሰነድ በቅርብ ጊዜ ያግኙ።",
+      en: "Find any document instantly with our advanced search capabilities.",
     },
-    icon: SearchIcon
+    icon: SearchIcon,
   },
   {
-    name: { am: 'በራስ-ሰር የሚሰሩ ስራዎች', en: 'Automated Workflows' },
+    name: { am: "በራስ-ሰር የሚሰሩ ስራዎች", en: "Automated Workflows" },
     description: {
-      am: 'የማጽደቅ ሂደቶችን ቀላል ያድርጉ።',
-      en: 'Streamline your approval processes with automated workflows.'
+      am: "የማጽደቅ ሂደቶችን ቀላል ያድርጉ።",
+      en: "Streamline your approval processes with automated workflows.",
     },
-    icon: CheckCircleIcon
+    icon: CheckCircleIcon,
   },
   {
-    name: { am: 'ትክክለኛ ትንተና', en: 'Analytics & Insights' },
+    name: { am: "ትክክለኛ ትንተና", en: "Analytics & Insights" },
     description: {
-      am: 'ከስራዎ ሂደቶች ጠቃሚ ትንተና ያግኙ።',
-      en: 'Gain valuable insights into your document workflows.'
+      am: "ከስራዎ ሂደቶች ጠቃሚ ትንተና ያግኙ።",
+      en: "Gain valuable insights into your document workflows.",
     },
-    icon: BarChartIcon
-  }
+    icon: BarChartIcon,
+  },
 ];
 
 const services = [
   {
     name: {
-      am: 'የደብዳቤ ሂደት',
-      en: 'Letter Processing'
+      am: "የደብዳቤ ሂደት",
+      en: "Letter Processing",
     },
     description: {
-      am: 'የመግቢያ እና የውጪ ይፋዊ ደብዳቤዎችን ውጤታማ ማስተናገድ',
-      en: 'Efficient handling of incoming and outgoing official correspondence.'
+      am: "የመግቢያ እና የውጪ ይፋዊ ደብዳቤዎችን ውጤታማ ማስተናገድ",
+      en: "Efficient handling of incoming and outgoing official correspondence.",
     },
-    icon: FileTextIcon
+    icon: FileTextIcon,
   },
   {
     name: {
-      am: 'ሰነድ ማህደረ ትውስታ',
-      en: 'Document Archiving'
+      am: "ሰነድ ማህደረ ትውስታ",
+      en: "Document Archiving",
     },
     description: {
-      am: 'የተቋማት ሰነዶች ደህንነታቸው የተጠበቀ ረጅም ጊዜ ማከማቻ እና ማግኛ',
-      en: 'Secure long-term storage and retrieval of institutional documents.'
+      am: "የተቋማት ሰነዶች ደህንነታቸው የተጠበቀ ረጅም ጊዜ ማከማቻ እና ማግኛ",
+      en: "Secure long-term storage and retrieval of institutional documents.",
     },
-    icon: LayersIcon
+    icon: LayersIcon,
   },
   {
     name: {
-      am: 'የማጽደቅ ስራ ፍሰቶች',
-      en: 'Approval Workflows'
+      am: "የማጽደቅ ስራ ፍሰቶች",
+      en: "Approval Workflows",
     },
     description: {
-      am: 'ለማጽደቅ እና ፊርማ የተመቻቸ መስመር',
-      en: 'Streamlined routing for authorization and signatures.'
+      am: "ለማጽደቅ እና ፊርማ የተመቻቸ መስመር",
+      en: "Streamlined routing for authorization and signatures.",
     },
-    icon: SendIcon
-  }
+    icon: SendIcon,
+  },
 ];
 
 const Home = ({ onLogin }: { onLogin: () => void }) => {
-  const [lang, setLang] = useState<'am' | 'en'>('am');
+  const [lang, setLang] = useState<"am" | "en">("am");
   const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [adminCredentials, setAdminCredentials] = useState({ email: '', password: '' });
-  const [loginError, setLoginError] = useState('');
+  const [adminCredentials, setAdminCredentials] = useState({
+    email: "",
+    password: "",
+  });
+  const [loginError, setLoginError] = useState("");
   const navigate = useNavigate();
 
   const t = translations[lang];
 
   const handleLogin = () => {
     onLogin();
-    navigate('/dashboard');
+    navigate("/dashboard");
   };
-
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // TEMPORARY BYPASS FOR DEV
     // Remove/comment this after testing!
-    localStorage.setItem('user', JSON.stringify({ role: 'admin', email: 'dev@admin' }));
+    localStorage.setItem(
+      "user",
+      JSON.stringify({ role: "admin", email: "dev@admin" })
+    );
     onLogin();
-    navigate('/admin');
+    navigate("/admin");
     return;
-    
+
     // --- Original code below ---
     // setLoginError('');
     // try {
@@ -197,12 +203,9 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
     // }
   };
 
-
-
-
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFBFF]">
-      <PublicNavbar 
+      <PublicNavbar
         lang={lang}
         onLanguageChange={setLang}
         onAdminLogin={() => setShowAdminLogin(true)}
@@ -254,7 +257,7 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                 </h1>
               </motion.div>
 
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
@@ -269,7 +272,6 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                 transition={{ delay: 0.7 }}
                 className="mt-10 max-w-md mx-auto sm:flex sm:justify-center md:mt-12 gap-4"
               >
-
                 <div className="rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
                   <Link
                     to="/signup"
@@ -279,16 +281,14 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                   </Link>
                 </div>
                 <div className="mt-3 sm:mt-0 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-
-          
-                <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
-
-                  <button
-                    onClick={handleLogin}
-                    className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-xl text-blue-600 bg-white hover:bg-gray-50 transform hover:-translate-y-0.5 transition-all duration-200"
-                  >
-                    {t.login}
-                  </button>
+                  <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
+                    <button
+                      onClick={handleLogin}
+                      className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-xl text-blue-600 bg-white hover:bg-gray-50 transform hover:-translate-y-0.5 transition-all duration-200"
+                    >
+                      {t.login}
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             </div>
@@ -302,7 +302,7 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
           </div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center">
-              <motion.h2 
+              <motion.h2
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -310,7 +310,7 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
               >
                 {t.featuresHeading}
               </motion.h2>
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -360,7 +360,9 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                 viewport={{ once: true }}
                 className="text-4xl font-extrabold text-gray-900 sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600"
               >
-                {lang === 'am' ? 'የሙያተኛ አገልግሎቶቻችን' : 'Our Professional Services'}
+                {lang === "am"
+                  ? "የሙያተኛ አገልግሎቶቻችን"
+                  : "Our Professional Services"}
               </motion.h2>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -369,7 +371,9 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                 transition={{ delay: 0.2 }}
                 className="mt-4 text-xl text-gray-500"
               >
-                {lang === 'am' ? 'ለSSGI የግንኙነት ፍላጎቶች የተለዩ መፍትሄዎች' : 'Specialized solutions for SSGI\'s communication needs'}
+                {lang === "am"
+                  ? "ለSSGI የግንኙነት ፍላጎቶች የተለዩ መፍትሄዎች"
+                  : "Specialized solutions for SSGI's communication needs"}
               </motion.p>
             </div>
             <div className="mt-20 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -416,7 +420,9 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
             >
               <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
                 <span className="block">{t.ctaTitle}</span>
-                <span className="block mt-2 text-blue-200">{t.ctaSubtitle}</span>
+                <span className="block mt-2 text-blue-200">
+                  {t.ctaSubtitle}
+                </span>
               </h2>
             </motion.div>
             <motion.div
@@ -425,7 +431,6 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
               viewport={{ once: true }}
               className="mt-8 flex lg:mt-0 lg:flex-shrink-0"
             >
-
               <div className="inline-flex rounded-xl shadow">
                 <Link
                   to="/signup"
@@ -434,7 +439,6 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                   {t.getStarted}
                 </Link>
               </div>
-
             </motion.div>
           </div>
         </div>
@@ -442,13 +446,13 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
 
       <PublicFooter />
 
-      <Modal 
-        open={showAdminLogin} 
+      <Modal
+        open={showAdminLogin}
         onClose={() => setShowAdminLogin(false)}
         center
         classNames={{
-          modal: 'rounded-2xl p-8 w-full max-w-md bg-white shadow-2xl',
-          overlay: 'bg-gray-900/50 backdrop-blur-sm'
+          modal: "rounded-2xl p-8 w-full max-w-md bg-white shadow-2xl",
+          overlay: "bg-gray-900/50 backdrop-blur-sm",
         }}
       >
         <div className="mb-6">
@@ -464,7 +468,9 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
 
         <form onSubmit={handleAdminLogin} className="space-y-6">
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">Email</label>
+            <label className="block text-gray-700 mb-2 font-medium">
+              Email
+            </label>
             <div className="relative">
               <UserIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
               <input
@@ -472,14 +478,21 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                 className="pl-12 w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 placeholder="admin@example.com"
                 value={adminCredentials.email}
-                onChange={(e) => setAdminCredentials({ ...adminCredentials, email: e.target.value })}
+                onChange={(e) =>
+                  setAdminCredentials({
+                    ...adminCredentials,
+                    email: e.target.value,
+                  })
+                }
                 required
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">Password</label>
+            <label className="block text-gray-700 mb-2 font-medium">
+              Password
+            </label>
             <div className="relative">
               <LockIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
               <input
@@ -487,24 +500,29 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                 className="pl-12 w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 placeholder="••••••••"
                 value={adminCredentials.password}
-                onChange={(e) => setAdminCredentials({ ...adminCredentials, password: e.target.value })}
+                onChange={(e) =>
+                  setAdminCredentials({
+                    ...adminCredentials,
+                    password: e.target.value,
+                  })
+                }
                 required
               />
             </div>
           </div>
 
           <div className="flex justify-between items-center">
-  <button
-    type="button"
-    className="text-sm text-blue-600 hover:underline focus:outline-none"
-    onClick={() => {
-      // You can set a state to show a 'Forgot Password' modal or navigate to a reset page
-      alert("Forgot Password functionality coming soon!");
-    }}
-  >
-    Forgot Password?
-  </button>
-</div>
+            <button
+              type="button"
+              className="text-sm text-blue-600 hover:underline focus:outline-none"
+              onClick={() => {
+                // You can set a state to show a 'Forgot Password' modal or navigate to a reset page
+                alert("Forgot Password functionality coming soon!");
+              }}
+            >
+              Forgot Password?
+            </button>
+          </div>
 
           <button
             type="submit"
