@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { registerUser } from "../../services/api"; // Make sure this path is correct for your project
 
-// You would probably split this out, but for clarity:
 const InputField = ({
   label,
   id,
@@ -66,7 +66,14 @@ const Signup = () => {
     setError(null);
     setSuccess(null);
 
-    if (!formData.name || !formData.email || !formData.phone || !formData.departmentOrSector || !formData.password || !formData.confirmPassword) {
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.departmentOrSector ||
+      !formData.password ||
+      !formData.confirmPassword
+    ) {
       setError("Please fill in all fields.");
       return;
     }
@@ -76,8 +83,15 @@ const Signup = () => {
       return;
     }
 
-    // Demo: simulate backend registration
-    setTimeout(() => {
+    try {
+      // Call your actual backend API
+      await registerUser({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        departmentOrSector: formData.departmentOrSector,
+        password: formData.password,
+      });
       setSuccess("Registration successful!");
       setFormData({
         name: "",
@@ -87,7 +101,12 @@ const Signup = () => {
         password: "",
         confirmPassword: "",
       });
-    }, 1000);
+    } catch (err: any) {
+      setError(
+        "Registration failed: " +
+          (err.response?.data?.error || err.response?.data?.message || err.message)
+      );
+    }
   };
 
   return (
@@ -97,14 +116,10 @@ const Signup = () => {
           Register New User
         </h2>
         {error && (
-          <p className="text-red-600 bg-red-100 p-3 rounded text-center mb-6">
-            {error}
-          </p>
+          <p className="text-red-600 bg-red-100 p-3 rounded text-center mb-6">{error}</p>
         )}
         {success && (
-          <p className="text-green-600 bg-green-100 p-3 rounded text-center mb-6">
-            {success}
-          </p>
+          <p className="text-green-600 bg-green-100 p-3 rounded text-center mb-6">{success}</p>
         )}
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -155,7 +170,6 @@ const Signup = () => {
               </select>
             </div>
           </div>
-
           {/* Right Column */}
           <div className="space-y-5">
             <InputField
