@@ -301,7 +301,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
-                className="mt-10 max-w-md mx-auto sm:flex sm:justify-center md:mt-12 gap-4"
+                className="mt-16 max-w-md mx-auto sm:flex sm:justify-center md:mt-20 gap-4"
               >
                 <div className="rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
                   <button
