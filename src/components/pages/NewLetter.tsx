@@ -1,15 +1,10 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { PaperclipIcon, SendIcon, SaveIcon, GlobeIcon } from "lucide-react";
 import CCSection from "./Employees";
 import { LanguageContext } from "./LanguageContext";
 import axios from "axios";
-
-const departments = [
-  { value: "finance", label: { en: "Finance", am: "ፋይናንስ" } },
-  { value: "hr", label: { en: "Human Resources", am: "የሰው ኃብት" } },
-  { value: "it", label: { en: "IT", am: "ቴክኖሎጂ" } },
-  { value: "operations", label: { en: "Operations", am: "ኦፕሬሽን" } },
-];
+import TemplateMemoLetter from "./TemplateMemoLetter";
+import DepartmentSelector from "./DepartmentSelector";
 
 const NewLetter = () => {
   const { lang, setLang } = useContext(LanguageContext);
@@ -27,48 +22,41 @@ const NewLetter = () => {
     from: "",
   });
 
-  // New state for employees by department
-  const [employeesByDepartment, setEmployeesByDepartment] = useState({});
-  const [toDepartment, setToDepartment] = useState(""); // Selected department for "To"
-  const [toEmployee, setToEmployee] = useState(""); // Selected employee for "To"
-  const [loadingEmployees, setLoadingEmployees] = useState(false);
-  const [searchEmployee, setSearchEmployee] = useState("");
+  const [users, setUsers] = useState<any[]>([]);
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [toEmployee, setToEmployee] = useState("");
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   const [attachment, setAttachment] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
-  // Fetch employees grouped by department
   useEffect(() => {
-    const fetchEmployees = async () => {
-      setLoadingEmployees(true);
-      try {
-        const res = await axios.get("http://localhost:5000/api/users");
-        const grouped = {};
-        res.data.forEach((user) => {
-          const dept = user.departmentOrSector?.toLowerCase() || "other";
-          if (!grouped[dept]) grouped[dept] = [];
-          grouped[dept].push(user.name);
-        });
-        setEmployeesByDepartment(grouped);
-      } catch (err) {
-        setEmployeesByDepartment({});
-      }
-      setLoadingEmployees(false);
-    };
-    fetchEmployees();
+    setLoadingUsers(true);
+    axios.get("http://localhost:5000/api/users")
+      .then(res => setUsers(res.data))
+      .finally(() => setLoadingUsers(false));
   }, []);
 
-  // When "To" employee changes, update letterData.to
+  // When department changes, update letterData and reset toEmployee
   useEffect(() => {
-    setLetterData((prev) => ({
-      ...prev,
-      to: toEmployee,
-      department: toDepartment,
-    }));
-  }, [toEmployee, toDepartment]);
+    setLetterData(prev => ({ ...prev, department: selectedDepartment }));
+    setToEmployee("");
+  }, [selectedDepartment]);
 
-  // ...existing code...
-  const handleSubmit = async (e) => {
+  // When toEmployee changes, update letterData
+  useEffect(() => {
+    setLetterData(prev => ({ ...prev, to: toEmployee }));
+  }, [toEmployee]);
+
+  // Only show users matching selected department
+  const filteredUsers = selectedDepartment
+    ? users.filter(
+        (u) =>
+          u.departmentOrSector?.toLowerCase() === selectedDepartment.toLowerCase()
+      )
+    : [];
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!letterData.content.trim()) {
@@ -89,13 +77,13 @@ const NewLetter = () => {
         const formData = new FormData();
         Object.entries(letterData).forEach(([key, value]) => {
           if (key === "ccEmployees") {
-            formData.append("ccEmployees", JSON.stringify(value)); // <-- Fix here
+            formData.append("ccEmployees", JSON.stringify(value));
           } else if (key !== "attachments") {
             formData.append(key, value as string);
           }
         });
         formData.append("from", currentUserId);
-        formData.append("attachment", attachment); // <-- Field name must match backend
+        formData.append("attachment", attachment);
 
         response = await axios.post(
           "http://localhost:5000/api/letters",
@@ -108,11 +96,9 @@ const NewLetter = () => {
         response = await axios.post("http://localhost:5000/api/letters", {
           ...letterData,
           from: currentUserId,
-          ccEmployees: JSON.stringify(letterData.ccEmployees), // <-- Fix here
+          ccEmployees: JSON.stringify(letterData.ccEmployees),
         });
       }
-
-      console.log("Letter saved successfully:", response.data);
 
       setLetterData({
         subject: "",
@@ -126,15 +112,11 @@ const NewLetter = () => {
         ccEmployees: {},
         from: "",
       });
-      setToDepartment("");
+      setSelectedDepartment("");
       setToEmployee("");
-      setAttachment(null); // Clear the file after submit
+      setAttachment(null);
       alert("Letter sent successfully!");
-    } catch (error) {
-      console.error(
-        "Error saving letter:",
-        error.response?.data || error.message
-      );
+    } catch (error: any) {
       alert("Failed to send the letter. Please try again.");
     }
   };
@@ -144,7 +126,7 @@ const NewLetter = () => {
       setAttachment(e.target.files[0]);
       setLetterData((prev) => ({
         ...prev,
-        attachments: [e.target.files[0].name], // Store file name for display
+        attachments: [e.target.files[0].name],
       }));
     }
   };
@@ -266,72 +248,59 @@ const NewLetter = () => {
 
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <form onSubmit={handleSubmit}>
-          {/* Reference and Department */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t.reference[lang]}
-              </label>
-              <div className="flex">
-                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
-                  LTR-2023-
-                </span>
-                <input
-                  type="text"
-                  className="flex-1 block w-full px-3 py-2 rounded-none rounded-r-md border focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300"
-                  placeholder="090"
-                  value={letterData.reference}
-                  onChange={(e) =>
-                    setLetterData({ ...letterData, reference: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-
-            {/* To: Department and Employee */}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t.to[lang]}
-              </label>
-              {/* Department dropdown */}
-              <select
-                className="mb-2 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                value={toDepartment}
-                onChange={(e) => {
-                  setToDepartment(e.target.value);
-                  setToEmployee("");
-                  setSearchEmployee("");
-                }}
-              >
-                <option value="">{t.selectDepartment[lang]}</option>
-                {departments.map((dept) => (
-                  <option key={dept.value} value={dept.value}>
-                    {dept.label[lang]}
-                  </option>
-                ))}
-              </select>
-              {/* Employee searchable input */}
+          {/* Reference */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.reference[lang]}
+            </label>
+            <div className="flex">
+              <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                LTR-2023-
+              </span>
               <input
                 type="text"
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder={t.selectEmployee[lang]}
-                value={toEmployee}
-                onChange={(e) => setToEmployee(e.target.value)}
-                list="employee-list"
-                autoComplete="off"
-                disabled={!toDepartment || loadingEmployees}
+                className="flex-1 block w-full px-3 py-2 rounded-none rounded-r-md border focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300"
+                placeholder="090"
+                value={letterData.reference}
+                onChange={(e) =>
+                  setLetterData({ ...letterData, reference: e.target.value })
+                }
               />
-              <datalist id="employee-list">
-                {(employeesByDepartment[toDepartment] || [])
-                  .filter((emp) =>
-                    emp.toLowerCase().includes(toEmployee.toLowerCase())
-                  )
-                  .map((emp) => (
-                    <option key={emp} value={emp} />
-                  ))}
-              </datalist>
             </div>
+          </div>
+          {/* Department */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">{t.department[lang]}</label>
+            <DepartmentSelector
+              value={selectedDepartment}
+              onChange={val => setSelectedDepartment(val)}
+            />
+          </div>
+          {/* Recipient */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.to[lang]}
+            </label>
+            <input
+              type="text"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md"
+              placeholder={t.selectEmployee[lang]}
+              value={toEmployee}
+              onChange={e => setToEmployee(e.target.value)}
+              list="user-list"
+              autoComplete="off"
+              disabled={!selectedDepartment || loadingUsers}
+            />
+            <datalist id="user-list">
+              {filteredUsers.map(user =>
+                <option
+                  key={user._id}
+                  value={user.name}
+                >
+                  {user.name}
+                </option>
+              )}
+            </datalist>
           </div>
 
           {/* Subject */}
@@ -382,22 +351,35 @@ const NewLetter = () => {
             </div>
           </div>
 
-          {/* Content */}
+          {/* Content - Use TemplateMemoLetter */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t.content[lang]}
             </label>
-            <textarea
-              rows={6}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder={
-                lang === "am" ? "የደብዳቤውን ይዘት ያስገቡ" : "Enter letter content"
+            <TemplateMemoLetter
+              subject={letterData.subject}
+              recipient={letterData.to}
+              reference={letterData.reference}
+              body={
+                <textarea
+                  value={letterData.content}
+                  onChange={e =>
+                    setLetterData({ ...letterData, content: e.target.value })
+                  }
+                  placeholder={
+                    lang === "am"
+                      ? "የደብዳቤውን ይዘት ያስገቡ"
+                      : "Enter letter content"
+                  }
+                  className="w-full min-h-[180px] text-base outline-none border-none bg-transparent resize-vertical"
+                  style={{
+                    fontFamily: "'Noto Sans Ethiopic', Arial, sans-serif",
+                    lineHeight: 1.8,
+                    color: "#222",
+                  }}
+                />
               }
-              value={letterData.content}
-              onChange={(e) =>
-                setLetterData({ ...letterData, content: e.target.value })
-              }
-            ></textarea>
+            />
           </div>
 
           {/* Attachments */}
