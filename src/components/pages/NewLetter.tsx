@@ -36,18 +36,15 @@ const NewLetter = () => {
       .finally(() => setLoadingUsers(false));
   }, []);
 
-  // When department changes, update letterData and reset toEmployee
   useEffect(() => {
     setLetterData(prev => ({ ...prev, department: selectedDepartment }));
     setToEmployee("");
   }, [selectedDepartment]);
 
-  // When toEmployee changes, update letterData
   useEffect(() => {
     setLetterData(prev => ({ ...prev, to: toEmployee }));
   }, [toEmployee]);
 
-  // Only show users matching selected department
   const filteredUsers = selectedDepartment
     ? users.filter(
         (u) =>

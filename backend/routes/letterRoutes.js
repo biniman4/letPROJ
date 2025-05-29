@@ -1,4 +1,3 @@
-// backend/routes/letterRoutes.js
 import express from "express";
 import multer from "multer";
 import {
@@ -18,13 +17,19 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
       cb(
         new Error(
-          "Invalid file type. Only PDF, JPEG, and PNG files are allowed."
+          "Invalid file type. Only PDF, DOC, DOCX, JPEG, and PNG files are allowed."
         ),
         false
       );
@@ -32,7 +37,7 @@ const upload = multer({
   },
 });
 
-// Keep your existing routes
+// Routes
 router.post("/", upload.single("attachment"), createLetter);
 router.get("/", getLetters);
 router.get("/download/:letterId/:filename", downloadFile);
