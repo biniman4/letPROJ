@@ -11,7 +11,6 @@ const NewLetter = () => {
 
   const [letterData, setLetterData] = useState({
     subject: "",
-    reference: "",
     to: "",
     department: "",
     priority: "normal",
@@ -102,7 +101,6 @@ const NewLetter = () => {
 
       setLetterData({
         subject: "",
-        reference: "",
         to: "",
         department: "",
         priority: "normal",
@@ -169,10 +167,6 @@ const NewLetter = () => {
     subtitle: {
       en: "Compose and send a new letter",
       am: "አዲስ ደብዳቤ ይፃፉ እና ይላኩ",
-    },
-    reference: {
-      en: "Reference Number",
-      am: "የማጣቀሻ ቁጥር",
     },
     department: {
       en: "Department",
@@ -248,26 +242,6 @@ const NewLetter = () => {
 
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <form onSubmit={handleSubmit}>
-          {/* Reference */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t.reference[lang]}
-            </label>
-            <div className="flex">
-              <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
-                LTR-2023-
-              </span>
-              <input
-                type="text"
-                className="flex-1 block w-full px-3 py-2 rounded-none rounded-r-md border focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300"
-                placeholder="090"
-                value={letterData.reference}
-                onChange={(e) =>
-                  setLetterData({ ...letterData, reference: e.target.value })
-                }
-              />
-            </div>
-          </div>
           {/* Department */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">{t.department[lang]}</label>
@@ -359,7 +333,7 @@ const NewLetter = () => {
             <TemplateMemoLetter
               subject={letterData.subject}
               recipient={letterData.to}
-              reference={letterData.reference}
+              reference={""}
               body={
                 <textarea
                   value={letterData.content}
