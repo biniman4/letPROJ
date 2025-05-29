@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboardIcon, MailPlusIcon, InboxIcon,
   ArchiveIcon, BellIcon, UsersIcon, SettingsIcon,
-  MenuIcon, XIcon, ShieldIcon
+  MenuIcon, XIcon, ShieldIcon, ChevronsLeft, ChevronsRight
 } from 'lucide-react';
 
 const navItems = [
@@ -21,7 +21,7 @@ const adminItems = [
 ];
 
 export const Sidebar = ({ isAdmin = false }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   const items = isAdmin ? [...navItems, ...adminItems] : navItems;
 
@@ -36,31 +36,55 @@ export const Sidebar = ({ isAdmin = false }) => {
       </div>
 
       {/* Sidebar */}
-      <div className={`fixed z-40 top-0 left-0 h-full w-64 bg-white border-r transform transition-transform duration-300 ease-in-out
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:block`}>
-        <div className="p-6 hidden md:block mt-4">
-          <h1 className="text-xl font-semibold text-gray-800">LetterFlow</h1>
+      <div className={`fixed z-40 top-0 left-0 h-screen bg-white transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block ${isOpen ? 'w-64' : 'w-20'}`}>
+        <div className="h-full border-r-2 border-gray-300 rounded-tr-[32px] rounded-br-[32px] relative">
+          {/* Toggle Button */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="absolute -right-3 top-8 bg-white rounded-full p-1.5 border-2 border-gray-300 cursor-pointer hover:bg-gray-50"
+          >
+            {isOpen ? <ChevronsLeft size={16} /> : <ChevronsRight size={16} />}
+          </button>
+
+          {/* Logo Section */}
+          <div className="px-5 py-4">
+            <h1 className={`text-2xl font-bold text-gray-900 transition-all ${!isOpen && 'scale-0'}`}>LetterFlow</h1>
+          </div>
+
+          {/* Navigation Container */}
+          <div className="flex flex-col h-[calc(100vh-64px)]">
+            {/* Navigation Items */}
+            <nav className="px-2 py-6 flex flex-col space-y-3">
+              {items.map(item => (
+                <NavLink
+                  key={item.label}
+                  to={item.path}
+                  onClick={() => setIsOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-4 px-4 py-2.5 rounded-md text-[16px] transition-all
+                    ${isActive 
+                      ? 'bg-blue-50 text-blue-600 font-medium' 
+                      : 'text-[#6b7280] hover:bg-gray-50 hover:text-gray-900'}`
+                  }
+                >
+                  <item.icon className={`w-[22px] h-[22px] flex-shrink-0`} />
+                  <span className={`transition-all ${!isOpen && 'hidden'}`}>{item.label}</span>
+                </NavLink>
+              ))}
+            </nav>
+            {/* Spacer to push content to top */}
+            <div className="flex-grow"></div>
+          </div>
         </div>
-        <nav className="flex flex-col pt-4 mt-12 md:mt-0">
-          {items.map(item => (
-            <NavLink
-              key={item.label}
-              to={item.path}
-              onClick={() => setIsOpen(false)}
-              className={({ isActive }) =>
-                `w-full flex items-center space-x-3 px-6 py-3 text-sm transition-all
-                ${isActive ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50'}`
-              }
-            >
-              <item.icon className="w-5 h-5" />
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
-        </nav>
       </div>
 
-      {/* Overlay */}
-      {isOpen && <div onClick={() => setIsOpen(false)} className="fixed inset-0 bg-black opacity-30 md:hidden z-30" />}
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          onClick={() => setIsOpen(false)} 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm md:hidden z-30" 
+        />
+      )}
     </>
   );
 };

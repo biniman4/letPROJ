@@ -1,23 +1,16 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { PaperclipIcon, SendIcon, SaveIcon, GlobeIcon } from "lucide-react";
 import CCSection from "./Employees";
 import { LanguageContext } from "./LanguageContext";
 import axios from "axios";
-import TemplateMemoLetter from "./TemplateMemoLetter"; // Same folder import
-
-const departments = [
-  { value: "finance", label: { en: "Finance", am: "ፋይናንስ" } },
-  { value: "hr", label: { en: "Human Resources", am: "የሰው ኃብት" } },
-  { value: "it", label: { en: "IT", am: "ቴክኖሎጂ" } },
-  { value: "operations", label: { en: "Operations", am: "ኦፕሬሽን" } },
-];
+import TemplateMemoLetter from "./TemplateMemoLetter";
+import DepartmentSelector from "./DepartmentSelector";
 
 const NewLetter = () => {
   const { lang, setLang } = useContext(LanguageContext);
 
   const [letterData, setLetterData] = useState({
     subject: "",
-    reference: "",
     to: "",
     department: "",
     priority: "normal",
@@ -28,43 +21,36 @@ const NewLetter = () => {
     from: "",
   });
 
-  const [employeesByDepartment, setEmployeesByDepartment] = useState<any>({});
-  const [toDepartment, setToDepartment] = useState(""); // Selected department for "To"
-  const [toEmployee, setToEmployee] = useState(""); // Selected employee for "To"
-  const [loadingEmployees, setLoadingEmployees] = useState(false);
+  const [users, setUsers] = useState<any[]>([]);
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [toEmployee, setToEmployee] = useState("");
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   const [attachment, setAttachment] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
-  // Fetch employees grouped by department
   useEffect(() => {
-    const fetchEmployees = async () => {
-      setLoadingEmployees(true);
-      try {
-        const res = await axios.get("http://localhost:5000/api/users");
-        const grouped: { [key: string]: string[] } = {};
-        res.data.forEach((user: any) => {
-          const dept = user.departmentOrSector?.toLowerCase() || "other";
-          if (!grouped[dept]) grouped[dept] = [];
-          grouped[dept].push(user.name);
-        });
-        setEmployeesByDepartment(grouped);
-      } catch (err) {
-        setEmployeesByDepartment({});
-      }
-      setLoadingEmployees(false);
-    };
-    fetchEmployees();
+    setLoadingUsers(true);
+    axios.get("http://localhost:5000/api/users")
+      .then(res => setUsers(res.data))
+      .finally(() => setLoadingUsers(false));
   }, []);
 
-  // When "To" employee or department changes, update letterData.to and department
   useEffect(() => {
-    setLetterData((prev) => ({
-      ...prev,
-      to: toEmployee,
-      department: toDepartment,
-    }));
-  }, [toEmployee, toDepartment]);
+    setLetterData(prev => ({ ...prev, department: selectedDepartment }));
+    setToEmployee("");
+  }, [selectedDepartment]);
+
+  useEffect(() => {
+    setLetterData(prev => ({ ...prev, to: toEmployee }));
+  }, [toEmployee]);
+
+  const filteredUsers = selectedDepartment
+    ? users.filter(
+        (u) =>
+          u.departmentOrSector?.toLowerCase() === selectedDepartment.toLowerCase()
+      )
+    : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,7 +98,6 @@ const NewLetter = () => {
 
       setLetterData({
         subject: "",
-        reference: "",
         to: "",
         department: "",
         priority: "normal",
@@ -122,7 +107,7 @@ const NewLetter = () => {
         ccEmployees: {},
         from: "",
       });
-      setToDepartment("");
+      setSelectedDepartment("");
       setToEmployee("");
       setAttachment(null);
       alert("Letter sent successfully!");
@@ -179,10 +164,6 @@ const NewLetter = () => {
     subtitle: {
       en: "Compose and send a new letter",
       am: "አዲስ ደብዳቤ ይፃፉ እና ይላኩ",
-    },
-    reference: {
-      en: "Reference Number",
-      am: "የማጣቀሻ ቁጥር",
     },
     department: {
       en: "Department",
@@ -258,69 +239,39 @@ const NewLetter = () => {
 
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <form onSubmit={handleSubmit}>
-          {/* Reference and Department */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t.reference[lang]}
-              </label>
-              <div className="flex">
-                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
-                  LTR-2023-
-                </span>
-                <input
-                  type="text"
-                  className="flex-1 block w-full px-3 py-2 rounded-none rounded-r-md border focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300"
-                  placeholder="090"
-                  value={letterData.reference}
-                  onChange={(e) =>
-                    setLetterData({ ...letterData, reference: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-            {/* To: Department and Employee */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t.to[lang]}
-              </label>
-              {/* Department dropdown */}
-              <select
-                className="mb-2 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                value={toDepartment}
-                onChange={(e) => {
-                  setToDepartment(e.target.value);
-                  setToEmployee("");
-                }}
-              >
-                <option value="">{t.selectDepartment[lang]}</option>
-                {departments.map((dept) => (
-                  <option key={dept.value} value={dept.value}>
-                    {dept.label[lang]}
-                  </option>
-                ))}
-              </select>
-              {/* Employee searchable input */}
-              <input
-                type="text"
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder={t.selectEmployee[lang]}
-                value={toEmployee}
-                onChange={(e) => setToEmployee(e.target.value)}
-                list="employee-list"
-                autoComplete="off"
-                disabled={!toDepartment || loadingEmployees}
-              />
-              <datalist id="employee-list">
-                {(employeesByDepartment[toDepartment] || [])
-                  .filter((emp: string) =>
-                    emp.toLowerCase().includes(toEmployee.toLowerCase())
-                  )
-                  .map((emp: string) => (
-                    <option key={emp} value={emp} />
-                  ))}
-              </datalist>
-            </div>
+          {/* Department */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">{t.department[lang]}</label>
+            <DepartmentSelector
+              value={selectedDepartment}
+              onChange={val => setSelectedDepartment(val)}
+            />
+          </div>
+          {/* Recipient */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.to[lang]}
+            </label>
+            <input
+              type="text"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md"
+              placeholder={t.selectEmployee[lang]}
+              value={toEmployee}
+              onChange={e => setToEmployee(e.target.value)}
+              list="user-list"
+              autoComplete="off"
+              disabled={!selectedDepartment || loadingUsers}
+            />
+            <datalist id="user-list">
+              {filteredUsers.map(user =>
+                <option
+                  key={user._id}
+                  value={user.name}
+                >
+                  {user.name}
+                </option>
+              )}
+            </datalist>
           </div>
 
           {/* Subject */}
@@ -378,9 +329,8 @@ const NewLetter = () => {
             </label>
             <TemplateMemoLetter
               subject={letterData.subject}
-              date={new Date().toLocaleDateString()}
               recipient={letterData.to}
-              reference={letterData.reference}
+              reference={""}
               body={
                 <textarea
                   value={letterData.content}

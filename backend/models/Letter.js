@@ -4,7 +4,7 @@ import { Buffer } from "buffer";
 const letterSchema = new mongoose.Schema(
   {
     subject: { type: String, required: true },
-    reference: { type: String, required: true },
+    // reference: { type: String, required: true }, // REMOVE this line
     from: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     fromName: { type: String, required: true },
     fromEmail: { type: String, required: true },

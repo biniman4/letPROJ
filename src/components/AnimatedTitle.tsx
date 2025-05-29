@@ -37,7 +37,7 @@ export const AnimatedTitle = ({ lang }: { lang: "am" | "en" }) => {
   return (
     <div className="text-center">
       {/* Main Title */}
-      <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-2">
+      <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4">
         <AnimatePresence mode="wait">
           <motion.span
             key={`${lang}-title`}
@@ -60,7 +60,7 @@ export const AnimatedTitle = ({ lang }: { lang: "am" | "en" }) => {
       </h1>
 
       {/* Subtitle */}
-      <h2 className="text-xl sm:text-2xl text-blue-600">
+      <h2 className="text-xl sm:text-2xl text-blue-600 mb-6">
         <AnimatePresence mode="wait">
           <motion.span
             key={`${lang}-subtitle`}

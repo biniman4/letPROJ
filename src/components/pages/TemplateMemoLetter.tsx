@@ -13,12 +13,12 @@ const iconStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  width: 42,
-  height: 42,
+  width: 32,
+  height: 32,
   borderRadius: "50%",
   background: "#b07642",
   color: "white",
-  fontSize: 22,
+  fontSize: 18,
   margin: "0 auto",
   zIndex: 2,
   boxShadow: "0 2px 6px rgba(0,0,0,0.03)",
@@ -46,31 +46,30 @@ const TemplateMemoLetter = ({
   children?: React.ReactNode;
 }) => (
   <div
-    className="bg-white max-w-[800px] mx-auto shadow-xl border border-gray-200 rounded-lg relative"
+    className="bg-white w-full max-w-[850px] mx-auto shadow border border-gray-200 rounded-lg relative flex flex-col min-h-screen"
     style={{
       fontFamily: "'Noto Sans Ethiopic', Arial, sans-serif",
-      minHeight: "1100px",
       background: "white",
-      paddingBottom: 0,
     }}
   >
     {/* HEADER */}
-    <div className="pt-6 pb-1 px-8 border-b-8 border-[#b07642]">
+    <div className="px-0 pt-4 pb-2 border-b-8 border-[#b07642]">
       <div className="flex flex-col items-center">
+        {/* Bigger Logo at the top */}
         <img
           src="src/img icon/logo.png"
           alt="SSGI Logo"
-          className="h-16 mb-2"
-          style={{ objectFit: "contain" }}
+          className="h-20 sm:h-24 md:h-28 mb-2"
+          style={{ objectFit: "contain", maxWidth: 120 }}
         />
-        <div className="text-[#03619c] font-bold leading-tight" style={{ fontSize: 18 }}>
+        <div className="text-[#03619c] font-bold leading-tight text-[15px] xs:text-[16px] sm:text-lg md:text-xl lg:text-2xl text-center">
           የአካባቢ ሳይንስ እና ቅጥያ ተከታታይ ኢንስቲትዩት
         </div>
-        <div className="font-bold text-black tracking-wide text-lg mb-1">
+        <div className="font-bold text-black tracking-wide text-[15px] xs:text-[16px] sm:text-lg md:text-xl lg:text-2xl mb-2 text-center">
           SPACE SCIENCE AND GEOSPATIAL INSTITUTE
         </div>
       </div>
-      <div className="h-2 w-full mt-3 mb-0 flex items-center gap-1">
+      <div className="h-2 w-full mt-3 mb-0 flex items-center gap-[2px] px-2 sm:px-8">
         <div className="h-2 w-1/2 bg-[#03619c] rounded-l-full" />
         <div className="h-2 w-1/4 bg-[#b07642]" />
         <div className="h-2 w-1/4 bg-[#f05323] rounded-r-full" />
@@ -78,84 +77,107 @@ const TemplateMemoLetter = ({
     </div>
 
     {/* MEMO TITLE & DATE */}
-    <div className="flex justify-between items-center px-8 mt-4 mb-2">
+    <div className="flex flex-row justify-between items-center px-2 xs:px-4 sm:px-8 mt-3 mb-2">
       <div />
-      <div className="text-center">
-        <div className="text-[#03619c] font-bold" style={{ fontSize: 20 }}>
+      <div className="text-center flex flex-col items-center">
+        <div className="text-[#03619c] font-bold text-[15px] xs:text-[16px] sm:text-lg md:text-xl lg:text-2xl leading-tight">
           የጽሁፍ ማስታወሻ
         </div>
-        <div className="font-bold text-lg tracking-wide">OFFICE MEMO</div>
-      </div>
-      <div className="text-right text-[15px] text-[#03619c]">
-        <div>
-          ቀን {date || getFormattedUTCDate()}
+        <div className="font-bold text-[15px] xs:text-[16px] sm:text-lg md:text-xl lg:text-2xl tracking-wide">
+          OFFICE MEMO
         </div>
-        <div className="text-xs text-gray-600">Date</div>
+      </div>
+      <div className="text-right text-[#03619c] text-[13px] xs:text-[14px] sm:text-base md:text-lg">
+        <div>
+          <span className="inline-block align-middle mr-1" title="Date">
+            <svg
+              width="15"
+              height="15"
+              fill="#03619c"
+              viewBox="0 0 24 24"
+              style={{ display: "inline" }}
+            >
+              <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zm0-13H5V6h14v1z" />
+            </svg>
+          </span>
+          {date || getFormattedUTCDate()}
+        </div>
+        <div className="text-[11px] sm:text-xs md:text-sm text-gray-600">Date</div>
       </div>
     </div>
 
     {/* LETTER BODY */}
-    <div className="px-10 py-2 min-h-[450px]">
-      
-      <div className="mb-1">
-        <span className="font-semibold">{reference ? `ቁጥር ${reference}` : ""}</span>
-      </div>
-      
-      <div className="mb-8" style={{ lineHeight: 2 }}>
+    <div className="flex-1 px-2 xs:px-4 sm:px-8 pt-2 pb-0 min-h-[200px]">
+      {reference && (
+        <div className="mb-2 text-[13px] xs:text-sm sm:text-base md:text-lg font-semibold">{`ቁጥር ${reference}`}</div>
+      )}
+      <div
+        className="mb-8 text-[14px] xs:text-[15px] sm:text-base md:text-lg text-gray-700"
+        style={{ lineHeight: 1.85 }}
+      >
         {body || children || (
-          <span className="text-gray-400">[የደብዳቤ ይዘት እዚህ...]</span>
+          <span className="text-gray-400">Enter letter content</span>
         )}
       </div>
-      <div className="flex justify-end items-center space-x-12 mt-10">
-      
-      </div>
     </div>
 
-    {/* CC, Copy To, etc */}
-    <div className="px-10 mt-2">
-      {cc && (
-        <div className="mb-2">
-          <div className="font-semibold underline">ኮፒ:</div>
-          <div>{cc}</div>
-        </div>
-      )}
-      {copyTo && (
-        <div>
-          <div className="font-semibold underline">ተቀባይዎች:</div>
-          <div>{copyTo}</div>
-        </div>
-      )}
-    </div>
-
-    {/* FOOTER - as in your last image, no red or green lines after! */}
-    <div className="w-full pt-3 pb-0 mt-6" style={{marginBottom: 0}}>
+    {/* FOOTER */}
+    <div className="w-full pt-2">
       <div
         className="w-full flex flex-col items-center"
-        style={{ borderTop: "8px solid #194b5a" }}
+        style={{ borderTop: "4px solid #194b5a" }}
       >
-        <div className="flex w-full justify-between px-6 relative" style={{ marginTop: -24, zIndex: 2 }}>
+        <div
+          className={`
+            flex w-full flex-row flex-wrap justify-between
+            px-0
+            mt-[-18px] z-20
+            gap-y-1
+            xs:gap-y-1
+            xs:px-2
+            sm:px-6
+            xs:mt-[-14px]
+            sm:mt-[-18px]
+            [@media(max-width:410px)]:gap-x-1
+            [@media(max-width:410px)]:px-1
+            [@media(max-width:410px)]:mt-[-8px]
+            [@media(max-width:375px)]:mt-[-4px]
+            [@media(max-width:370px)]:gap-x-0
+            [@media(max-width:370px)]:px-0
+            [@media(max-width:370px)]:mt-[-2px]
+          `}
+        >
           {/* Phone */}
-          <div className="flex flex-col items-center w-1/5">
-            <span style={iconStyle}>
-              <svg width="22" height="22" fill="white" viewBox="0 0 24 24">
+          <div className="flex flex-col items-center w-1/5 min-w-[46px] mb-2">
+            <span style={{
+              ...iconStyle,
+              width: 32, height: 32, fontSize: 14,
+              // Larger on desktop
+              ...(typeof window !== "undefined" && window.innerWidth >= 1024 ? { width: 40, height: 50, fontSize: 24 } : {})
+            }}>
+              <svg width="18" height="18" fill="white" viewBox="0 0 24 24">
                 <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.21 11.36 11.36 0 003.54.57 1 1 0 011 1v3.61a1 1 0 01-1 1A17 17 0 013 5a1 1 0 011-1h3.61a1 1 0 011 1 11.36 11.36 0 00.57 3.54 1 1 0 01-.21 1.11l-2.2 2.2z" />
               </svg>
             </span>
-            <div className="text-sm text-[#194b5a] leading-tight mt-2" style={{ fontFamily: "inherit" }}>
+            <div className="text-[12px] xs:text-xs sm:text-base md:text-lg text-[#194b5a] leading-tight mt-1 text-center" style={{ fontFamily: "inherit" }}>
               +251 118 96 10 50<br />+251 115 51 84 45
             </div>
           </div>
           {/* Website */}
-          <div className="flex flex-col items-center w-1/5">
-            <span style={iconStyle}>
-              <svg width="22" height="22" fill="white" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="2" fill="none"/>
-                <path d="M2 12h20M12 2c3.866 0 7 4.03 7 9s-3.134 9-7 9-7-4.03-7-9 3.134-9 7-9z" stroke="white" strokeWidth="2" fill="none"/>
+          <div className="flex flex-col items-center w-1/5 min-w-[46px] mb-2">
+            <span style={{
+              ...iconStyle,
+              width: 32, height: 32, fontSize: 18,
+              ...(typeof window !== "undefined" && window.innerWidth >= 1024 ? { width: 40, height: 40, fontSize: 24 } : {})
+            }}>
+              <svg width="18" height="18" fill="white" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="2" fill="none" />
+                <path d="M2 12h20M12 2c3.866 0 7 4.03 7 9s-3.134 9-7 9-7-4.03-7-9 3.134-9 7-9z" stroke="white" strokeWidth="2" fill="none" />
               </svg>
             </span>
             <a
               href="http://www.ssgi.gov.et"
-              className="text-[#194b5a] underline text-sm mt-2"
+              className="text-[#194b5a] underline text-[12px] xs:text-xs sm:text-base md:text-lg mt-1 text-center"
               style={{ fontFamily: "inherit" }}
               target="_blank"
               rel="noopener noreferrer"
@@ -164,47 +186,59 @@ const TemplateMemoLetter = ({
             </a>
           </div>
           {/* Mail/PO Box */}
-          <div className="flex flex-col items-center w-1/5">
-            <span style={iconStyle}>
-              <svg width="22" height="22" fill="white" viewBox="0 0 24 24">
-                <rect width="18" height="14" x="3" y="5" rx="2" fill="none" stroke="white" strokeWidth="2"/>
-                <polyline points="3 7 12 13 21 7" fill="none" stroke="white" strokeWidth="2"/>
+          <div className="flex flex-col items-center w-1/5 min-w-[46px] mb-2">
+            <span style={{
+              ...iconStyle,
+              width: 32, height: 32, fontSize: 18,
+              ...(typeof window !== "undefined" && window.innerWidth >= 1024 ? { width: 40, height: 40, fontSize: 24 } : {})
+            }}>
+              <svg width="18" height="18" fill="white" viewBox="0 0 24 24">
+                <rect width="18" height="14" x="3" y="5" rx="2" fill="none" stroke="white" strokeWidth="2" />
+                <polyline points="3 7 12 13 21 7" fill="none" stroke="white" strokeWidth="2" />
               </svg>
             </span>
-            <span className="text-[#194b5a] text-sm mt-2" style={{ fontFamily: "inherit" }}>
+            <span className="text-[#194b5a] text-[12px] xs:text-xs sm:text-base md:text-lg mt-1 text-center" style={{ fontFamily: "inherit" }}>
               33679 / 597
             </span>
           </div>
           {/* Email */}
-          <div className="flex flex-col items-center w-1/5">
-            <span style={iconStyle}>
-              <svg width="22" height="22" fill="white" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="2" fill="none"/>
-                <path d="M8 12l2 2l4-4" stroke="white" strokeWidth="2" fill="none"/>
+          <div className="flex flex-col items-center w-1/5 min-w-[46px] mb-2">
+            <span style={{
+              ...iconStyle,
+              width: 32, height: 32, fontSize: 18,
+              ...(typeof window !== "undefined" && window.innerWidth >= 1024 ? { width: 40, height: 40, fontSize: 24 } : {})
+            }}>
+              <svg width="18" height="18" fill="white" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="2" fill="none" />
+                <path d="M8 12l2 2l4-4" stroke="white" strokeWidth="2" fill="none" />
               </svg>
             </span>
             <a
               href="mailto:info@ssgi.gov.et"
-              className="text-[#194b5a] underline text-sm mt-2"
+              className="text-[#194b5a] underline text-[12px] xs:text-xs sm:text-base md:text-lg mt-1 text-center"
               style={{ fontFamily: "inherit" }}
             >
               info@ssgi.gov.et
             </a>
           </div>
           {/* Fax */}
-          <div className="flex flex-col items-center w-1/5">
-            <span style={iconStyle}>
-              <svg width="22" height="22" fill="white" viewBox="0 0 24 24">
-                <rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="white" strokeWidth="2"/>
-                <path d="M8 4v4h8V4" fill="none" stroke="white" strokeWidth="2"/>
+          <div className="flex flex-col items-center w-1/5 min-w-[46px] mb-2">
+            <span style={{
+              ...iconStyle,
+              width: 32, height: 32, fontSize: 18,
+              ...(typeof window !== "undefined" && window.innerWidth >= 1024 ? { width: 40, height: 40, fontSize: 24 } : {})
+            }}>
+              <svg width="18" height="18" fill="white" viewBox="0 0 24 24">
+                <rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="white" strokeWidth="2" />
+                <path d="M8 4v4h8V4" fill="none" stroke="white" strokeWidth="2" />
               </svg>
             </span>
-            <span className="text-[#194b5a] text-sm mt-2" style={{ fontFamily: "inherit" }}>
+            <span className="text-[#194b5a] text-[12px] xs:text-xs sm:text-base md:text-lg mt-1 text-center" style={{ fontFamily: "inherit" }}>
               +251 118 72 02 83
             </span>
           </div>
         </div>
-        <div className="text-center text-[#b07642] text-lg mt-1 mb-0" style={{ fontFamily: "'Noto Sans Ethiopic', Arial, sans-serif" }}>
+        <div className="text-center text-[#b07642] text-[13px] xs:text-sm sm:text-base md:text-lg mt-1 mb-0" style={{ fontFamily: "'Noto Sans Ethiopic', Arial, sans-serif" }}>
           "አስራር አለበሰማይ..."
         </div>
       </div>

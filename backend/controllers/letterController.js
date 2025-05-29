@@ -8,7 +8,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ...existing code...
+// CREATE LETTER
 export const createLetter = async (req, res) => {
   try {
     console.log("Received letter data:", req.body);
@@ -82,16 +82,23 @@ export const createLetter = async (req, res) => {
       });
     }
 
-    // Prepare letter data, only include ccEmployees if it's a valid object
+    // Only include fields that exist in the schema (NO "reference" field)
     const letterData = {
-      ...req.body,
+      subject: req.body.subject,
       from: sender._id,
       fromName: sender.name,
       fromEmail: sender.email,
+      to: req.body.to,
       toEmail: recipient.email,
+      department: req.body.department,
+      priority: req.body.priority || "normal",
+      content: req.body.content,
       attachments: attachmentsArr,
+      cc: req.body.cc || [],
+      ccEmployees: ccEmployees,
+      unread: true,
+      starred: false,
     };
-    letterData.ccEmployees = ccEmployees;
 
     const letter = new Letter(letterData);
     await letter.save();
@@ -155,7 +162,8 @@ export const createLetter = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-// ...existing code...
+
+// GET ALL LETTERS
 export const getLetters = async (req, res) => {
   try {
     const letters = await Letter.find();
@@ -165,6 +173,7 @@ export const getLetters = async (req, res) => {
   }
 };
 
+// FILE DOWNLOAD
 export const downloadFile = async (req, res) => {
   try {
     const { letterId, filename } = req.params;
@@ -194,6 +203,7 @@ export const downloadFile = async (req, res) => {
   }
 };
 
+// FILE VIEW
 export const viewFile = async (req, res) => {
   try {
     const { letterId, filename } = req.params;
@@ -220,6 +230,7 @@ export const viewFile = async (req, res) => {
   }
 };
 
+// UPDATE LETTER STATUS
 export const updateLetterStatus = async (req, res) => {
   try {
     const { letterId, unread, starred } = req.body;
