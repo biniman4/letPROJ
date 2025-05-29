@@ -8,7 +8,11 @@ import {
   XIcon,
 } from "lucide-react";
 
-export const Header = () => {
+interface HeaderProps {
+  onLogout: () => void;
+}
+
+export const Header = ({ onLogout }: HeaderProps) => {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
@@ -25,81 +29,65 @@ export const Header = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    // Log out logic (e.g., clear session, tokens, etc.)
-    alert("Logged out!");
-    setOpen(false);
-
-    // Redirect to the homepage after logout
-    window.location.href = "/"; // Redirect to the home page
-  };
-
-  const handleExit = () => {
-    alert("Exiting...");
-    setOpen(false);
-  };
-
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
+    <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0">
       {/* Left: Search */}
-      <div className="flex items-center w-96">
-        <SearchIcon className="w-5 h-5 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Search letters, users..."
-          className="ml-2 w-full outline-none text-sm"
-        />
+      <div className="flex-1 max-w-2xl">
+        <div className="relative">
+          <SearchIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search letters, users..."
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-gray-50/50"
+          />
+        </div>
       </div>
 
       {/* Right: Notification + Profile */}
-      <div className="flex items-center space-x-4 relative" ref={dropdownRef}>
-        <button className="p-2 hover:bg-gray-100 rounded-full relative">
-          <BellIcon className="w-5 h-5 text-gray-600" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+      <div className="flex items-center space-x-4">
+        <button className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+          <BellIcon className="w-6 h-6" />
+          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
         </button>
 
-        <div
-          onClick={() => setOpen(!open)}
-          className="flex items-center space-x-2 cursor-pointer select-none"
-        >
-          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-            <UserIcon className="w-5 h-5 text-gray-600" />
-          </div>
-          <span className="text-sm text-gray-700">John Director</span>
-        </div>
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setOpen(!open)}
+            className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg p-2 transition-colors"
+          >
+            <img
+              src="https://ui-avatars.com/api/?name=John+Director&background=E3F2FD&color=2563EB"
+              alt="User Avatar"
+              className="w-8 h-8 rounded-full"
+            />
+            <span className="text-sm font-medium text-gray-700">John Director</span>
+          </button>
 
-        {/* Dropdown */}
-        <div
-          className={`absolute top-14 right-0 w-56 bg-white shadow-xl rounded-lg overflow-hidden transform transition-all duration-300 ease-out z-50
-            ${
+          {/* Dropdown Menu */}
+          <div
+            className={`absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 transition-all duration-200 ${
               open
-                ? "opacity-100 translate-y-0 scale-100"
-                : "opacity-0 -translate-y-4 scale-95 pointer-events-none"
+                ? "opacity-100 translate-y-0 visible"
+                : "opacity-0 -translate-y-2 invisible"
             }`}
-        >
-          <div className="divide-y divide-gray-100">
-            <button className="w-full flex items-center px-4 py-3 text-sm hover:bg-gray-50 transition">
-              <UserIcon className="w-4 h-4 mr-2 text-gray-500" />
-              Profile
-            </button>
-            <button className="w-full flex items-center px-4 py-3 text-sm hover:bg-gray-50 transition">
-              <SettingsIcon className="w-4 h-4 mr-2 text-gray-500" />
-              Settings
-            </button>
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center px-4 py-3 text-sm hover:bg-gray-50 transition"
-            >
-              <LogOutIcon className="w-4 h-4 mr-2 text-gray-500" />
-              Logout
-            </button>
-            <button
-              onClick={handleExit}
-              className="w-full flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition"
-            >
-              <XIcon className="w-4 h-4 mr-2" />
-              Exit
-            </button>
+          >
+            <div className="p-2 space-y-1">
+              <button className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                <UserIcon className="w-4 h-4" />
+                <span>Profile</span>
+              </button>
+              <button className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                <SettingsIcon className="w-4 h-4" />
+                <span>Settings</span>
+              </button>
+              <button 
+                onClick={onLogout}
+                className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <LogOutIcon className="w-4 h-4" />
+                <span>Sign out</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -36,31 +36,59 @@ export const Sidebar = ({ isAdmin = false }) => {
       </div>
 
       {/* Sidebar */}
-      <div className={`fixed z-40 top-0 left-0 h-full w-64 bg-white border-r transform transition-transform duration-300 ease-in-out
+      <div className={`fixed z-40 top-0 left-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:block`}>
-        <div className="p-6 hidden md:block mt-4">
-          <h1 className="text-xl font-semibold text-gray-800">LetterFlow</h1>
+        
+        {/* Logo Section */}
+        <div className="p-6">
+          <h1 className="text-2xl font-bold text-gray-900">LetterFlow</h1>
         </div>
-        <nav className="flex flex-col pt-4 mt-12 md:mt-0">
+
+        {/* Navigation */}
+        <nav className="px-3 py-4">
           {items.map(item => (
             <NavLink
               key={item.label}
               to={item.path}
               onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
-                `w-full flex items-center space-x-3 px-6 py-3 text-sm transition-all
-                ${isActive ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50'}`
+                `flex items-center space-x-3 px-4 py-3 rounded-lg text-sm transition-all mb-1
+                ${isActive 
+                  ? 'bg-blue-50 text-blue-600 font-medium' 
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`
               }
             >
-              <item.icon className="w-5 h-5" />
-              <span>{item.label}</span>
+              <item.icon className={`w-5 h-5 flex-shrink-0`} />
+              <span className="font-medium">{item.label}</span>
             </NavLink>
           ))}
         </nav>
+
+        {/* Bottom Section - You can add user profile or logout here */}
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <div className="border-t border-gray-100 pt-4">
+            <div className="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm text-gray-600 hover:bg-gray-50 cursor-pointer">
+              <img
+                src="https://ui-avatars.com/api/?name=John+Director&background=E3F2FD&color=2563EB"
+                alt="User"
+                className="w-8 h-8 rounded-full"
+              />
+              <div>
+                <p className="font-medium text-gray-900">John Director</p>
+                <p className="text-xs text-gray-500">Administrator</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Overlay */}
-      {isOpen && <div onClick={() => setIsOpen(false)} className="fixed inset-0 bg-black opacity-30 md:hidden z-30" />}
+      {isOpen && (
+        <div 
+          onClick={() => setIsOpen(false)} 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm md:hidden z-30" 
+        />
+      )}
     </>
   );
 };
