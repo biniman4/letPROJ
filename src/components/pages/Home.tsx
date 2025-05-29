@@ -157,17 +157,7 @@ const services = [
   },
 ];
 
-
 const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
-  const [lang, setLang] = useState<'en' | 'am'>('en');
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [adminCredentials, setAdminCredentials] = useState({
-    email: '',
-    password: ''
-  });
-
-const Home = ({ onLogin }: { onLogin: () => void }) => {
   const [lang, setLang] = useState<"am" | "en">("am");
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [adminCredentials, setAdminCredentials] = useState({
@@ -190,7 +180,7 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    setLoginError(null);
+    setLoginError("");
     
     try {
       // Add your admin login logic here
@@ -199,7 +189,7 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
       setShowAdminLogin(false);
       // navigate('/admin');
     } catch (error) {
-      setLoginError('Invalid credentials');
+      setLoginError("");
     }
 
 
@@ -235,21 +225,33 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
       <PublicNavbar
         lang={lang}
         onLanguageChange={setLang}
-        onAdminLogin={() => setShowAdminLogin(true)}
       />
 
-      <main className="flex-grow pt-[104px]">
-        <div className="relative overflow-hidden bg-gradient-to-b from-[#F5F8FF] via-[#FAFBFF] to-white">
-          <div className="absolute inset-0">
-            <div className="water-drops"></div>
-            <div className="water-drops-2"></div>
-            <div className="water-drops-3"></div>
-            <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-            <div className="absolute top-0 -right-4 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-            <div className="absolute -bottom-8 left-20 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+      <main className="flex-grow">
+        <div className="relative h-screen bg-gradient-to-b from-[#F5F8FF] via-[#FAFBFF] to-white">
+          {/* Left side water drops */}
+          <div className="absolute left-0 w-[15%] top-0 bottom-0 overflow-hidden">
+            <div className="water-drops-left absolute inset-0"></div>
+            <div className="water-drops-left-2 absolute inset-0"></div>
           </div>
 
-          <div className="max-w-7xl mx-auto pt-20 pb-32 px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* Right side water drops */}
+          <div className="absolute right-0 w-[15%] top-0 bottom-0 overflow-hidden">
+            <div className="water-drops-right absolute inset-0"></div>
+            <div className="water-drops-right-2 absolute inset-0"></div>
+          </div>
+
+          {/* Main content water drops */}
+          <div className="absolute left-[15%] right-[15%] top-0 bottom-0 overflow-hidden">
+            <div className="water-drops absolute inset-0"></div>
+            <div className="water-drops-2 absolute inset-0"></div>
+            <div className="water-drops-3 absolute inset-0"></div>
+            <div className="absolute top-[10%] left-[10%] w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+            <div className="absolute top-[10%] right-[10%] w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+            <div className="absolute bottom-[10%] left-[20%] w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+          </div>
+
+          <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col justify-center">
             <div className="text-center">
               <motion.div
                 key={lang + "-title"}
@@ -258,7 +260,7 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                 variants={wordVariants}
                 className="relative"
               >
-                <h1 className="text-5xl md:text-6xl lg:text-7xl tracking-tight font-extrabold text-gray-900 mb-8">
+                <h1 className="text-5xl md:text-6xl lg:text-7xl tracking-tight font-extrabold text-gray-900">
                   <span className="block bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
                     {t.title.split("").map((char, i) => (
                       <motion.span
@@ -302,15 +304,15 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                 className="mt-10 max-w-md mx-auto sm:flex sm:justify-center md:mt-12 gap-4"
               >
                 <div className="rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                  <Link
-                    to="/login"
+                  <button
+                    onClick={handleLogin}
                     className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-xl text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transform hover:-translate-y-0.5 transition-all duration-200"
                   >
                     {t.login}
-                  </Link>
+                  </button>
                 </div>
-                <div className="mt-3 sm:mt-0 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
 
+                <div className="mt-3 sm:mt-0 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
                   <button
                     onClick={() => setShowAdminLogin(true)}
                     className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-xl text-blue-600 bg-white hover:bg-gray-50 transform hover:-translate-y-0.5 transition-all duration-200"
@@ -318,16 +320,6 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                     <LockIcon className="w-5 h-5 mr-2" />
                     Admin Login
                   </button>
-
-                  <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
-                    <button
-                      onClick={handleLogin}
-                      className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-xl text-blue-600 bg-white hover:bg-gray-50 transform hover:-translate-y-0.5 transition-all duration-200"
-                    >
-                      {t.login}
-                    </button>
-                  </div>
-
                 </div>
               </motion.div>
             </div>
@@ -464,21 +456,6 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
                 </span>
               </h2>
             </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="mt-8 flex lg:mt-0 lg:flex-shrink-0"
-            >
-              <div className="inline-flex rounded-xl shadow">
-                <button
-                  onClick={handleLogin}
-                  className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-xl text-blue-600 bg-white hover:bg-blue-50 transform hover:-translate-y-0.5 transition-all duration-200"
-                >
-                  {t.login}
-                </button>
-              </div>
-            </motion.div>
           </div>
         </div>
       </main>
@@ -595,11 +572,11 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
               opacity: 0;
             }
             50% {
-              transform: translateY(25px) scale(1.1);
+              transform: translateY(15px) scale(1.1);
               opacity: 0.7;
             }
             100% {
-              transform: translateY(50px) scale(1);
+              transform: translateY(30px) scale(1);
               opacity: 0;
             }
           }
@@ -614,54 +591,79 @@ const Home = ({ onLogin }: { onLogin: () => void }) => {
             animation-delay: 4s;
           }
 
-          .water-drops {
-            position: absolute;
-            inset: 0;
-            background-image: 
-              radial-gradient(3px 3px at 40px 40px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 80px 60px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 120px 90px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 160px 120px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 200px 150px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 240px 180px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 280px 210px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 320px 240px, rgba(99, 102, 241, 0.6) 50%, transparent);
-            background-size: 400px 400px;
+          .water-drops,
+          .water-drops-2,
+          .water-drops-3 {
+            pointer-events: none;
+            background-size: 200px 200px;
             animation: droplet 3s linear infinite;
+            opacity: 0.6;
+          }
+
+          .water-drops {
+            background-image: 
+              radial-gradient(2px 2px at 40px 40px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 80px 60px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 120px 90px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 160px 120px, rgba(99, 102, 241, 0.6) 50%, transparent);
           }
 
           .water-drops-2 {
-            position: absolute;
-            inset: 0;
-            background-image: 
-              radial-gradient(3px 3px at 20px 50px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 60px 70px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 100px 100px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 140px 130px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 180px 160px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 220px 190px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 260px 220px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 300px 250px, rgba(99, 102, 241, 0.6) 50%, transparent);
-            background-size: 400px 400px;
-            animation: droplet 3s linear infinite;
             animation-delay: -1s;
+            background-image: 
+              radial-gradient(2px 2px at 20px 50px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 60px 70px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 100px 100px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 140px 130px, rgba(99, 102, 241, 0.6) 50%, transparent);
           }
 
           .water-drops-3 {
-            position: absolute;
-            inset: 0;
-            background-image: 
-              radial-gradient(3px 3px at 30px 30px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 70px 80px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 110px 110px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 150px 140px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 190px 170px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 230px 200px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 270px 230px, rgba(99, 102, 241, 0.6) 50%, transparent),
-              radial-gradient(3px 3px at 310px 260px, rgba(99, 102, 241, 0.6) 50%, transparent);
-            background-size: 400px 400px;
-            animation: droplet 3s linear infinite;
             animation-delay: -2s;
+            background-image: 
+              radial-gradient(2px 2px at 30px 30px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 70px 80px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 110px 110px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 150px 140px, rgba(99, 102, 241, 0.6) 50%, transparent);
+          }
+
+          .water-drops-left,
+          .water-drops-left-2,
+          .water-drops-right,
+          .water-drops-right-2 {
+            pointer-events: none;
+            background-size: 100px 100px;
+            animation: droplet 4s linear infinite;
+            opacity: 0.4;
+          }
+
+          .water-drops-left {
+            background-image: 
+              radial-gradient(2px 2px at 20px 20px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 40px 40px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 60px 60px, rgba(99, 102, 241, 0.6) 50%, transparent);
+          }
+
+          .water-drops-left-2 {
+            animation-delay: -2s;
+            background-image: 
+              radial-gradient(2px 2px at 30px 30px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 50px 50px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 70px 70px, rgba(99, 102, 241, 0.6) 50%, transparent);
+          }
+
+          .water-drops-right {
+            background-image: 
+              radial-gradient(2px 2px at 25px 25px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 45px 45px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 65px 65px, rgba(99, 102, 241, 0.6) 50%, transparent);
+          }
+
+          .water-drops-right-2 {
+            animation-delay: -2s;
+            background-image: 
+              radial-gradient(2px 2px at 35px 35px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 55px 55px, rgba(99, 102, 241, 0.6) 50%, transparent),
+              radial-gradient(2px 2px at 75px 75px, rgba(99, 102, 241, 0.6) 50%, transparent);
           }
         `}
       </style>
