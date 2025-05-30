@@ -106,6 +106,24 @@ const TemplateMemoLetter = ({
       </div>
     </div>
 
+    {/* SUBJECT LABEL */}
+    <div className="px-2 xs:px-4 sm:px-8 mt-2 mb-1">
+      <div className="font-semibold text-lg">
+        <span className="text-gray-600">Subject: </span>
+        <span className="text-gray-900">{subject}</span>
+      </div>
+    </div>
+
+    {/* RECIPIENT */}
+    {recipient && (
+      <div className="px-2 xs:px-4 sm:px-8 pb-2">
+        <div className="text-sm text-gray-700">
+          <span className="font-medium">To: </span>
+          {recipient}
+        </div>
+      </div>
+    )}
+
     {/* LETTER BODY */}
     <div className="flex-1 px-2 xs:px-4 sm:px-8 pt-2 pb-0 min-h-[200px]">
       {reference && (
@@ -120,6 +138,30 @@ const TemplateMemoLetter = ({
         )}
       </div>
     </div>
+
+    {/* SIGNATURE */}
+    {signature && (
+      <div className="px-2 xs:px-4 sm:px-8 pb-2">
+        <div className="text-sm font-medium text-gray-700 mt-8">Signature:</div>
+        <div className="text-base text-gray-800">{signature}</div>
+      </div>
+    )}
+
+    {/* CC / CopyTo */}
+    {cc && (
+      <div className="px-2 xs:px-4 sm:px-8 pb-2">
+        <div className="text-sm font-medium text-gray-700">CC:</div>
+        <div className="text-base text-gray-800">{cc}</div>
+      </div>
+    )}
+    {copyTo && (
+      <div className="px-2 xs:px-4 sm:px-8 pb-2">
+        <div className="text-sm font-medium text-gray-700">Copy To:</div>
+        <div className="text-base text-gray-800">{copyTo}</div>
+      </div>
+    )}
+
+    {children}
 
     {/* FOOTER */}
     <div className="w-full pt-2">

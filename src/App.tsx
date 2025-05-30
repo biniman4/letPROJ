@@ -20,6 +20,7 @@ import Settings from "./components/pages/Settings";
 import Signup from "./components/pages/Signup";
 import Login from "./components/pages/Login";
 import AdminPanel from "./components/pages/AdminPanel";
+import Profile from "./components/pages/Profile";
 
 import { LanguageProvider } from "./components/pages/LanguageContext";
 
@@ -137,6 +138,14 @@ export function App() {
               element={
                 <PrivateRoute>
                   <Settings />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
                 </PrivateRoute>
               }
             />

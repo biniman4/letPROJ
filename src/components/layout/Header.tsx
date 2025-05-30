@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   SearchIcon,
   BellIcon,
@@ -7,6 +8,7 @@ import {
   SettingsIcon,
   XIcon,
 } from "lucide-react";
+import { useNotifications } from "../../context/NotificationContext";
 
 interface HeaderProps {
   onLogout: () => void;
@@ -15,6 +17,9 @@ interface HeaderProps {
 export const Header = ({ onLogout }: HeaderProps) => {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const { unreadNotifications } = useNotifications();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -28,6 +33,21 @@ export const Header = ({ onLogout }: HeaderProps) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleProfileClick = () => {
+    setOpen(false);
+    navigate("/profile");
+  };
+
+  const handleSettingsClick = () => {
+    setOpen(false);
+    navigate("/settings");
+  };
+
+  const handleLogout = () => {
+    setOpen(false);
+    onLogout();
+  };
 
   return (
     <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0">
@@ -45,9 +65,16 @@ export const Header = ({ onLogout }: HeaderProps) => {
 
       {/* Right: Notification + Profile */}
       <div className="flex items-center space-x-4">
-        <button className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+        <button
+          onClick={() => navigate("/notifications")}
+          className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+        >
           <BellIcon className="w-6 h-6" />
-          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
+          {unreadNotifications > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-xs font-medium flex items-center justify-center rounded-full border-2 border-white">
+              {unreadNotifications > 99 ? "99+" : unreadNotifications}
+            </span>
+          )}
         </button>
 
         <div className="relative" ref={dropdownRef}>
@@ -56,11 +83,15 @@ export const Header = ({ onLogout }: HeaderProps) => {
             className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg p-2 transition-colors"
           >
             <img
-              src="https://ui-avatars.com/api/?name=John+Director&background=E3F2FD&color=2563EB"
+              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                user.name || "User"
+              )}&background=E3F2FD&color=2563EB`}
               alt="User Avatar"
               className="w-8 h-8 rounded-full"
             />
-            <span className="text-sm font-medium text-gray-700">John Director</span>
+            <span className="text-sm font-medium text-gray-700">
+              {user.name || "User"}
+            </span>
           </button>
 
           {/* Dropdown Menu */}
@@ -72,16 +103,22 @@ export const Header = ({ onLogout }: HeaderProps) => {
             }`}
           >
             <div className="p-2 space-y-1">
-              <button className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+              <button
+                onClick={handleProfileClick}
+                className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+              >
                 <UserIcon className="w-4 h-4" />
                 <span>Profile</span>
               </button>
-              <button className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+              <button
+                onClick={handleSettingsClick}
+                className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+              >
                 <SettingsIcon className="w-4 h-4" />
                 <span>Settings</span>
               </button>
-              <button 
-                onClick={onLogout}
+              <button
+                onClick={handleLogout}
                 className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 <LogOutIcon className="w-4 h-4" />

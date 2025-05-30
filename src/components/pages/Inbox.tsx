@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { SearchIcon, FilterIcon, FileTextIcon, StarIcon } from "lucide-react";
 import axios from "axios";
-import { Modal } from "react-responsive-modal"; // You can use any modal library or a custom modal
+import { Modal } from "react-responsive-modal";
 import "react-responsive-modal/styles.css";
 import { useNotifications } from "../../context/NotificationContext";
+import TemplateMemoLetter from "./TemplateMemoLetter";
 
 interface Letter {
   _id: string;
@@ -11,6 +12,7 @@ interface Letter {
   fromName: string;
   fromEmail: string;
   toEmail: string;
+  toName?: string; // Full name of recipient, as filled during registration
   department: string;
   priority: string;
   content: string;
@@ -20,11 +22,20 @@ interface Letter {
   attachments?: Array<{ filename: string }>;
 }
 
+const getLetterSentDate = (dateString: string) => {
+  const d = new Date(dateString);
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const year = d.getUTCFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 const Inbox = () => {
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [letters, setLetters] = useState<Letter[]>([]);
   const [search, setSearch] = useState("");
   const [openLetter, setOpenLetter] = useState<Letter | null>(null);
+  const [viewMode, setViewMode] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -88,6 +99,7 @@ const Inbox = () => {
 
       // Finally, open the letter
       setOpenLetter({ ...letter, unread: false, starred: true });
+      setViewMode(false);
     } catch (error) {
       console.error("Error updating letter status:", error);
       // If the update fails, still update the local state to maintain UI consistency
@@ -97,11 +109,12 @@ const Inbox = () => {
         )
       );
       setOpenLetter({ ...letter, unread: false, starred: true });
+      setViewMode(false);
     }
   };
 
   const handleStarToggle = async (letter: Letter, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent letter from opening when clicking star
+    e.stopPropagation();
 
     try {
       const newStarredState = !letter.starred;
@@ -182,7 +195,7 @@ const Inbox = () => {
     setCurrentPage(1);
   }, [selectedFilter, search]);
 
-  // Format date function
+  // Format date function (for modal and lists)
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString("en-US", {
@@ -194,6 +207,17 @@ const Inbox = () => {
       second: "2-digit",
       hour12: true,
     });
+  };
+
+  // Helper: receiver full name, fallback to username part of email if name not present
+  const getRecipientDisplayName = (letter: Letter) =>
+    letter.toName || (letter.toEmail ? letter.toEmail.split("@")[0] : "");
+
+  // Helper: Extract only the user name before @ in email, fallback to full name if no email
+  const getSenderDisplayName = (letter: Letter) => {
+    if (letter.fromName) return letter.fromName;
+    if (letter.fromEmail) return letter.fromEmail.split("@")[0];
+    return "";
   };
 
   return (
@@ -338,58 +362,92 @@ const Inbox = () => {
 
       {/* Letter Details Modal */}
       {openLetter && (
-        <Modal open={!!openLetter} onClose={() => setOpenLetter(null)} center>
-          <div className="p-4">
-            <h3 className="text-xl font-semibold mb-2">{openLetter.subject}</h3>
-            <div className="mb-2 text-gray-700">
-              <strong>From:</strong> {openLetter.fromName} (
-              {openLetter.fromEmail})
-            </div>
-            <div className="mb-2 text-gray-700">
-              <strong>Department:</strong> {openLetter.department}
-            </div>
-            <div className="mb-2 text-gray-700">
-              <strong>Priority:</strong> {openLetter.priority}
-            </div>
-            <div className="mb-2 text-gray-700">
-              <strong>Date:</strong> {formatDate(openLetter.createdAt)}
-            </div>
-            <div className="mb-4 text-gray-800 whitespace-pre-line">
-              {openLetter.content}
-            </div>
-
-            {openLetter.attachments && openLetter.attachments.length > 0 && (
-              <div className="mb-2">
-                <strong>Attachment:</strong>
-                <ul>
-                  {openLetter.attachments.map((file, idx) => (
-                    <li key={idx} className="flex items-center space-x-2">
-                      <a
-                        href={`http://localhost:5000/api/letters/download/${
-                          openLetter._id
-                        }/${encodeURIComponent(file.filename)}`}
-                        className="text-blue-600 hover:text-blue-800 underline"
-                        download={file.filename}
-                      >
-                        Download
-                      </a>
-                      <a
-                        href={`http://localhost:5000/api/letters/view/${
-                          openLetter._id
-                        }/${encodeURIComponent(file.filename)}`}
-                        className="text-green-600 hover:text-green-800 underline"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View
-                      </a>
-                      <span className="text-gray-700">{file.filename}</span>
-                    </li>
-                  ))}
-                </ul>
+        <Modal
+          open={!!openLetter}
+          onClose={() => {
+            setOpenLetter(null);
+            setViewMode(false);
+          }}
+          center
+        >
+          {!viewMode ? (
+            <div className="p-4">
+              {/* Subject shown with user-friendly label */}
+              <div className="mb-2 text-gray-700">
+                <strong>Subject:</strong> {openLetter.subject}
               </div>
-            )}
-          </div>
+              <div className="mb-2 text-gray-700">
+                <strong>To:</strong> {getRecipientDisplayName(openLetter)}
+              </div>
+              <div className="mb-2 text-gray-700">
+                <strong>From:</strong> {getSenderDisplayName(openLetter)}
+              </div>
+              <div className="mb-2 text-gray-700">
+                <strong>Department:</strong> {openLetter.department}
+              </div>
+              <div className="mb-2 text-gray-700">
+                <strong>Priority:</strong> {openLetter.priority}
+              </div>
+              <div className="mb-2 text-gray-700">
+                <strong>Date:</strong> {formatDate(openLetter.createdAt)}
+              </div>
+              {/* No content, no email, as requested */}
+              {openLetter.attachments && openLetter.attachments.length > 0 && (
+                <div className="mb-2">
+                  <strong>Attachment:</strong>
+                  <ul>
+                    {openLetter.attachments.map((file, idx) => (
+                      <li key={idx} className="flex items-center space-x-2">
+                        <a
+                          href={`http://localhost:5000/api/letters/download/${openLetter._id}/${encodeURIComponent(
+                            file.filename
+                          )}`}
+                          className="text-blue-600 hover:text-blue-800 underline"
+                          download={file.filename}
+                        >
+                          Download
+                        </a>
+                        <a
+                          href={`http://localhost:5000/api/letters/view/${openLetter._id}/${encodeURIComponent(
+                            file.filename
+                          )}`}
+                          className="text-green-600 hover:text-green-800 underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View
+                        </a>
+                        <span className="text-gray-700">{file.filename}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <button
+                onClick={() => setViewMode(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 mt-4"
+              >
+                View
+              </button>
+            </div>
+          ) : (
+            <div className="p-4">
+              <TemplateMemoLetter
+                subject={openLetter.subject}
+                date={getLetterSentDate(openLetter.createdAt)}
+                recipient={getRecipientDisplayName(openLetter)}
+                reference={""}
+                body={openLetter.content}
+                signature={openLetter.fromName}
+              />
+              <button
+                onClick={() => setViewMode(false)}
+                className="mt-4 bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700"
+              >
+                Back
+              </button>
+            </div>
+          )}
         </Modal>
       )}
     </div>
