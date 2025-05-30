@@ -22,6 +22,7 @@ import Signup from "./components/pages/Signup";
 import Login from "./components/pages/Login";
 import AdminPanel from "./components/pages/AdminPanel";
 import Profile from "./components/pages/Profile";
+import Sent from "./components/pages/Sent";
 
 import { LanguageProvider } from "./components/pages/LanguageContext";
 
@@ -110,6 +111,14 @@ export function App() {
                 element={
                   <PrivateRoute>
                     <Inbox />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/sent"
+                element={
+                  <PrivateRoute>
+                    <Sent />
                   </PrivateRoute>
                 }
               />

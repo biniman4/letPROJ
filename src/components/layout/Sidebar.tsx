@@ -13,12 +13,14 @@ import {
   ShieldIcon,
   ChevronsLeft,
   ChevronsRight,
+  SendIcon,
 } from "lucide-react";
 
 const navItems = [
   { icon: LayoutDashboardIcon, label: "Dashboard", path: "/dashboard" },
   { icon: MailPlusIcon, label: "New Letter", path: "/new-letter" },
   { icon: InboxIcon, label: "Inbox", path: "/inbox" },
+  { icon: SendIcon, label: "Sent", path: "/sent" },
   { icon: ArchiveIcon, label: "Archive", path: "/archive" },
   { icon: BellIcon, label: "Notifications", path: "/notifications" },
   { icon: UsersIcon, label: "Users", path: "/users" },
