@@ -80,7 +80,6 @@ export const Sidebar = ({ isAdmin = false }) => {
                 <NavLink
                   key={item.label}
                   to={item.path}
-                  onClick={() => setIsOpen(false)}
                   className={({ isActive }) =>
                     `flex items-center gap-4 px-4 py-2.5 rounded-md text-[16px] transition-all
                     ${
