@@ -6,6 +6,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { NotificationProvider } from "./context/NotificationContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 import { Sidebar } from "./components/layout/Sidebar";
 import { Header } from "./components/layout/Header";
@@ -24,7 +25,9 @@ import Profile from "./components/pages/Profile";
 
 import { LanguageProvider } from "./components/pages/LanguageContext";
 
+/*************  ✨ Windsurf Command 🌟  *************/
 export function App() {
+  // State to track if user is authenticated
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
@@ -78,88 +81,91 @@ export function App() {
   };
 
   return (
-    <LanguageProvider>
-      <NotificationProvider>
-        <Router>
-          <Routes>
-            <Route path="/login" element={<Login onLogin={handleLogin} />} />
-            <Route path="/" element={<Home onLogin={handleLogin} />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route
-              path="/dashboard"
-              element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/new-letter"
-              element={
-                <PrivateRoute>
-                  <NewLetter />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/inbox"
-              element={
-                <PrivateRoute>
-                  <Inbox />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/archive"
-              element={
-                <PrivateRoute>
-                  <Archive />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/notifications"
-              element={
-                <PrivateRoute>
-                  <Notifications />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/users"
-              element={
-                <PrivateRoute>
-                  <Users />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <PrivateRoute>
-                  <Settings />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <PrivateRoute>
-                  <Profile />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <PrivateRoute adminRequired={true}>
-                  <AdminPanel />
-                </PrivateRoute>
-              }
-            />
-          </Routes>
-        </Router>
-      </NotificationProvider>
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <NotificationProvider>
+          <Router>
+            <Routes>
+              <Route path="/login" element={<Login onLogin={handleLogin} />} />
+              <Route path="/" element={<Home onLogin={handleLogin} />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <PrivateRoute>
+                    <Dashboard />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/new-letter"
+                element={
+                  <PrivateRoute>
+                    <NewLetter />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/inbox"
+                element={
+                  <PrivateRoute>
+                    <Inbox />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/archive"
+                element={
+                  <PrivateRoute>
+                    <Archive />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  <PrivateRoute>
+                    <Notifications />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/users"
+                element={
+                  <PrivateRoute>
+                    <Users />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <PrivateRoute>
+                    <Settings />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <PrivateRoute>
+                    <Profile />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <PrivateRoute adminRequired={true}>
+                    <AdminPanel />
+                  </PrivateRoute>
+                }
+              />
+            </Routes>
+          </Router>
+        </NotificationProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
+/*******  0cfabed7-dce5-43a5-8d65-b66ce1d202f6  *******/

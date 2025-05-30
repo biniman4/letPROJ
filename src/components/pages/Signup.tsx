@@ -17,7 +17,10 @@ const InputField = ({
   const [showPassword, setShowPassword] = useState(false);
   return (
     <div className="relative w-full">
-      <label htmlFor={id} className="block mb-1 text-sm font-semibold text-indigo-900">
+      <label
+        htmlFor={id}
+        className="block mb-1 text-sm font-semibold text-indigo-900"
+      >
         {label}
       </label>
       <input
@@ -38,7 +41,11 @@ const InputField = ({
           className="absolute top-8 right-4 text-indigo-400 hover:text-indigo-700"
           tabIndex={-1}
         >
-          {showPassword ? <MdVisibilityOff size={22} /> : <MdVisibility size={22} />}
+          {showPassword ? (
+            <MdVisibilityOff size={22} />
+          ) : (
+            <MdVisibility size={22} />
+          )}
         </button>
       )}
     </div>
@@ -58,7 +65,9 @@ const Signup = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.id]: e.target.value,
@@ -107,7 +116,9 @@ const Signup = () => {
     } catch (err: any) {
       setError(
         "Registration failed: " +
-        (err.response?.data?.error || err.response?.data?.message || err.message)
+          (err.response?.data?.error ||
+            err.response?.data?.message ||
+            err.message)
       );
     }
   };
@@ -194,10 +205,18 @@ const Signup = () => {
             </div>
           </div>
           <div className="md:col-span-2 flex items-center space-x-2 text-xs text-indigo-900 mt-2">
-            <input type="checkbox" id="terms" required className="accent-indigo-600" />
+            <input
+              type="checkbox"
+              id="terms"
+              required
+              className="accent-indigo-600"
+            />
             <label htmlFor="terms" className="select-none">
               I agree to the{" "}
-              <a href="#" className="underline text-indigo-600 hover:text-teal-700 transition">
+              <a
+                href="#"
+                className="underline text-indigo-600 hover:text-teal-700 transition"
+              >
                 Terms and Conditions
               </a>
             </label>
