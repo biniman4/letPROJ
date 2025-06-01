@@ -159,74 +159,38 @@ const services = [
 
 const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
   const [lang, setLang] = useState<"am" | "en">("am");
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [adminCredentials, setAdminCredentials] = useState({
+  const [showLogin, setShowLogin] = useState(false);
+  const [credentials, setCredentials] = useState({
     email: "",
     password: "",
   });
   const [loginError, setLoginError] = useState("");
-
   const navigate = useNavigate();
-
   const t = translations[lang];
 
-  const handleLogin = () => {
-    onLogin();
-
-    navigate("/dashboard");
-
-  };
-
-  const handleAdminLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleLogin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setLoginError("");
-    
     try {
-      // Add your admin login logic here
-      // For example:
-      // await adminLogin(adminCredentials);
-      setShowAdminLogin(false);
-      // navigate('/admin');
-    } catch (error) {
-      setLoginError("");
+      // Example login request (replace with your backend endpoint)
+      const response = await axios.post(
+        "http://localhost:5000/api/users/login",
+        credentials
+      );
+      const user = response.data.user;
+      localStorage.setItem("user", JSON.stringify(user));
+      onLogin();
+      // Redirect based on user role
+      if (user.role === "admin") navigate("/admin");
+      else navigate("/dashboard");
+    } catch (error: any) {
+      setLoginError("Invalid credentials");
     }
-
-
-    // TEMPORARY BYPASS FOR DEV
-    // Remove/comment this after testing!
-    localStorage.setItem(
-      "user",
-      JSON.stringify({ role: "admin", email: "dev@admin" })
-    );
-    onLogin();
-    navigate("/admin");
-    return;
-
-    // --- Original code below ---
-    // setLoginError('');
-    // try {
-    //   const response = await axios.post('http://localhost:5000/api/users/login', adminCredentials);
-    //   if (response.data.user.role === 'admin') {
-    //     localStorage.setItem('user', JSON.stringify(response.data.user));
-    //     onLogin();
-    //     navigate('/admin');
-    //   } else {
-    //     setLoginError('Access denied. Admin privileges required.');
-    //   }
-    // } catch (error) {
-    //   setLoginError('Invalid credentials');
-    // }
-
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFBFF]">
-      <PublicNavbar
-        lang={lang}
-        onLanguageChange={setLang}
-      />
-
+      <PublicNavbar lang={lang} onLanguageChange={setLang} />
       <main className="flex-grow">
         <div className="relative h-screen bg-gradient-to-b from-[#F5F8FF] via-[#FAFBFF] to-white">
           {/* Left side water drops */}
@@ -303,22 +267,12 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 transition={{ delay: 0.7 }}
                 className="mt-16 max-w-md mx-auto sm:flex sm:justify-center md:mt-20 gap-4"
               >
-                <div className="rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <div className="rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 w-full">
                   <button
-                    onClick={handleLogin}
+                    onClick={() => setShowLogin(true)}
                     className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-xl text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transform hover:-translate-y-0.5 transition-all duration-200"
                   >
                     {t.login}
-                  </button>
-                </div>
-
-                <div className="mt-3 sm:mt-0 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-                  <button
-                    onClick={() => setShowAdminLogin(true)}
-                    className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-xl text-blue-600 bg-white hover:bg-gray-50 transform hover:-translate-y-0.5 transition-all duration-200"
-                  >
-                    <LockIcon className="w-5 h-5 mr-2" />
-                    Admin Login
                   </button>
                 </div>
               </motion.div>
@@ -463,8 +417,8 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
       <PublicFooter />
 
       <Modal
-        open={showAdminLogin}
-        onClose={() => setShowAdminLogin(false)}
+        open={showLogin}
+        onClose={() => setShowLogin(false)}
         center
         classNames={{
           modal: "rounded-2xl p-8 w-full max-w-md bg-white shadow-2xl",
@@ -472,8 +426,8 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
         }}
       >
         <div className="mb-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Admin Login</h2>
-          <p className="text-gray-600">Please enter your admin credentials</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h2>
+          <p className="text-gray-600">Sign in with your credentials</p>
         </div>
 
         {loginError && (
@@ -482,7 +436,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
           </div>
         )}
 
-        <form onSubmit={handleAdminLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label className="block text-gray-700 mb-2 font-medium">
               Email
@@ -492,13 +446,10 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
               <input
                 type="email"
                 className="pl-12 w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                placeholder="admin@example.com"
-                value={adminCredentials.email}
+                placeholder="user@example.com"
+                value={credentials.email}
                 onChange={(e) =>
-                  setAdminCredentials({
-                    ...adminCredentials,
-                    email: e.target.value,
-                  })
+                  setCredentials({ ...credentials, email: e.target.value })
                 }
                 required
               />
@@ -515,12 +466,9 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 type="password"
                 className="pl-12 w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 placeholder="••••••••"
-                value={adminCredentials.password}
+                value={credentials.password}
                 onChange={(e) =>
-                  setAdminCredentials({
-                    ...adminCredentials,
-                    password: e.target.value,
-                  })
+                  setCredentials({ ...credentials, password: e.target.value })
                 }
                 required
               />
@@ -544,7 +492,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
             type="submit"
             className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-indigo-700 transform hover:-translate-y-0.5 transition-all duration-200"
           >
-            Login as Admin
+            Sign In
           </button>
         </form>
       </Modal>

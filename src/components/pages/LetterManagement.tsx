@@ -12,7 +12,6 @@ import axios from "axios";
 import { Modal } from "react-responsive-modal";
 import "react-responsive-modal/styles.css";
 import TemplateMemoLetter from "./TemplateMemoLetter";
-import DepartmentSelector from "./DepartmentSelector";
 
 const getLetterSentDate = (dateString: string) => {
   const d = new Date(dateString);
@@ -22,31 +21,13 @@ const getLetterSentDate = (dateString: string) => {
   return `${day}/${month}/${year}`;
 };
 
-type Letter = {
-  _id: string;
-  subject: string;
-  fromName?: string;
-  fromEmail?: string;
-  to?: string;
-  toEmail?: string;
-  department?: string;
-  priority?: string;
-  status?: string;
-  fileUrl?: string;
-  attachmentUrl?: string;
-  attachments?: { filename: string }[];
-  createdAt: string;
-  content?: string;
-};
-
-const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ setSuccessMsg }) => {
-  const [letters, setLetters] = useState<Letter[]>([]);
+const LetterManagement = ({ setSuccessMsg }) => {
+  const [letters, setLetters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [acceptedLetters, setAcceptedLetters] = useState<string[]>([]);
   const [letterSearch, setLetterSearch] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("");
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
-  const [openLetter, setOpenLetter] = useState<Letter | null>(null);
+  const [openLetter, setOpenLetter] = useState(null);
   const [viewMode, setViewMode] = useState(false);
 
   useEffect(() => {
@@ -82,7 +63,7 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ 
     setTimeout(() => setSuccessMsg(""), 2000);
   };
 
-  const handleDetailLetter = (letter: Letter) => {
+  const handleDetailLetter = (letter) => {
     setOpenLetter(letter);
     setViewMode(false);
   };
@@ -129,11 +110,11 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ 
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
-  const filteredLetters = sortedLetters.filter((letter) => {
-    const matchesSearch = (letter.subject || "").toLowerCase().includes(letterSearch.toLowerCase());
-    const matchesDepartment = !selectedDepartment || letter.department === selectedDepartment;
-    return matchesSearch && matchesDepartment;
-  });
+  const filteredLetters = sortedLetters.filter((letter) =>
+    (letter.subject || "")
+      .toLowerCase()
+      .includes(letterSearch.toLowerCase())
+  );
 
   if (loading)
     return (
@@ -147,10 +128,7 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ 
       {/* Sticky search bar/header */}
       <div className="sticky top-0 z-10 bg-white p-4 border-b">
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-          {/* Department selector */}
-          <div className="w-full sm:w-64">
-            <DepartmentSelector value={selectedDepartment} onChange={setSelectedDepartment} />
-          </div>
+          <h3 className="text-2xl font-semibold text-gray-700 flex-shrink-0">Letters Management</h3>
           <div className="flex items-center bg-gray-100 rounded px-2 py-1 w-full sm:w-auto">
             <Search className="w-4 h-4 text-gray-500 mr-1" />
             <input
@@ -231,16 +209,14 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ 
                 </button>
                 <button
                   className="bg-gray-700 text-white px-3 py-1 rounded shadow flex items-center gap-1 hover:bg-gray-800"
-                  onClick={() => letter.fileUrl && handleDownload(letter.fileUrl)}
-                  disabled={!letter.fileUrl}
+                  onClick={() => handleDownload(letter.fileUrl)}
                 >
                   <Download className="w-4 h-4" /> Letter File
                 </button>
                 {letter.attachmentUrl && (
                   <button
                     className="bg-gray-700 text-white px-3 py-1 rounded shadow flex items-center gap-1 hover:bg-gray-800"
-                    onClick={() => letter.attachmentUrl && handleDownload(letter.attachmentUrl)}
-                    disabled={!letter.attachmentUrl}
+                    onClick={() => handleDownload(letter.attachmentUrl)}
                   >
                     <Download className="w-4 h-4" /> Attachment
                   </button>
