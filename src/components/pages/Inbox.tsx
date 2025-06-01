@@ -5,6 +5,8 @@ import { Modal } from "react-responsive-modal";
 import "react-responsive-modal/styles.css";
 import { useNotifications } from "../../context/NotificationContext";
 import TemplateMemoLetter from "./TemplateMemoLetter";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface Letter {
   _id: string;
@@ -12,7 +14,7 @@ interface Letter {
   fromName: string;
   fromEmail: string;
   toEmail: string;
-  toName?: string; // Full name of recipient, as filled during registration
+  toName?: string;
   department: string;
   priority: string;
   content: string;
@@ -70,6 +72,7 @@ const Inbox = () => {
       } catch (err) {
         console.error("Error fetching letters:", err);
         setLetters([]);
+        toast.error("Error fetching letters.");
       }
     };
     fetchLetters();
@@ -102,6 +105,7 @@ const Inbox = () => {
       setViewMode(false);
     } catch (error) {
       console.error("Error updating letter status:", error);
+      toast.error("Error updating letter status.");
       // If the update fails, still update the local state to maintain UI consistency
       setLetters((prevLetters) =>
         prevLetters.map((l) =>
@@ -113,9 +117,9 @@ const Inbox = () => {
     }
   };
 
+  // MODIFIED: Show toast message when star status is toggled
   const handleStarToggle = async (letter: Letter, e: React.MouseEvent) => {
     e.stopPropagation();
-
     try {
       const newStarredState = !letter.starred;
 
@@ -138,8 +142,16 @@ const Inbox = () => {
           prev ? { ...prev, starred: newStarredState } : null
         );
       }
+
+      // Show custom toast message for starring/un-starring
+      if (newStarredState) {
+        toast.success(`Letter "${letter.subject}" starred!`);
+      } else {
+        toast.info(`Letter "${letter.subject}" unstarred.`);
+      }
     } catch (error) {
       console.error("Error toggling star:", error);
+      toast.error("Error toggling star.");
       // If the update fails, still update the local state to maintain UI consistency
       setLetters((prevLetters) =>
         prevLetters.map((l) =>
@@ -149,6 +161,7 @@ const Inbox = () => {
     }
   };
 
+  // Add "seen" to the filter logic
   const filteredLetters = letters
     .filter((letter) => {
       switch (selectedFilter) {
@@ -158,6 +171,8 @@ const Inbox = () => {
           return letter.starred === true;
         case "urgent":
           return letter.priority === "urgent";
+        case "seen":
+          return letter.unread === false;
         default:
           return true;
       }
@@ -231,7 +246,7 @@ const Inbox = () => {
         <div className="p-4 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
             <div className="flex space-x-2">
-              {["all", "unread", "starred", "urgent"].map((filter) => (
+              {["all", "unread", "starred", "urgent", "seen"].map((filter) => (
                 <button
                   key={filter}
                   onClick={() => setSelectedFilter(filter)}
@@ -372,7 +387,6 @@ const Inbox = () => {
         >
           {!viewMode ? (
             <div className="p-4">
-              {/* Subject shown with user-friendly label */}
               <div className="mb-2 text-gray-700">
                 <strong>Subject:</strong> {openLetter.subject}
               </div>
@@ -391,7 +405,6 @@ const Inbox = () => {
               <div className="mb-2 text-gray-700">
                 <strong>Date:</strong> {formatDate(openLetter.createdAt)}
               </div>
-              {/* No content, no email, as requested */}
               {openLetter.attachments && openLetter.attachments.length > 0 && (
                 <div className="mb-2">
                   <strong>Attachment:</strong>

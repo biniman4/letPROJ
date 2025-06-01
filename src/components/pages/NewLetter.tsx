@@ -5,6 +5,8 @@ import { LanguageContext } from "./LanguageContext";
 import axios from "axios";
 import TemplateMemoLetter from "./TemplateMemoLetter";
 import DepartmentSelector from "./DepartmentSelector";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const NewLetter = () => {
   const { lang, setLang } = useContext(LanguageContext);
@@ -56,13 +58,13 @@ const NewLetter = () => {
     e.preventDefault();
 
     if (!letterData.content.trim()) {
-      alert("Letter content is required.");
+      toast.error("Letter content is required.");
       return;
     }
 
     const currentUserId = localStorage.getItem("userId");
     if (!currentUserId) {
-      alert("User not logged in. Please log in again.");
+      toast.error("User not logged in. Please log in again.");
       return;
     }
 
@@ -110,9 +112,9 @@ const NewLetter = () => {
       setSelectedDepartment("");
       setToEmployee("");
       setAttachment(null);
-      alert("Letter sent successfully!");
+      toast.success("Letter sent successfully!");
     } catch (error: any) {
-      alert("Failed to send the letter. Please try again.");
+      toast.error("Failed to send the letter. Please try again.");
     }
   };
 

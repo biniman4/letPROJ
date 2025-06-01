@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Input, Select } from "antd";
-import { SearchOutlined, FilterOutlined } from "@ant-design/icons";
+import { Table, Button, Input, Select, Modal, Form } from "antd";
+import { SearchOutlined, FilterOutlined, SendOutlined } from "@ant-design/icons";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface Letter {
   id: string;
@@ -14,6 +16,9 @@ const Sent: React.FC = () => {
   const [letters, setLetters] = useState<Letter[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [composeVisible, setComposeVisible] = useState(false);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     // TODO: Replace with actual API call
@@ -41,11 +46,34 @@ const Sent: React.FC = () => {
       } catch (error) {
         console.error("Error fetching sent letters:", error);
         setLoading(false);
+        toast.error("Failed to fetch sent letters.");
       }
     };
 
     fetchSentLetters();
   }, []);
+
+  // Simulated send letter function
+  const handleSendLetter = async (values: { subject: string; recipient: string }) => {
+    try {
+      // Simulate API call delay
+      await new Promise((res) => setTimeout(res, 1000));
+      // Simulate success and add to table
+      const newLetter: Letter = {
+        id: `${Date.now()}`,
+        subject: values.subject,
+        recipient: values.recipient,
+        date: new Date().toISOString().slice(0, 10),
+        status: "Delivered",
+      };
+      setLetters((prev) => [newLetter, ...prev]);
+      toast.success("Letter sent successfully!");
+      setComposeVisible(false);
+      form.resetFields();
+    } catch (error) {
+      toast.error("Failed to send the letter.");
+    }
+  };
 
   const columns = [
     {
@@ -102,19 +130,22 @@ const Sent: React.FC = () => {
   ];
 
   const handleView = (letter: Letter) => {
-    // TODO: Implement view functionality
+    toast.info(`Viewing letter: ${letter.subject}`);
     console.log("View letter:", letter);
   };
 
   const handleDelete = (letter: Letter) => {
-    // TODO: Implement delete functionality
+    setLetters((prev) => prev.filter((l) => l.id !== letter.id));
+    toast.success("Letter deleted successfully.");
     console.log("Delete letter:", letter);
   };
 
   const filteredLetters = letters.filter(
     (letter) =>
-      letter.subject.toLowerCase().includes(searchText.toLowerCase()) ||
-      letter.recipient.toLowerCase().includes(searchText.toLowerCase())
+      (letter.subject.toLowerCase().includes(searchText.toLowerCase()) ||
+        letter.recipient.toLowerCase().includes(searchText.toLowerCase())) &&
+      (statusFilter === "all" ||
+        letter.status.toLowerCase() === statusFilter.toLowerCase())
   );
 
   return (
@@ -122,6 +153,13 @@ const Sent: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Sent Letters</h1>
         <div className="flex space-x-4">
+          <Button
+            type="primary"
+            icon={<SendOutlined />}
+            onClick={() => setComposeVisible(true)}
+          >
+            New Letter
+          </Button>
           <Input
             placeholder="Search letters..."
             prefix={<SearchOutlined />}
@@ -132,10 +170,12 @@ const Sent: React.FC = () => {
             placeholder="Filter by status"
             className="w-40"
             suffixIcon={<FilterOutlined />}
+            defaultValue="all"
+            onChange={(val) => setStatusFilter(val)}
           >
             <Select.Option value="all">All</Select.Option>
-            <Select.Option value="delivered">Delivered</Select.Option>
-            <Select.Option value="read">Read</Select.Option>
+            <Select.Option value="Delivered">Delivered</Select.Option>
+            <Select.Option value="Read">Read</Select.Option>
           </Select>
         </div>
       </div>
@@ -151,6 +191,45 @@ const Sent: React.FC = () => {
           showTotal: (total) => `Total ${total} items`,
         }}
       />
+
+      <Modal
+        title="Compose New Letter"
+        open={composeVisible}
+        onCancel={() => setComposeVisible(false)}
+        footer={null}
+        destroyOnClose
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSendLetter}
+        >
+          <Form.Item
+            label="Subject"
+            name="subject"
+            rules={[{ required: true, message: "Please enter the subject" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Recipient"
+            name="recipient"
+            rules={[{ required: true, message: "Please enter the recipient" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={<SendOutlined />}
+              block
+            >
+              Send Letter
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

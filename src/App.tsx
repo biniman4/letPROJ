@@ -25,8 +25,9 @@ import Profile from "./components/pages/Profile";
 import Sent from "./components/pages/Sent";
 
 import { LanguageProvider } from "./components/pages/LanguageContext";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-/*************  ✨ Windsurf Command 🌟  *************/
 export function App() {
   // State to track if user is authenticated
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -86,91 +87,94 @@ export function App() {
       <LanguageProvider>
         <NotificationProvider>
           <Router>
-            <Routes>
-              <Route path="/login" element={<Login onLogin={handleLogin} />} />
-              <Route path="/" element={<Home onLogin={handleLogin} />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <PrivateRoute>
-                    <Dashboard />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/new-letter"
-                element={
-                  <PrivateRoute>
-                    <NewLetter />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/inbox"
-                element={
-                  <PrivateRoute>
-                    <Inbox />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/sent"
-                element={
-                  <PrivateRoute>
-                    <Sent />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/archive"
-                element={
-                  <PrivateRoute>
-                    <Archive />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/notifications"
-                element={
-                  <PrivateRoute>
-                    <Notifications />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/users"
-                element={
-                  <PrivateRoute>
-                    <Users />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <PrivateRoute>
-                    <Settings />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <PrivateRoute>
-                    <Profile />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/admin"
-                element={
-                  <PrivateRoute adminRequired={true}>
-                    <AdminPanel />
-                  </PrivateRoute>
-                }
-              />
-            </Routes>
+            <>
+              <ToastContainer />
+              <Routes>
+                <Route path="/login" element={<Login onLogin={handleLogin} />} />
+                <Route path="/" element={<Home onLogin={handleLogin} />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <PrivateRoute>
+                      <Dashboard />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/new-letter"
+                  element={
+                    <PrivateRoute>
+                      <NewLetter />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/inbox"
+                  element={
+                    <PrivateRoute>
+                      <Inbox />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/sent"
+                  element={
+                    <PrivateRoute>
+                      <Sent />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/archive"
+                  element={
+                    <PrivateRoute>
+                      <Archive />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/notifications"
+                  element={
+                    <PrivateRoute>
+                      <Notifications />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/users"
+                  element={
+                    <PrivateRoute>
+                      <Users />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <PrivateRoute>
+                      <Settings />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <PrivateRoute>
+                      <Profile />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/admin"
+                  element={
+                    <PrivateRoute adminRequired={true}>
+                      <AdminPanel />
+                    </PrivateRoute>
+                  }
+                />
+              </Routes>
+            </>
           </Router>
         </NotificationProvider>
       </LanguageProvider>
