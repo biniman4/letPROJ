@@ -23,7 +23,7 @@ import Login from "./components/pages/Login";
 import AdminPanel from "./components/pages/AdminPanel";
 import Profile from "./components/pages/Profile";
 import Sent from "./components/pages/Sent";
-import ForgotPassword from "./components/pages/ForgotPassword";
+import Forget from "./components/pages/Forget";
 import ResetPassword from "./components/pages/ResetPassword";
 
 import { LanguageProvider } from "./components/pages/LanguageContext";
@@ -93,10 +93,7 @@ export function App() {
               <ToastContainer />
               <Routes>
                 <Route path="/login" element={<Login onLogin={handleLogin} />} />
-                <Route
-                  path="/forgot-password"
-                  element={<ForgotPassword />}
-                />
+                <Route path="/forgot-password" element={<Forget />} />
                 <Route
                   path="/reset-password/:token"
                   element={<ResetPassword />}
