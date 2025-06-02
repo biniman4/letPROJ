@@ -479,10 +479,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
             <button
               type="button"
               className="text-sm text-blue-600 hover:underline focus:outline-none"
-              onClick={() => {
-                // You can set a state to show a 'Forgot Password' modal or navigate to a reset page
-                alert("Forgot Password functionality coming soon!");
-              }}
+              onClick={() => navigate('/forgot-password')}
             >
               Forgot Password?
             </button>

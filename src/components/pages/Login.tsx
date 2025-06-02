@@ -36,7 +36,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
       localStorage.setItem("user", JSON.stringify(response.data.user)); // <-- Add this line
       onLogin();
       navigate("/dashboard");
-    } catch (err) {
+    } catch (err: any) {
       setError(err.response?.data?.message || "An error occurred");
     }
   };
@@ -103,6 +103,16 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
               >
                 Sign up
               </a>
+            </p>
+
+            <p className="text-center text-gray-600 text-sm mt-2">
+              <button
+                type="button"
+                className="underline text-blue-600 hover:text-blue-800 transition"
+                onClick={() => navigate('/forgot-password')}
+              >
+                Forgot Password?
+              </button>
             </p>
           </div>
         </form>
