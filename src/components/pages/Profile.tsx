@@ -87,17 +87,19 @@ const Profile = () => {
           </div>
         )}
 
-        <div className="flex items-center space-x-4 mb-6">
-          <img
-            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-              user.name
-            )}&background=E3F2FD&color=2563EB&size=128`}
-            alt="Profile"
-            className="w-24 h-24 rounded-full"
-          />
-          <div>
-            <h3 className="text-xl font-semibold text-gray-900">{user.name}</h3>
-            <p className="text-gray-600">{user.email}</p>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
+          <div className="flex-shrink-0">
+            <img
+              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                user.name
+              )}&background=E3F2FD&color=2563EB&size=128`}
+              alt="Profile"
+              className="w-16 h-16 sm:w-24 sm:h-24 rounded-full"
+            />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-xl font-semibold text-gray-900 truncate">{user.name}</h3>
+            <p className="text-gray-600 text-sm sm:text-base break-all">{user.email}</p>
           </div>
         </div>
 
@@ -116,7 +118,7 @@ const Profile = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm sm:text-base"
                   required
                 />
               </div>
@@ -135,7 +137,7 @@ const Profile = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm sm:text-base"
                   required
                 />
               </div>
@@ -154,7 +156,7 @@ const Profile = () => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm sm:text-base"
                 />
               </div>
             </div>
@@ -172,16 +174,16 @@ const Profile = () => {
                   name="departmentOrSector"
                   value={formData.departmentOrSector}
                   onChange={handleInputChange}
-                  className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm sm:text-base"
                 />
               </div>
             </div>
 
-            <div className="flex space-x-3">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 ${
+                className={`flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm sm:text-base ${
                   isLoading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
@@ -190,7 +192,7 @@ const Profile = () => {
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200"
+                className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 text-sm sm:text-base"
               >
                 Cancel
               </button>
@@ -198,14 +200,14 @@ const Profile = () => {
           </form>
         ) : (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <h4 className="text-sm font-medium text-gray-500">Name</h4>
-                <p className="mt-1 text-gray-900">{user.name}</p>
+                <p className="mt-1 text-gray-900 break-words">{user.name}</p>
               </div>
               <div>
                 <h4 className="text-sm font-medium text-gray-500">Email</h4>
-                <p className="mt-1 text-gray-900">{user.email}</p>
+                <p className="mt-1 text-gray-900 break-all">{user.email}</p>
               </div>
               <div>
                 <h4 className="text-sm font-medium text-gray-500">Phone</h4>
@@ -215,7 +217,7 @@ const Profile = () => {
                 <h4 className="text-sm font-medium text-gray-500">
                   Department/Sector
                 </h4>
-                <p className="mt-1 text-gray-900">
+                <p className="mt-1 text-gray-900 break-words">
                   {user.departmentOrSector || "Not set"}
                 </p>
               </div>
@@ -223,7 +225,7 @@ const Profile = () => {
 
             <button
               onClick={() => setIsEditing(true)}
-              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              className="mt-6 w-full sm:w-auto bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 text-sm sm:text-base"
             >
               Edit Profile
             </button>

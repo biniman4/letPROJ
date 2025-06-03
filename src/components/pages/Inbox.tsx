@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { SearchIcon, FilterIcon, FileTextIcon, StarIcon } from "lucide-react";
+import { SearchIcon, FilterIcon, FileTextIcon, StarIcon, Eye, Download, X } from "lucide-react";
 import axios from "axios";
 import { Modal } from "react-responsive-modal";
 import "react-responsive-modal/styles.css";
@@ -7,6 +7,7 @@ import { useNotifications } from "../../context/NotificationContext";
 import TemplateMemoLetter from "./TemplateMemoLetter";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { MailIcon, PaperclipIcon } from "lucide-react";
 
 interface Letter {
   _id: string;
@@ -236,21 +237,22 @@ const Inbox = () => {
   };
 
   return (
-    <div>
+    <div className="px-4 py-6 lg:px-6">
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800">Inbox</h2>
-        <p className="text-gray-600">Manage your incoming letters</p>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-1">Inbox</h2>
+        <p className="text-gray-600 text-sm">Manage your incoming letters</p>
       </div>
+      
       <div className="bg-white rounded-lg border border-gray-200">
         {/* Filters and Search */}
         <div className="p-4 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-            <div className="flex space-x-2">
+          <div className="flex flex-col space-y-4">
+            <div className="flex flex-wrap gap-2">
               {["all", "unread", "starred", "urgent", "seen"].map((filter) => (
                 <button
                   key={filter}
                   onClick={() => setSelectedFilter(filter)}
-                  className={`px-3 py-1 rounded-md text-sm ${
+                  className={`px-3 py-1.5 rounded-md text-sm whitespace-nowrap ${
                     selectedFilter === filter
                       ? "bg-blue-50 text-blue-600"
                       : "text-gray-600 hover:bg-gray-50"
@@ -260,23 +262,32 @@ const Inbox = () => {
                 </button>
               ))}
             </div>
-            <div className="flex space-x-2">
-              <div className="relative">
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
                 <input
                   type="text"
-                  placeholder="Search inbox..."
+                  placeholder="Search letters..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full sm:w-64 pl-9 pr-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <SearchIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
-              <button className="p-2 hover:bg-gray-100 rounded-md">
-                <FilterIcon className="h-5 w-5 text-gray-600" />
-              </button>
+              
+              <select
+                value={selectedFilter}
+                onChange={(e) => setSelectedFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="date">Sort by Date</option>
+                <option value="priority">Sort by Priority</option>
+                <option value="status">Sort by Status</option>
+              </select>
             </div>
           </div>
         </div>
+
         {/* Letters List */}
         <div className="divide-y divide-gray-200">
           {filteredLetters.length === 0 && (

@@ -31,85 +31,71 @@ const adminItems = [{ icon: ShieldIcon, label: "Admin Panel", path: "/admin" }];
 
 export const Sidebar = ({ isAdmin = false }) => {
   const [isOpen, setIsOpen] = useState(true);
-
-  const items = isAdmin ? [...navItems, ...adminItems] : navItems;
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const items = [...navItems, ...(isAdmin ? adminItems : [])];
 
   return (
     <>
-      {/* Fixed Top Toggle Button for Mobile */}
-      <div className="fixed top-0 left-0 w-full bg-white border-b md:hidden z-50 flex items-center justify-between p-4">
-        <h1 className="text-xl font-semibold text-gray-800">LetterFlow</h1>
-        <button onClick={() => setIsOpen(!isOpen)} className="text-gray-800">
-          {isOpen ? (
-            <XIcon className="w-6 h-6" />
-          ) : (
-            <MenuIcon className="w-6 h-6" />
-          )}
-        </button>
-      </div>
-
-      {/* Sidebar */}
-      <div
-        className={`fixed z-40 top-0 left-0 h-screen bg-white transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block ${
-          isOpen ? "w-64" : "w-20"
-        }`}
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-white shadow-md"
       >
-        <div className="h-full border-r-2 border-gray-300 rounded-tr-[32px] rounded-br-[32px] relative">
-          {/* Toggle Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="absolute -right-3 top-8 bg-white rounded-full p-1.5 border-2 border-gray-300 cursor-pointer hover:bg-gray-50"
-          >
-            {isOpen ? <ChevronsLeft size={16} /> : <ChevronsRight size={16} />}
-          </button>
+        <MenuIcon className="w-6 h-6 text-gray-600" />
+      </button>
 
+      {/* Sidebar Container */}
+      <div
+        className={`fixed lg:static inset-y-0 left-0 transform ${
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        } lg:translate-x-0 transition-transform duration-200 ease-in-out z-30`}
+      >
+        <div className="h-full w-64 bg-white shadow-lg lg:shadow-none">
           {/* Logo Section */}
-          <div className="px-5 py-4">
-            <h1
-              className={`text-2xl font-bold text-gray-900 transition-all ${
-                !isOpen && "scale-0"
-              }`}
+          <div className="px-5 py-4 flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-900">LetterFlow</h1>
+            {/* Close button for mobile */}
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="lg:hidden p-2 rounded-md hover:bg-gray-100"
             >
-              LetterFlow
-            </h1>
+              <XIcon className="w-6 h-6 text-gray-600" />
+            </button>
           </div>
 
           {/* Navigation Container */}
-          <div className="flex flex-col h-[calc(100vh-64px)]">
+          <div className="flex flex-col h-[calc(100vh-80px)]">
             {/* Navigation Items */}
-            <nav className="px-2 py-6 flex flex-col space-y-3">
+            <nav className="px-2 py-4 flex flex-col space-y-1">
               {items.map((item) => (
                 <NavLink
                   key={item.label}
                   to={item.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className={({ isActive }) =>
-                    `flex items-center gap-4 px-4 py-2.5 rounded-md text-[16px] transition-all
+                    `flex items-center gap-4 px-4 py-2.5 rounded-md text-[15px] transition-all
                     ${
                       isActive
                         ? "bg-blue-50 text-blue-600 font-medium"
-                        : "text-[#6b7280] hover:bg-gray-50 hover:text-gray-900"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                     }`
                   }
                 >
-                  <item.icon className={`w-[22px] h-[22px] flex-shrink-0`} />
-                  <span className={`transition-all ${!isOpen && "hidden"}`}>
-                    {item.label}
-                  </span>
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  <span>{item.label}</span>
                 </NavLink>
               ))}
             </nav>
-            {/* Spacer to push content to top */}
-            <div className="flex-grow"></div>
           </div>
         </div>
       </div>
 
-      {/* Mobile Overlay */}
-      {isOpen && (
+      {/* Overlay for mobile */}
+      {isMobileMenuOpen && (
         <div
-          onClick={() => setIsOpen(false)}
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm md:hidden z-30"
-        />
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        ></div>
       )}
     </>
   );

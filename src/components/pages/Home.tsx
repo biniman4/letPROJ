@@ -421,31 +421,31 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
         onClose={() => setShowLogin(false)}
         center
         classNames={{
-          modal: "rounded-2xl p-8 w-full max-w-md bg-white shadow-2xl",
+          modal: "rounded-2xl p-4 sm:p-8 w-[95%] max-w-md bg-white shadow-2xl",
           overlay: "bg-gray-900/50 backdrop-blur-sm",
         }}
       >
-        <div className="mb-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h2>
-          <p className="text-gray-600">Sign in with your credentials</p>
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Sign In</h2>
+          <p className="text-sm sm:text-base text-gray-600">Sign in with your credentials</p>
         </div>
 
         {loginError && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-700 rounded-xl">
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-100 text-red-700 rounded-xl text-sm">
             {loginError}
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-4 sm:space-y-6">
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">
+            <label className="block text-gray-700 mb-1.5 sm:mb-2 text-sm font-medium">
               Email
             </label>
             <div className="relative">
-              <UserIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+              <UserIcon className="absolute left-3 sm:left-4 top-2.5 sm:top-3.5 h-4 sm:h-5 w-4 sm:w-5 text-gray-400" />
               <input
                 type="email"
-                className="pl-12 w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                className="pl-9 sm:pl-12 w-full p-2.5 sm:p-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 placeholder="user@example.com"
                 value={credentials.email}
                 onChange={(e) =>
@@ -457,14 +457,14 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">
+            <label className="block text-gray-700 mb-1.5 sm:mb-2 text-sm font-medium">
               Password
             </label>
             <div className="relative">
-              <LockIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+              <LockIcon className="absolute left-3 sm:left-4 top-2.5 sm:top-3.5 h-4 sm:h-5 w-4 sm:w-5 text-gray-400" />
               <input
                 type="password"
-                className="pl-12 w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                className="pl-9 sm:pl-12 w-full p-2.5 sm:p-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 placeholder="••••••••"
                 value={credentials.password}
                 onChange={(e) =>
@@ -478,7 +478,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
           <div className="flex justify-between items-center">
             <button
               type="button"
-              className="text-sm text-blue-600 hover:underline focus:outline-none"
+              className="text-xs sm:text-sm text-blue-600 hover:underline focus:outline-none"
               onClick={() => navigate('/forgot-password')}
             >
               Forgot Password?
@@ -487,7 +487,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
 
           <button
             type="submit"
-            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-indigo-700 transform hover:-translate-y-0.5 transition-all duration-200"
+            className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm sm:text-base font-medium rounded-xl hover:from-blue-700 hover:to-indigo-700 transform hover:-translate-y-0.5 transition-all duration-200"
           >
             Sign In
           </button>

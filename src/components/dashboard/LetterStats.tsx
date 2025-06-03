@@ -22,19 +22,23 @@ const stats = [{
   color: 'bg-red-50 text-red-600'
 }];
 export const LetterStats = () => {
-  return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {stats.map(stat => <div key={stat.label} className="bg-white p-6 rounded-lg border border-gray-200">
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {stats.map(stat => (
+        <div key={stat.label} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center space-x-3">
-            <div className={`p-3 rounded-full ${stat.color}`}>
-              <stat.icon className="w-6 h-6" />
+            <div className={`p-2 rounded-lg ${stat.color}`}>
+              <stat.icon className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">{stat.label}</p>
-              <p className="text-2xl font-semibold text-gray-800">
+              <p className="text-sm text-gray-600 mb-0.5">{stat.label}</p>
+              <p className="text-xl font-semibold text-gray-800">
                 {stat.value}
               </p>
             </div>
           </div>
-        </div>)}
-    </div>;
+        </div>
+      ))}
+    </div>
+  );
 };

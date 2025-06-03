@@ -149,26 +149,30 @@ const Sent: React.FC = () => {
   );
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Sent Letters</h1>
-        <div className="flex space-x-4">
+    <div className="px-4 py-6 lg:px-6 space-y-6">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h1 className="text-2xl font-semibold text-gray-800">Sent Letters</h1>
           <Button
             type="primary"
             icon={<SendOutlined />}
             onClick={() => setComposeVisible(true)}
+            className="w-full sm:w-auto"
           >
             New Letter
           </Button>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row gap-4">
           <Input
             placeholder="Search letters..."
             prefix={<SearchOutlined />}
             onChange={(e) => setSearchText(e.target.value)}
-            className="w-64"
+            className="w-full sm:w-64"
           />
           <Select
             placeholder="Filter by status"
-            className="w-40"
+            className="w-full sm:w-40"
             suffixIcon={<FilterOutlined />}
             defaultValue="all"
             onChange={(val) => setStatusFilter(val)}
@@ -180,17 +184,22 @@ const Sent: React.FC = () => {
         </div>
       </div>
 
-      <Table
-        columns={columns}
-        dataSource={filteredLetters}
-        loading={loading}
-        rowKey="id"
-        pagination={{
-          pageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total) => `Total ${total} items`,
-        }}
-      />
+      <div className="overflow-x-auto">
+        <Table
+          columns={columns}
+          dataSource={filteredLetters}
+          loading={loading}
+          rowKey="id"
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total) => `Total ${total} items`,
+            responsive: true,
+          }}
+          scroll={{ x: 'max-content' }}
+          className="min-w-full"
+        />
+      </div>
 
       <Modal
         title="Compose New Letter"
@@ -198,11 +207,13 @@ const Sent: React.FC = () => {
         onCancel={() => setComposeVisible(false)}
         footer={null}
         destroyOnClose
+        width={400}
       >
         <Form
           form={form}
           layout="vertical"
           onFinish={handleSendLetter}
+          className="mt-4"
         >
           <Form.Item
             label="Subject"

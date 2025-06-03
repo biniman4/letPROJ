@@ -114,13 +114,16 @@ const Notifications = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800">Notifications</h2>
+    <div className="px-4 py-6 lg:px-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-1">Notifications</h2>
+          <p className="text-sm text-gray-600">Stay updated with your latest alerts</p>
+        </div>
         {notifications.some((n) => !n.read) && (
           <button
             onClick={handleMarkAllAsRead}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 w-full sm:w-auto"
           >
             <CheckCircle className="w-4 h-4" />
             Mark all as read
@@ -129,7 +132,7 @@ const Notifications = () => {
       </div>
 
       {notifications.length === 0 ? (
-        <div className="text-center py-12">
+        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
           <Bell className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">
             No notifications
@@ -149,9 +152,9 @@ const Notifications = () => {
                   : "bg-blue-50 border-blue-200"
               }`}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
                     <h3 className="text-sm font-medium text-gray-900">
                       {notification.title}
                     </h3>
@@ -163,7 +166,7 @@ const Notifications = () => {
                       {notification.priority}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 break-words">
                     {notification.message}
                   </p>
                   {notification.relatedLetter && (
@@ -171,28 +174,30 @@ const Notifications = () => {
                       Related to: {notification.relatedLetter.subject}
                     </p>
                   )}
-                  <p className="mt-1 text-xs text-gray-400">
+                  <p className="mt-2 text-xs text-gray-400">
                     {formatDistanceToNow(new Date(notification.createdAt), {
                       addSuffix: true,
                     })}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 sm:flex-col">
                   {!notification.read && (
                     <button
                       onClick={() => handleMarkAsRead(notification._id)}
-                      className="p-1 text-gray-400 hover:text-gray-600"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                       title="Mark as read"
                     >
                       <Check className="w-4 h-4" />
+                      <span className="sm:hidden">Mark as read</span>
                     </button>
                   )}
                   <button
                     onClick={() => handleDelete(notification._id)}
-                    className="p-1 text-gray-400 hover:text-red-600"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-red-600 bg-white border border-gray-300 rounded-md hover:bg-red-50"
                     title="Delete notification"
                   >
                     <Trash2 className="w-4 h-4" />
+                    <span className="sm:hidden">Delete</span>
                   </button>
                 </div>
               </div>

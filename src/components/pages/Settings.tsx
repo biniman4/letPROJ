@@ -77,309 +77,145 @@ const Settings = () => {
   };
 
   return (
-    <div
-      className={`max-w-4xl mx-auto p-6 transition-colors duration-300 ${
-        theme === "dark"
-          ? "bg-gray-900 text-gray-100"
-          : "bg-gray-50 text-gray-900"
-      }`}
-    >
+    <div className="px-4 py-6 lg:px-6">
       <div className="mb-6">
-        <h2
-          className={`text-2xl font-semibold ${
-            theme === "dark" ? "text-gray-100" : "text-gray-800"
-          }`}
-        >
-          Settings
-        </h2>
-        <p className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
-          Configure your application preferences
-        </p>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-1">Settings</h2>
+        <p className="text-gray-600 text-sm">Customize your app preferences</p>
       </div>
 
-      <div className="space-y-6">
+      <div className="grid gap-6">
         {/* Profile Settings */}
-        <div
-          className={`rounded-lg border p-6 transition-colors duration-300 ${
-            theme === "dark"
-              ? "bg-gray-800 border-gray-700"
-              : "bg-white border-gray-200"
-          }`}
-        >
-          <div className="flex items-center space-x-3 mb-4">
-            <User
-              className={`h-6 w-6 ${
-                theme === "dark" ? "text-blue-400" : "text-gray-600"
-              }`}
-            />
-            <h3
-              className={`text-lg font-medium ${
-                theme === "dark" ? "text-gray-100" : "text-gray-900"
-              }`}
-            >
-              Profile Settings
-            </h3>
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <User className="w-6 h-6 text-gray-600" />
+            <h3 className="text-lg font-medium text-gray-900">Profile Settings</h3>
           </div>
-
-          {message.text && (
-            <div
-              className={`mb-4 p-3 rounded-md ${
-                message.type === "success"
-                  ? theme === "dark"
-                    ? "bg-green-900 text-green-200"
-                    : "bg-green-50 text-green-700"
-                  : theme === "dark"
-                  ? "bg-red-900 text-red-200"
-                  : "bg-red-50 text-red-700"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
-
-          <form onSubmit={handleProfileUpdate} className="space-y-4">
+          
+          <div className="grid gap-6 sm:grid-cols-2">
             <div>
-              <label
-                className={`block text-sm font-medium ${
-                  theme === "dark" ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Name
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
               <input
                 type="text"
                 value={profileName}
                 onChange={(e) => setProfileName(e.target.value)}
-                className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
-                  theme === "dark"
-                    ? "bg-gray-700 border-gray-600 text-gray-100"
-                    : "border-gray-300"
-                }`}
-                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Your name"
               />
             </div>
             <div>
-              <label
-                className={`block text-sm font-medium ${
-                  theme === "dark" ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Email
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input
                 type="email"
                 value={profileEmail}
                 onChange={(e) => setProfileEmail(e.target.value)}
-                className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
-                  theme === "dark"
-                    ? "bg-gray-700 border-gray-600 text-gray-100"
-                    : "border-gray-300"
-                }`}
-                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Your email"
               />
             </div>
             <div>
-              <label
-                className={`block text-sm font-medium ${
-                  theme === "dark" ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Phone
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
               <input
                 type="tel"
                 value={profilePhone}
                 onChange={(e) => setProfilePhone(e.target.value)}
-                className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
-                  theme === "dark"
-                    ? "bg-gray-700 border-gray-600 text-gray-100"
-                    : "border-gray-300"
-                }`}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Your phone number"
               />
             </div>
             <div>
-              <label
-                className={`block text-sm font-medium ${
-                  theme === "dark" ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Department/Sector
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
               <input
                 type="text"
                 value={profileDepartment}
                 onChange={(e) => setProfileDepartment(e.target.value)}
-                className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
-                  theme === "dark"
-                    ? "bg-gray-700 border-gray-600 text-gray-100"
-                    : "border-gray-300"
-                }`}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Your department"
               />
             </div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`px-4 py-2 rounded-md transition-colors duration-300 ${
-                theme === "dark"
-                  ? "bg-blue-600 hover:bg-blue-700 text-white"
-                  : "bg-blue-600 hover:bg-blue-700 text-white"
-              } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-              {isLoading ? "Updating..." : "Update Profile"}
-            </button>
-          </form>
+          </div>
         </div>
 
         {/* Notification Settings */}
-        <div
-          className={`rounded-lg border p-6 transition-colors duration-300 ${
-            theme === "dark"
-              ? "bg-gray-800 border-gray-700"
-              : "bg-white border-gray-200"
-          }`}
-        >
-          <div className="flex items-center space-x-3 mb-4">
-            <Bell
-              className={`h-6 w-6 ${
-                theme === "dark" ? "text-blue-400" : "text-gray-600"
-              }`}
-            />
-            <h3
-              className={`text-lg font-medium ${
-                theme === "dark" ? "text-gray-100" : "text-gray-900"
-              }`}
-            >
-              Notification Settings
-            </h3>
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <Bell className="w-6 h-6 text-gray-600" />
+            <h3 className="text-lg font-medium text-gray-900">Notification Settings</h3>
           </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+          
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h4
-                  className={`text-sm font-medium ${
-                    theme === "dark" ? "text-gray-100" : "text-gray-900"
-                  }`}
-                >
-                  Email Notifications
-                </h4>
-                <p
-                  className={`text-sm ${
-                    theme === "dark" ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  Receive notifications via email
-                </p>
+                <h4 className="text-sm font-medium text-gray-900">Email Notifications</h4>
+                <p className="text-sm text-gray-500">Receive notifications via email</p>
               </div>
-              <button
-                onClick={handleEmailNotificationsToggle}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
-                  emailNotifications
-                    ? theme === "dark"
-                      ? "bg-blue-500"
-                      : "bg-blue-600"
-                    : theme === "dark"
-                    ? "bg-gray-600"
-                    : "bg-gray-200"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
-                    emailNotifications ? "translate-x-6" : "translate-x-1"
-                  }`}
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={emailNotifications}
+                  onChange={handleEmailNotificationsToggle}
+                  className="sr-only peer"
                 />
-              </button>
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
             </div>
-            <div className="flex items-center justify-between">
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h4
-                  className={`text-sm font-medium ${
-                    theme === "dark" ? "text-gray-100" : "text-gray-900"
-                  }`}
-                >
-                  Notification Sound
-                </h4>
-                <p
-                  className={`text-sm ${
-                    theme === "dark" ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  Play sound for new notifications
-                </p>
+                <h4 className="text-sm font-medium text-gray-900">Notification Sound</h4>
+                <p className="text-sm text-gray-500">Play sound for new notifications</p>
               </div>
-              <button
-                onClick={handleNotificationSoundToggle}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
-                  notificationSound
-                    ? theme === "dark"
-                      ? "bg-blue-500"
-                      : "bg-blue-600"
-                    : theme === "dark"
-                    ? "bg-gray-600"
-                    : "bg-gray-200"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
-                    notificationSound ? "translate-x-6" : "translate-x-1"
-                  }`}
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={notificationSound}
+                  onChange={handleNotificationSoundToggle}
+                  className="sr-only peer"
                 />
-              </button>
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
             </div>
           </div>
         </div>
 
         {/* Theme Settings */}
-        <div
-          className={`rounded-lg border p-6 transition-colors duration-300 ${
-            theme === "dark"
-              ? "bg-gray-800 border-gray-700"
-              : "bg-white border-gray-200"
-          }`}
-        >
-          <div className="flex items-center space-x-3 mb-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center gap-3 mb-6">
             {theme === "dark" ? (
-              <Moon className="h-6 w-6 text-blue-400" />
+              <Moon className="w-6 h-6 text-gray-600" />
             ) : (
-              <Sun className="h-6 w-6 text-yellow-500" />
+              <Sun className="w-6 h-6 text-gray-600" />
             )}
-            <h3
-              className={`text-lg font-medium ${
-                theme === "dark" ? "text-gray-100" : "text-gray-900"
-              }`}
-            >
-              Theme Settings
-            </h3>
+            <h3 className="text-lg font-medium text-gray-900">Theme Settings</h3>
           </div>
-          <div className="flex items-center justify-between">
+          
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h4
-                className={`text-sm font-medium ${
-                  theme === "dark" ? "text-gray-100" : "text-gray-900"
-                }`}
-              >
-                Dark Mode
-              </h4>
-              <p
-                className={`text-sm ${
-                  theme === "dark" ? "text-gray-400" : "text-gray-500"
-                }`}
-              >
-                Switch between light and dark theme
-              </p>
+              <h4 className="text-sm font-medium text-gray-900">Dark Mode</h4>
+              <p className="text-sm text-gray-500">Toggle between light and dark themes</p>
             </div>
-            <button
-              onClick={toggleTheme}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
-                theme === "dark" ? "bg-blue-500" : "bg-gray-200"
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
-                  theme === "dark" ? "translate-x-6" : "translate-x-1"
-                }`}
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={theme === "dark"}
+                onChange={toggleTheme}
+                className="sr-only peer"
               />
-            </button>
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
           </div>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={() => {
+              // Add save functionality
+              console.log("Settings saved");
+            }}
+            className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300"
+          >
+            Save Changes
+          </button>
         </div>
       </div>
     </div>
