@@ -80,17 +80,15 @@ const Inbox = () => {
 
   const handleLetterOpen = async (letter: Letter) => {
     try {
-      // First update the backend
+      // Only update unread status
       await axios.post(`http://localhost:5000/api/letters/status`, {
         letterId: letter._id,
         unread: false,
-        starred: true,
       });
 
-      // Then update local state
       setLetters((prevLetters) =>
         prevLetters.map((l) =>
-          l._id === letter._id ? { ...l, unread: false, starred: true } : l
+          l._id === letter._id ? { ...l, unread: false } : l
         )
       );
 
@@ -100,19 +98,18 @@ const Inbox = () => {
       ).length;
       updateUnreadLetters(unreadCount);
 
-      // Finally, open the letter
-      setOpenLetter({ ...letter, unread: false, starred: true });
+      // Open the letter (don't modify starred state)
+      setOpenLetter({ ...letter, unread: false });
       setViewMode(false);
     } catch (error) {
       console.error("Error updating letter status:", error);
       toast.error("Error updating letter status.");
-      // If the update fails, still update the local state to maintain UI consistency
       setLetters((prevLetters) =>
         prevLetters.map((l) =>
-          l._id === letter._id ? { ...l, unread: false, starred: true } : l
+          l._id === letter._id ? { ...l, unread: false } : l
         )
       );
-      setOpenLetter({ ...letter, unread: false, starred: true });
+      setOpenLetter({ ...letter, unread: false });
       setViewMode(false);
     }
   };
