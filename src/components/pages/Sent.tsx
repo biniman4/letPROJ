@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Table, Button, Input, Select, Modal, Form } from "antd";
 import {
   SearchOutlined,
@@ -7,10 +7,13 @@ import {
   PaperClipOutlined,
   DownloadOutlined,
   EyeOutlined,
+  FileTextOutlined,
+  PrinterOutlined,
 } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
+import TemplateMemoLetter from "./TemplateMemoLetter";
 
 interface Attachment {
   filename: string;
@@ -28,6 +31,8 @@ interface Letter {
   department: string;
   priority: string;
   attachments: Attachment[];
+  content: string;
+  fromName: string;
 }
 
 const Sent: React.FC = () => {
@@ -39,8 +44,11 @@ const Sent: React.FC = () => {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [previewType, setPreviewType] = useState<string>("");
+  const [memoViewVisible, setMemoViewVisible] = useState(false);
+  const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
   const [form] = Form.useForm();
   const [attachment, setAttachment] = useState<File | null>(null);
+  const memoPrintRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchSentLetters();
@@ -108,6 +116,45 @@ const Sent: React.FC = () => {
     if (previewUrl) {
       window.URL.revokeObjectURL(previewUrl);
       setPreviewUrl("");
+    }
+  };
+
+  const handleMemoView = (letter: Letter) => {
+    setSelectedLetter(letter);
+    setMemoViewVisible(true);
+  };
+
+  const handlePrint = () => {
+    if (memoPrintRef.current) {
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Print Letter</title>
+              <style>
+                body {
+                  font-family: Arial, sans-serif;
+                  margin: 40px;
+                }
+                @media print {
+                  body {
+                    margin: 0;
+                    padding: 20px;
+                  }
+                }
+              </style>
+            </head>
+            <body>
+              ${memoPrintRef.current.innerHTML}
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+      }
     }
   };
 
@@ -185,6 +232,20 @@ const Sent: React.FC = () => {
             <span className="text-gray-400">No attachments</span>
           )}
         </div>
+      ),
+    },
+    {
+      title: "Memo View",
+      key: "memoView",
+      render: (record: Letter) => (
+        <Button
+          type="link"
+          icon={<FileTextOutlined />}
+          onClick={() => handleMemoView(record)}
+          size="small"
+        >
+          View Memo
+        </Button>
       ),
     },
   ];
@@ -416,6 +477,49 @@ const Sent: React.FC = () => {
             </div>
           )}
         </div>
+      </Modal>
+
+      {/* Memo View Modal */}
+      <Modal
+        title="Memo Letter View"
+        open={memoViewVisible}
+        onCancel={() => {
+          setMemoViewVisible(false);
+          setSelectedLetter(null);
+        }}
+        footer={[
+          <Button
+            key="close"
+            onClick={() => {
+              setMemoViewVisible(false);
+              setSelectedLetter(null);
+            }}
+          >
+            Close
+          </Button>,
+          <Button
+            key="print"
+            type="primary"
+            icon={<PrinterOutlined />}
+            onClick={handlePrint}
+          >
+            Print Letter
+          </Button>,
+        ]}
+        width={800}
+      >
+        {selectedLetter && (
+          <div className="p-4" ref={memoPrintRef}>
+            <TemplateMemoLetter
+              subject={selectedLetter.subject}
+              date={new Date(selectedLetter.createdAt).toLocaleDateString()}
+              recipient={selectedLetter.to}
+              reference=""
+              body={selectedLetter.content}
+              signature={selectedLetter.fromName}
+            />
+          </div>
+        )}
       </Modal>
     </div>
   );
