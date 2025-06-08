@@ -6,6 +6,7 @@ import {
   downloadFile,
   viewFile,
   updateLetterStatus,
+  getSentLetters,
 } from "../controllers/letterController.js";
 
 const router = express.Router();
@@ -22,7 +23,7 @@ const upload = multer({
       "image/jpeg",
       "image/png",
       "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
@@ -40,6 +41,7 @@ const upload = multer({
 // Routes
 router.post("/", upload.single("attachment"), createLetter);
 router.get("/", getLetters);
+router.get("/sent", getSentLetters);
 router.get("/download/:letterId/:filename", downloadFile);
 router.get("/view/:letterId/:filename", viewFile);
 router.post("/status", updateLetterStatus);

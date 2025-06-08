@@ -28,6 +28,11 @@ const letterSchema = new mongoose.Schema(
     cc: [String],
     ccEmployees: { type: Map, of: [String] },
     toEmail: { type: String, required: true },
+    status: {
+      type: String,
+      enum: ["draft", "sent", "delivered", "read"],
+      default: "draft",
+    },
   },
   { timestamps: true }
 );

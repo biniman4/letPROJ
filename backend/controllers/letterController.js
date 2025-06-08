@@ -98,6 +98,7 @@ export const createLetter = async (req, res) => {
       ccEmployees: ccEmployees,
       unread: true,
       starred: false,
+      status: "sent",
     };
 
     const letter = new Letter(letterData);
@@ -279,5 +280,18 @@ export const updateLetterStatus = async (req, res) => {
   } catch (error) {
     console.error("Error updating letter status:", error);
     res.status(500).json({ message: "Error updating letter status" });
+  }
+};
+
+// GET SENT LETTERS
+export const getSentLetters = async (req, res) => {
+  try {
+    const sentLetters = await Letter.find({ status: "sent" })
+      .sort({ createdAt: -1 })
+      .populate("from", "name email");
+    res.status(200).json(sentLetters);
+  } catch (error) {
+    console.error("Error in getSentLetters:", error);
+    res.status(500).json({ error: error.message });
   }
 };
