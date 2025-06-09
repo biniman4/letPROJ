@@ -32,6 +32,26 @@ const getLetterSentDate = (dateString: string) => {
   return `${day}/${month}/${year}`;
 };
 
+// Fetch departments from your actual API
+const fetchDepartments = async () => {
+  try {
+    const res = await axios.get("http://localhost:5000/api/departments");
+    return res.data; // [{ name: "HR", ... }]
+  } catch (err) {
+    return [];
+  }
+};
+
+// Fetch users by department from your actual API
+const fetchUsersByDepartment = async (departmentName: string) => {
+  try {
+    const res = await axios.get(`http://localhost:5000/api/users?department=${encodeURIComponent(departmentName)}`);
+    return res.data; // [{ name, email }, ...]
+  } catch (err) {
+    return [];
+  }
+};
+
 const Inbox = () => {
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [letters, setLetters] = useState<Letter[]>([]);
@@ -40,6 +60,12 @@ const Inbox = () => {
   const [viewMode, setViewMode] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [showForwardModal, setShowForwardModal] = useState(false);
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
+  const [departmentUsers, setDepartmentUsers] = useState<any[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
+  const [forwardStatus, setForwardStatus] = useState<string | null>(null);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user.email || "";
@@ -232,6 +258,46 @@ const Inbox = () => {
     return "";
   };
 
+  // Fetch departments on mount
+  useEffect(() => {
+    fetchDepartments().then((data) => setDepartments(data));
+  }, []);
+
+  // Fetch users when department changes
+  useEffect(() => {
+    if (selectedDepartment) {
+      fetchUsersByDepartment(selectedDepartment).then((users) => setDepartmentUsers(users));
+      setSelectedUsers([]);
+    } else {
+      setDepartmentUsers([]);
+      setSelectedUsers([]);
+    }
+  }, [selectedDepartment]);
+
+  // Forward letter logic (send to actual users)
+  const handleForwardLetter = async () => {
+    if (!openLetter || selectedUsers.length === 0) return;
+    try {
+      await axios.post("http://localhost:5000/api/letters/forward", {
+        letterId: openLetter._id,
+        to: selectedUsers.map((u) => u.email),
+      });
+      setForwardStatus(
+        `Message forwarded to: ${selectedUsers.map((u) => u.name).join(", ")}`
+      );
+      setTimeout(() => setForwardStatus(null), 3000);
+      setShowForwardModal(false);
+      setSelectedDepartment("");
+      setSelectedUsers([]);
+      toast.success(
+        `Letter forwarded to: ${selectedUsers.map((u) => u.name).join(", ")}`
+      );
+    } catch (error) {
+      setForwardStatus("Failed to forward message.");
+      toast.error("Failed to forward message.");
+    }
+  };
+
   return (
     <div>
       <div className="mb-6">
@@ -257,61 +323,45 @@ const Inbox = () => {
                 </button>
               ))}
             </div>
-            <div className="flex space-x-2">
-              <div className="relative">
+            <div className="flex items-center space-x-2">
+              <div className="relative w-full sm:w-64">
+                <SearchIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search inbox..."
+                  placeholder="Search letters..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full sm:w-64 pl-9 pr-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
-                <SearchIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
-              <button className="p-2 hover:bg-gray-100 rounded-md">
-                <FilterIcon className="h-5 w-5 text-gray-600" />
+              <button className="px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700">
+                <FilterIcon className="h-5 w-5 mr-2 -ml-1" />
+                Filter
               </button>
             </div>
           </div>
         </div>
-        {/* Letters List */}
+
+        {/* Letter List */}
         <div className="divide-y divide-gray-200">
-          {filteredLetters.length === 0 && (
-            <div className="p-4 text-gray-500 text-center">
+          {currentLetters.length === 0 ? (
+            <div className="p-4 text-center text-gray-500">
               No letters found.
             </div>
-          )}
-          {currentLetters.map((letter) => (
-            <div
-              key={letter._id}
-              className={`p-4 hover:bg-gray-50 flex items-center cursor-pointer ${
-                letter.unread ? "bg-blue-50/30" : ""
-              }`}
-              onClick={() => handleLetterOpen(letter)}
-            >
-              <div className="flex-1 flex items-center min-w-0">
-                <div className="flex items-center space-x-4">
-                  <button
-                    className="text-gray-400 hover:text-yellow-400"
-                    onClick={(e) => handleStarToggle(letter, e)}
-                  >
-                    <StarIcon
-                      className={`h-5 w-5 ${
-                        letter.starred ? "text-yellow-400 fill-yellow-400" : ""
-                      }`}
-                    />
-                  </button>
-                  <div className="p-2 bg-blue-50 rounded-lg">
-                    <FileTextIcon className="h-5 w-5 text-blue-600" />
-                  </div>
-                </div>
-                <div className="ml-4 flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
+          ) : (
+            currentLetters.map((letter) => (
+              <div
+                key={letter._id}
+                className={`p-4 cursor-pointer hover:bg-gray-50 ${
+                  letter.unread ? "bg-blue-50/30" : ""
+                }`}
+                onClick={() => handleLetterOpen(letter)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
                     <h4
                       className={`text-sm font-medium ${
-                        letter.unread
-                          ? "text-gray-900 font-semibold"
-                          : "text-gray-600"
+                        letter.unread ? "text-gray-900 font-semibold" : "text-gray-600"
                       }`}
                     >
                       {letter.subject}
@@ -327,18 +377,34 @@ const Inbox = () => {
                       </span>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-500 truncate">
-                    {letter.fromName} ({letter.department})
-                  </p>
+                  <div className="ml-4 flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-gray-500 truncate">
+                        {letter.fromName} ({letter.department})
+                      </p>
+                      <button
+                        onClick={(e) => handleStarToggle(letter, e)}
+                        className="text-gray-400 hover:text-yellow-400"
+                      >
+                        <StarIcon
+                          className={`h-5 w-5 transition-colors duration-200 ease-in-out ${
+                            letter.starred ? "text-yellow-400 fill-yellow-400" : ""
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
+
         {/* Pagination */}
         <div className="p-4 border-t border-gray-200 flex items-center justify-between">
           <p className="text-sm text-gray-700">
-            Showing <span className="font-medium">{startIndex + 1}</span> to{" "}
+            Showing{" "}
+            <span className="font-medium">{startIndex + 1}</span> to{" "}
             <span className="font-medium">
               {Math.min(endIndex, filteredLetters.length)}
             </span>{" "}
@@ -382,82 +448,166 @@ const Inbox = () => {
           }}
           center
         >
-          {!viewMode ? (
-            <div className="p-4">
-              <div className="mb-2 text-gray-700">
-                <strong>Subject:</strong> {openLetter.subject}
-              </div>
-              <div className="mb-2 text-gray-700">
-                <strong>To:</strong> {getRecipientDisplayName(openLetter)}
-              </div>
-              <div className="mb-2 text-gray-700">
-                <strong>From:</strong> {getSenderDisplayName(openLetter)}
-              </div>
-              <div className="mb-2 text-gray-700">
-                <strong>Department:</strong> {openLetter.department}
-              </div>
-              <div className="mb-2 text-gray-700">
-                <strong>Priority:</strong> {openLetter.priority}
-              </div>
-              <div className="mb-2 text-gray-700">
-                <strong>Date:</strong> {formatDate(openLetter.createdAt)}
-              </div>
-              {openLetter.attachments && openLetter.attachments.length > 0 && (
-                <div className="mb-2">
-                  <strong>Attachment:</strong>
-                  <ul>
-                    {openLetter.attachments.map((file, idx) => (
-                      <li key={idx} className="flex items-center space-x-2">
-                        <a
-                          href={`http://localhost:5000/api/letters/download/${openLetter._id}/${encodeURIComponent(
-                            file.filename
-                          )}`}
-                          className="text-blue-600 hover:text-blue-800 underline"
-                          download={file.filename}
-                        >
-                          Download
-                        </a>
-                        <a
-                          href={`http://localhost:5000/api/letters/view/${openLetter._id}/${encodeURIComponent(
-                            file.filename
-                          )}`}
-                          className="text-green-600 hover:text-green-800 underline"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View
-                        </a>
-                        <span className="text-gray-700">{file.filename}</span>
-                      </li>
-                    ))}
-                  </ul>
+          <div className="p-4">
+            {!viewMode ? (
+              <div className="p-4">
+                <div className="mb-2 text-gray-700">
+                  <strong>Subject:</strong> {openLetter.subject}
                 </div>
-              )}
-              <button
-                onClick={() => setViewMode(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 mt-4"
-              >
-                View
-              </button>
-            </div>
-          ) : (
-            <div className="p-4">
-              <TemplateMemoLetter
-                subject={openLetter.subject}
-                date={getLetterSentDate(openLetter.createdAt)}
-                recipient={getRecipientDisplayName(openLetter)}
-                reference={""}
-                body={openLetter.content}
-                signature={openLetter.fromName}
-              />
-              <button
-                onClick={() => setViewMode(false)}
-                className="mt-4 bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700"
-              >
-                Back
-              </button>
-            </div>
-          )}
+                <div className="mb-2 text-gray-700">
+                  <strong>To:</strong> {getRecipientDisplayName(openLetter)}
+                </div>
+                <div className="mb-2 text-gray-700">
+                  <strong>From:</strong> {getSenderDisplayName(openLetter)}
+                </div>
+                <div className="mb-2 text-gray-700">
+                  <strong>Department:</strong> {openLetter.department}
+                </div>
+                <div className="mb-2 text-gray-700">
+                  <strong>Priority:</strong> {openLetter.priority}
+                </div>
+                <div className="mb-2 text-gray-700">
+                  <strong>Date:</strong> {formatDate(openLetter.createdAt)}
+                </div>
+                {openLetter.attachments && openLetter.attachments.length > 0 && (
+                  <div className="mb-2">
+                    <strong>Attachment:</strong>
+                    <ul>
+                      {openLetter.attachments.map((file, idx) => (
+                        <li key={idx} className="flex items-center space-x-2">
+                          <a
+                            href={`http://localhost:5000/api/letters/download/${openLetter._id}/${encodeURIComponent(
+                              file.filename
+                            )}`}
+                            className="text-blue-600 hover:text-blue-800 underline"
+                            download={file.filename}
+                          >
+                            Download
+                          </a>
+                          <a
+                            href={`http://localhost:5000/api/letters/view/${openLetter._id}/${encodeURIComponent(
+                              file.filename
+                            )}`}
+                            className="text-green-600 hover:text-green-800 underline"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            View
+                          </a>
+                          <span className="text-gray-700">{file.filename}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <button
+                  onClick={() => setViewMode(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 mt-4"
+                >
+                  View
+                </button>
+              </div>
+            ) : (
+              <div className="p-4">
+                <TemplateMemoLetter
+                  subject={openLetter.subject}
+                  date={getLetterSentDate(openLetter.createdAt)}
+                  recipient={getRecipientDisplayName(openLetter)}
+                  reference={""}
+                  body={openLetter.content}
+                  signature={openLetter.fromName}
+                />
+                <div className="flex space-x-2 mt-4">
+                  <button
+                    onClick={() => setViewMode(false)}
+                    className="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={() => setShowForwardModal(true)}
+                    className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700"
+                  >
+                    Forward
+                  </button>
+                </div>
+                {/* Forward Modal */}
+                {showForwardModal && (
+                  <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+                      <h3 className="text-lg font-semibold mb-2">Forward Letter</h3>
+                      {/* Department Selector */}
+                      <label className="block mb-1 text-sm font-medium text-gray-700">
+                        Select Department/Sector
+                      </label>
+                      <select
+                        className="w-full rounded px-3 py-2 border mb-2"
+                        value={selectedDepartment}
+                        onChange={(e) => setSelectedDepartment(e.target.value)}
+                      >
+                        <option value="">-- Select Department --</option>
+                        {departments.map((dept) => (
+                          <option key={dept.name} value={dept.name}>
+                            {dept.name}
+                          </option>
+                        ))}
+                      </select>
+                      {/* User Multi-Selector */}
+                      {departmentUsers.length > 0 && (
+                        <>
+                          <label className="block mb-1 text-sm font-medium text-gray-700">
+                            Select User(s)
+                          </label>
+                          <select
+                            multiple
+                            className="w-full rounded px-3 py-2 border mb-2 h-32"
+                            value={selectedUsers.map((u) => u.email)}
+                            onChange={(e) => {
+                              const options = Array.from(e.target.selectedOptions);
+                              setSelectedUsers(
+                                options.map((opt) =>
+                                  departmentUsers.find((u) => u.email === opt.value)
+                                )
+                              );
+                            }}
+                          >
+                            {departmentUsers.map((user) => (
+                              <option key={user.email} value={user.email}>
+                                {user.name} ({user.email})
+                              </option>
+                            ))}
+                          </select>
+                        </>
+                      )}
+                      <div className="flex space-x-2 mt-2">
+                        <button
+                          className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700"
+                          onClick={handleForwardLetter}
+                          disabled={selectedUsers.length === 0}
+                        >
+                          Send
+                        </button>
+                        <button
+                          className="bg-gray-400 text-white px-4 py-2 rounded shadow hover:bg-gray-500"
+                          onClick={() => {
+                            setShowForwardModal(false);
+                            setSelectedDepartment("");
+                            setSelectedUsers([]);
+                            setForwardStatus(null);
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                      {forwardStatus && (
+                        <div className="mt-2 text-green-600">{forwardStatus}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </Modal>
       )}
     </div>
