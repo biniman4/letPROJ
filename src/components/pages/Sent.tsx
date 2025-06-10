@@ -133,8 +133,9 @@ const Sent: React.FC = () => {
             <head>
               <title>Print Letter</title>
               <style>
+                @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;700&display=swap");
                 body {
-                  font-family: Arial, sans-serif;
+                  font-family: 'Noto Sans Ethiopic', Arial, sans-serif;
                   margin: 40px;
                 }
                 @media print {

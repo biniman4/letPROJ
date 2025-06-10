@@ -224,7 +224,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 variants={wordVariants}
                 className="relative"
               >
-                <h1 className="text-5xl md:text-6xl lg:text-7xl tracking-tight font-extrabold text-gray-900">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight font-extrabold text-gray-900">
                   <span className="block bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
                     {t.title.split("").map((char, i) => (
                       <motion.span
@@ -237,7 +237,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                       </motion.span>
                     ))}
                   </span>
-                  <span className="block mt-4 text-3xl md:text-4xl lg:text-5xl text-blue-600">
+                  <span className="block mt-2 sm:mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-blue-600">
                     {t.subtitle.split("").map((char, i) => (
                       <motion.span
                         key={i}
@@ -256,7 +256,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="mt-6 max-w-2xl mx-auto text-xl text-gray-500 leading-relaxed"
+                className="mt-4 sm:mt-6 max-w-2xl mx-auto text-lg sm:text-xl text-gray-500 leading-relaxed px-4 sm:px-0"
               >
                 {t.description}
               </motion.p>
@@ -265,12 +265,12 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
-                className="mt-16 max-w-md mx-auto sm:flex sm:justify-center md:mt-20 gap-4"
+                className="mt-8 sm:mt-12 md:mt-16 max-w-md mx-auto sm:flex sm:justify-center md:mt-20 gap-4 px-4 sm:px-0"
               >
                 <div className="rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 w-full">
                   <button
                     onClick={() => setShowLogin(true)}
-                    className="w-full flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-xl text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transform hover:-translate-y-0.5 transition-all duration-200"
+                    className="w-full flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 border border-transparent text-base sm:text-lg font-medium rounded-xl text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transform hover:-translate-y-0.5 transition-all duration-200"
                   >
                     {t.login}
                   </button>
@@ -291,7 +291,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="text-4xl font-extrabold text-gray-900 sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600"
+                className="text-3xl sm:text-4xl font-extrabold text-gray-900 sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600"
               >
                 {t.featuresHeading}
               </motion.h2>
@@ -300,12 +300,12 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
-                className="mt-4 text-xl text-gray-500"
+                className="mt-3 sm:mt-4 text-lg sm:text-xl text-gray-500 px-4 sm:px-0"
               >
                 {t.featuresSub}
               </motion.p>
             </div>
-            <div className="mt-20 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-12 sm:mt-16 md:mt-20 grid grid-cols-1 gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {features.map((feature, index) => (
                 <motion.div
                   key={feature.name.en}
@@ -313,17 +313,17 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-100"
+                  className="group bg-white p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-100"
                 >
                   <div>
-                    <span className="p-3 bg-blue-50 rounded-xl inline-block group-hover:bg-blue-100 transition-colors duration-200">
-                      <feature.icon className="h-6 w-6 text-blue-600" />
+                    <span className="p-2 sm:p-3 bg-blue-50 rounded-xl inline-block group-hover:bg-blue-100 transition-colors duration-200">
+                      <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                     </span>
                   </div>
-                  <h3 className="mt-6 text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+                  <h3 className="mt-4 sm:mt-6 text-lg sm:text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
                     {feature.name[lang]}
                   </h3>
-                  <p className="mt-4 text-gray-500 leading-relaxed">
+                  <p className="mt-3 sm:mt-4 text-sm sm:text-base text-gray-500 leading-relaxed">
                     {feature.description[lang]}
                   </p>
                 </motion.div>
@@ -343,7 +343,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="text-4xl font-extrabold text-gray-900 sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600"
+                className="text-3xl sm:text-4xl font-extrabold text-gray-900 sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600"
               >
                 {lang === "am"
                   ? "የሙያተኛ አገልግሎቶቻችን"
@@ -354,14 +354,14 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
-                className="mt-4 text-xl text-gray-500"
+                className="mt-3 sm:mt-4 text-lg sm:text-xl text-gray-500 px-4 sm:px-0"
               >
                 {lang === "am"
                   ? "ለSSGI የግንኙነት ፍላጎቶች የተለዩ መፍትሄዎች"
                   : "Specialized solutions for SSGI's communication needs"}
               </motion.p>
             </div>
-            <div className="mt-20 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-12 sm:mt-16 md:mt-20 grid grid-cols-1 gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {services.map((service, index) => (
                 <motion.div
                   key={service.name.en}
@@ -369,17 +369,17 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="group bg-gradient-to-br from-white to-blue-50/50 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-100/20 hover:border-blue-200"
+                  className="group bg-gradient-to-br from-white to-blue-50/50 p-6 sm:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-100/20 hover:border-blue-200"
                 >
                   <div>
-                    <span className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl inline-block shadow-md group-hover:shadow-lg transition-all duration-200">
-                      <service.icon className="h-7 w-7 text-white" />
+                    <span className="p-3 sm:p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl inline-block shadow-md group-hover:shadow-lg transition-all duration-200">
+                      <service.icon className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                     </span>
                   </div>
-                  <h3 className="mt-6 text-2xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+                  <h3 className="mt-4 sm:mt-6 text-xl sm:text-2xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
                     {service.name[lang]}
                   </h3>
-                  <p className="mt-4 text-gray-600 leading-relaxed text-lg">
+                  <p className="mt-3 sm:mt-4 text-base sm:text-lg text-gray-600 leading-relaxed">
                     {service.description[lang]}
                   </p>
                 </motion.div>
@@ -396,14 +396,14 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-[0.02]"></div>
           </div>
 
-          <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between relative z-10">
+          <div className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between relative z-10">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="max-w-2xl"
+              className="max-w-2xl mx-auto lg:mx-0 text-center lg:text-left"
             >
-              <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
                 <span className="block">{t.ctaTitle}</span>
                 <span className="block mt-2 text-blue-200">
                   {t.ctaSubtitle}
@@ -421,31 +421,36 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
         onClose={() => setShowLogin(false)}
         center
         classNames={{
-          modal: "rounded-2xl p-8 w-full max-w-md bg-white shadow-2xl",
+          modal:
+            "rounded-2xl p-4 sm:p-8 w-[95%] sm:w-full max-w-md bg-white shadow-2xl",
           overlay: "bg-gray-900/50 backdrop-blur-sm",
         }}
       >
-        <div className="mb-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h2>
-          <p className="text-gray-600">Sign in with your credentials</p>
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            Sign In
+          </h2>
+          <p className="text-sm sm:text-base text-gray-600">
+            Sign in with your credentials
+          </p>
         </div>
 
         {loginError && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-700 rounded-xl">
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-100 text-sm sm:text-base text-red-700 rounded-xl">
             {loginError}
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-4 sm:space-y-6">
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">
+            <label className="block text-sm sm:text-base text-gray-700 mb-2 font-medium">
               Email
             </label>
             <div className="relative">
-              <UserIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+              <UserIcon className="absolute left-3 sm:left-4 top-3 sm:top-3.5 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
               <input
                 type="email"
-                className="pl-12 w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                className="pl-10 sm:pl-12 w-full p-2.5 sm:p-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 placeholder="user@example.com"
                 value={credentials.email}
                 onChange={(e) =>
@@ -457,14 +462,14 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">
+            <label className="block text-sm sm:text-base text-gray-700 mb-2 font-medium">
               Password
             </label>
             <div className="relative">
-              <LockIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+              <LockIcon className="absolute left-3 sm:left-4 top-3 sm:top-3.5 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
               <input
                 type="password"
-                className="pl-12 w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                className="pl-10 sm:pl-12 w-full p-2.5 sm:p-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 placeholder="••••••••"
                 value={credentials.password}
                 onChange={(e) =>
@@ -478,8 +483,8 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
           <div className="flex justify-between items-center">
             <button
               type="button"
-              className="text-sm text-blue-600 hover:underline focus:outline-none"
-              onClick={() => navigate('/forgot-password')}
+              className="text-xs sm:text-sm text-blue-600 hover:underline focus:outline-none"
+              onClick={() => navigate("/forgot-password")}
             >
               Forgot Password?
             </button>
@@ -487,7 +492,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
 
           <button
             type="submit"
-            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-indigo-700 transform hover:-translate-y-0.5 transition-all duration-200"
+            className="w-full py-2.5 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-indigo-700 transform hover:-translate-y-0.5 transition-all duration-200"
           >
             Sign In
           </button>
