@@ -114,13 +114,13 @@ const NewLetter = () => {
       setAttachment(null);
       toast.success("Letter sent successfully!");
     } catch (error: any) {
+      console.error("Error details:", error);
       toast.error("Failed to send the letter. Please try again.");
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setAttachment(e.target.files[0]);
+    if (e.target.files && e.target.files.length > 0) {
       setLetterData((prev) => ({
         ...prev,
         attachments: [e.target.files[0].name],
@@ -242,11 +242,12 @@ const NewLetter = () => {
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <form onSubmit={handleSubmit}>
           {/* Department */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">{t.department[lang]}</label>
+          <div className="mb-4">
+            <label htmlFor="department" className="block text-sm font-medium text-gray-700">
+              {t.department[lang]}
+            </label>
             <DepartmentSelector
-              value={selectedDepartment}
-              onChange={val => setSelectedDepartment(val)}
+              onChange={(val) => setSelectedDepartment(val)}
             />
           </div>
           {/* Recipient */}

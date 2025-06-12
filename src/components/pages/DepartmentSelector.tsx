@@ -10,52 +10,57 @@ const departments: DepartmentOption[] = [
     label: 'ዋና ዳይሬክተር',
     subDepartments: [
       {
-        label: 'የአስተዳደር እና ፋይናንስ',
+        label: 'የጽፈት ቤት ኃላፊ',
         subDepartments: [
-          { label: 'የሰብል ኃይል እና ማህበራዊ አገልግሎት' },
-          { label: 'የገንዘብ እና ቁሳቁስ አስተዳደር' },
-          { label: 'ማህበራዊ አገልግሎት' },
-          { label: 'የኢንፎርሜሽን ቴክኖሎጂ አገልግሎት' },
-          { label: 'የጽ/ቤት አገልግሎት' },
-          { label: 'የባንዲራ እና መንቅሳቃሽ አገልግሎት' },
+          { label: 'የህዝብ ግንኙነት ስራ አስፈጻሚ' },
+          { label: 'የህግ አገልግሎት ስራ አስፈጻሚ' },
+          { label: 'ኦዲት ስራ አስፈጻሚ' },
+          { label: 'የስነ ምግባርና ፀረ ሙስና ስራ አስፈጻሚ' },
+          { label: 'የሴቶችና ማህበራዊ አካቶ ትግበራ ስራ አስፈጻሚ' },
         ],
       },
       {
-        label: 'የሕግ እና ከተባበሩ አገልግሎቶች',
+        label: 'የስራ አመራር ዋና ስራ አስፈጻሚ',
         subDepartments: [
-          { label: 'የሕግ አገልግሎት' },
-          { label: 'የልዩ አገልግሎት እና ምክር አቤቱታ' },
-          { label: 'አዋጅ ቅጥር እና ማስተናገድ' },
-          { label: 'የማህበራዊ ግንኙነት አገልግሎት' },
-        ],
-      },
-    ],
-  },
-  {
-    label: 'የዲፓርትመንት ኮኦርዲኔተሮች',
-    subDepartments: [
-      {
-        label: 'የቀበሌ HCs',
-        subDepartments: [
-          { label: 'የመሃል አካባቢ እና ሰበር ቀበሌ ህክምና ተቋማት' },
-          { label: 'የካፍቶ እና ቀደም ቀበሌ ህክምና ተቋማት' },
-          { label: 'የማእከላዊ እና ከተማ አቀፍ ህክምና ተቋማት' },
+          { label: 'ስትራቴጂክ ጉዳዮች ስራ አስፈጻሚ' },
+          { label: 'ኢንፎርሜሽን ኮሙኒኬሽን ቴክኖሎጂ ስራ አስፈጻሚ' },
+          { label: 'የግዢና ፋይናንስ ስራ አስፈጻሚ' },
+          { label: 'የብቃትና ሰው ሀብት አስተዳደር ስአስፈጻሚ' },
+          { label: 'ተቋማዊ ለውጥ ስራ አስፈጻሚ' },
         ],
       },
       {
-        label: 'የአካባቢ HCs',
+        label: 'የስፔስ ዘርፍ',
         subDepartments: [
-          { label: 'የካንካ ህክምና ተቋማት' },
-          { label: 'የጉላላ እና ተዛማጅ ተቋማት' },
-          { label: 'የሀምሌ እና ተቋማት' },
+          { label: 'አስትሮኖሚና አስትሮፊዚክስ መሪ ስራ አስፈጻሚ' },
+          { label: 'ስፔስና ፕላኔታሪ ሳይንስ መሪ ስራ አስፈጻሚ' },
+          { label: 'የሪሞት ሴንሲንግ መሪ ስራ አስፈጻሚ' },
+          { label: 'ጂኦዴሲና ጂኦዳይናሚክ መሪ ስራ አስፈጻሚ' },
+          { label: 'ኤሮስፔስ ኢንጂነሪንግ መሪ ስራ አስፈጻሚ' },
+          { label: 'የሳተላይት ኦፕሬሽን መሪ ስራ አስፈጻሚ' },
+          { label: 'የድህረ ምረቃ፤ ሪጅስትራርና ምርምር አስተዳደር መሪ ስራ አስፈጻሚ' },
         ],
       },
       {
-        label: 'የተለያዩ አገልግሎቶችን አቅርበው የሚሰጡ HCs',
+        label: 'የጂኦስፓሻል ዘርፍ',
         subDepartments: [
-          { label: 'የታላቁ ህክምና ተቋማት (ሃረማያ, እና ሌሎች)' },
-          { label: 'የአካባቢ የህዝብ ጤና ተቋማት' },
-          { label: 'የአሰላላሊ ጤና ተቋማት' },
+          { label: 'የአየር ላይ ቅይሳ መሪ ስራ አስፈጻሚ' },
+          { label: 'የፎቶግራሜትሪና ሊዳር ዳታ ፕሮሰሲንግ መሪ ስራ አስፈጻሚ' },
+          { label: 'የካርታ ስራ መሪ ስራ አስፈጻሚ' },
+          { label: 'የጂኦዴቲክ መሠረተ ልማት እና አገልግሎት መሪ ስራ አስፈጻሚ' },
+          { label: 'የዲጂታል ኢሜጅ ፕሮሰሲንግ መሪ ስራ አስፈጻሚ' },
+          { label: 'የስፓሻል ፕላኒንግ እና የውሳኔ ድጋፍ መሪ ስራ አስፈጻሚ' },
+        ],
+      },
+      {
+        label: 'የስፔስና ጂኦስፓሻል አስቻይ ዘርፍ',
+        subDepartments: [
+          { label: 'የስፔስ እና ጂኦስፓሻል መረጃ ስታንዳርዳይዜሽን መሪ ስራ አስፈጻሚ' },
+          { label: 'የፕላትፎርምናአፕሊኬሽን ልማት መሪ ስራ አስፈጻሚ' },
+          { label: 'የዳታና ሲስተም አስተዳደር መሪ ስራ አስፈጻሚ' },
+          { label: 'የቴከኖሎጂ ሽግግር መሪ ስራ አስፈጻሚ' },
+          { label: 'የስፔስ ሳይንስና ጂኦስፓሻል ቀጠናዊ ትስስር መሪ ስራ አስፈጻሚ' },
+          { label: 'የፖሊሲና ህግ ማዕቀፍ መሪ ስራ አስፈጻሚ' },
         ],
       },
     ],
@@ -74,90 +79,89 @@ const flattenDepartments = (options: DepartmentOption[], parentLabel = ""): { la
   return result;
 };
 
-const DepartmentSelector: React.FC = () => {
-  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
-  const [selectedSubDepartment, setSelectedSubDepartment] = useState<string>("");
+const DepartmentSelector: React.FC<{ onChange: (value: string) => void }> = ({ onChange }) => {
+  const [selectedMainCategory, setSelectedMainCategory] = useState<string>('');
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>('');
+  const [selectedSubSubCategory, setSelectedSubSubCategory] = useState<string>('');
 
-  // Custom department list for first dropdown
-  const mainDepartmentLabels = [
-    'የአስተዳደር እና ፋይናንስ',
-    'የሕግ እና ከተባበሩ አገልግሎቶች',
-    'የዲፓርትመንት ኮኦርዲኔተሮች',
-    'የአካባቢ HCs',
-    'የተለያዩ አገልግሎቶችን አቅርበው የሚሰጡ HCs',
-  ];
+  const handleMainCategoryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedMainCategory(event.target.value);
+    setSelectedSubCategory('');
+    setSelectedSubSubCategory('');
+    onChange(event.target.value);
+  };
 
-  // Find all department objects matching the above labels (search recursively)
-  function findDepartmentsByLabels(options: DepartmentOption[], labels: string[]): DepartmentOption[] {
-    let found: DepartmentOption[] = [];
-    for (const opt of options) {
-      if (labels.includes(opt.label)) {
-        found.push(opt);
-      }
-      if (opt.subDepartments) {
-        found = found.concat(findDepartmentsByLabels(opt.subDepartments, labels));
-      }
-    }
-    return found;
-  }
+  const handleSubCategoryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedSubCategory(event.target.value);
+    setSelectedSubSubCategory('');
+    onChange(`${selectedMainCategory} > ${event.target.value}`);
+  };
 
-  const mainDepartments = findDepartmentsByLabels(departments, mainDepartmentLabels);
+  const handleSubSubCategoryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedSubSubCategory(event.target.value);
+    onChange(`${selectedMainCategory} > ${selectedSubCategory} > ${event.target.value}`);
+  };
 
-  // Find the selected department object
-  const selectedDeptObj = mainDepartments.find(d => d.label === selectedDepartment);
-  // Flatten subdepartments for dropdown
-  const subDepartmentOptions = selectedDeptObj && selectedDeptObj.subDepartments
-    ? selectedDeptObj.subDepartments.flatMap(sub => {
-        if (sub.subDepartments) {
-          return sub.subDepartments.map(s => ({
-            label: `${sub.label} > ${s.label}`,
-            value: `${sub.label} > ${s.label}`
-          }));
-        } else {
-          return [{ label: sub.label, value: sub.label }];
-        }
-      })
-    : [];
+  const subCategories =
+    departments.find((dept) => dept.label === selectedMainCategory)?.subDepartments || [];
+  const subSubCategories =
+    subCategories.find((sub) => sub.label === selectedSubCategory)?.subDepartments || [];
 
   return (
     <div>
-      <label className="block text-gray-700 font-medium mb-1">ዋና ዳይሬክተር / የዲፓርትመንት ምረጥ</label>
+      <label className="block text-gray-700 font-medium mb-1">ዋና ምድብ</label>
       <select
         className="border border-gray-300 rounded-lg px-3 py-2 w-full bg-white focus:ring-2 focus:ring-blue-200 mb-2"
-        value={selectedDepartment}
-        onChange={e => {
-          setSelectedDepartment(e.target.value);
-          setSelectedSubDepartment("");
-        }}
+        value={selectedMainCategory}
+        onChange={handleMainCategoryChange}
       >
-        <option value="">-- የዲፓርትመንት ይምረጡ --</option>
-        {mainDepartments.map(opt => (
-          <option key={opt.label} value={opt.label}>{opt.label}</option>
+        <option value="">-- ዋና ምድብ ይምረጡ --</option>
+        {departments.map((dept) => (
+          <option key={dept.label} value={dept.label}>
+            {dept.label}
+          </option>
         ))}
       </select>
-      {selectedDepartment && subDepartmentOptions.length > 0 && (
+
+      {subCategories.length > 0 && (
         <>
-          <label className="block text-gray-700 font-medium mb-1">ንዑስ ክፍል / ምድብ ይምረጡ</label>
+          <label className="block text-gray-700 font-medium mb-1">ንዑስ ምድብ</label>
           <select
-            className="border border-gray-300 rounded-lg px-3 py-2 w-full bg-white focus:ring-2 focus:ring-blue-200"
-            value={selectedSubDepartment}
-            onChange={e => setSelectedSubDepartment(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 w-full bg-white focus:ring-2 focus:ring-blue-200 mb-2"
+            value={selectedSubCategory}
+            onChange={handleSubCategoryChange}
           >
-            <option value="">-- ንዑስ ክፍል/ምድብ ይምረጡ --</option>
-            {subDepartmentOptions.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <option value="">-- ንዑስ ምድብ ይምረጡ --</option>
+            {subCategories.map((sub) => (
+              <option key={sub.label} value={sub.label}>
+                {sub.label}
+              </option>
             ))}
           </select>
         </>
       )}
-      {(selectedDepartment || selectedSubDepartment) && selectedSubDepartment && (
-        <div style={{ marginTop: '20px', color: 'green' }}>
-          የተመረጠ ክፍል: <strong>{selectedDepartment} &gt; {selectedSubDepartment.replace(/^.*> /, '')}</strong>
-        </div>
+
+      {subSubCategories.length > 0 && (
+        <>
+          <label className="block text-gray-700 font-medium mb-1">ንዑስ ንዑስ ምድብ</label>
+          <select
+            className="border border-gray-300 rounded-lg px-3 py-2 w-full bg-white focus:ring-2 focus:ring-blue-200 mb-2"
+            value={selectedSubSubCategory}
+            onChange={handleSubSubCategoryChange}
+          >
+            <option value="">-- ንዑስ ንዑስ ምድብ ይምረጡ --</option>
+            {subSubCategories.map((subSub) => (
+              <option key={subSub.label} value={subSub.label}>
+                {subSub.label}
+              </option>
+            ))}
+          </select>
+        </>
       )}
-      {(selectedDepartment && !selectedSubDepartment) && (
-        <div style={{ marginTop: '20px', color: 'green' }}>
-          የተመረጠ ክፍል: <strong>{selectedDepartment}</strong>
+
+      {(selectedMainCategory || selectedSubCategory || selectedSubSubCategory) && (
+        <div style={{ marginTop: "20px", color: "green" }}>
+          የተመረጠ ምድብ: <strong>{[selectedMainCategory, selectedSubCategory, selectedSubSubCategory].filter(Boolean).join(" > ")}</strong>
         </div>
       )}
     </div>

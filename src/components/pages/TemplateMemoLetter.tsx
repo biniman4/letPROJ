@@ -241,7 +241,6 @@ const TemplateMemoLetter = ({
                     wordBreak: "break-word",
                     overflowWrap: "break-word",
                     whiteSpace: "pre-wrap",
-                    whiteSpace: "pre-wrap",
                     maxWidth: "100%",
                     outline: "none",
                     background: "#fffbe9",
