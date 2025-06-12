@@ -76,14 +76,10 @@ const TemplateMemoLetter = ({
         : ""
     );
     setUserDepartment(
-      user.department && user.department !== "undefined"
-        ? user.department
-        : ""
+      user.department && user.department !== "undefined" ? user.department : ""
     );
     setSelectedDepartment(
-      user.department && user.department !== "undefined"
-        ? user.department
-        : ""
+      user.department && user.department !== "undefined" ? user.department : ""
     );
   }, []);
 
@@ -240,7 +236,6 @@ const TemplateMemoLetter = ({
                   style={{
                     wordBreak: "break-word",
                     overflowWrap: "break-word",
-                    whiteSpace: "pre-wrap",
                     whiteSpace: "pre-wrap",
                     maxWidth: "100%",
                     outline: "none",

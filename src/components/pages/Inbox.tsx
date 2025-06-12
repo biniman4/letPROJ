@@ -7,6 +7,7 @@ import { useNotifications } from "../../context/NotificationContext";
 import TemplateMemoLetter from "./TemplateMemoLetter";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import DepartmentSelector from "./DepartmentSelector";
 
 interface Letter {
   _id: string;
@@ -45,7 +46,11 @@ const fetchDepartments = async () => {
 // Fetch users by department from your actual API
 const fetchUsersByDepartment = async (departmentName: string) => {
   try {
-    const res = await axios.get(`http://localhost:5000/api/users?department=${encodeURIComponent(departmentName)}`);
+    const res = await axios.get(
+      `http://localhost:5000/api/users?department=${encodeURIComponent(
+        departmentName
+      )}`
+    );
     return res.data; // [{ name, email }, ...]
   } catch (err) {
     return [];
@@ -66,6 +71,9 @@ const Inbox = () => {
   const [departmentUsers, setDepartmentUsers] = useState<any[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
   const [forwardStatus, setForwardStatus] = useState<string | null>(null);
+  const [toEmployee, setToEmployee] = useState("");
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingLetters, setLoadingLetters] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user.email || "";
@@ -73,6 +81,7 @@ const Inbox = () => {
 
   useEffect(() => {
     const fetchLetters = async () => {
+      setLoadingLetters(true);
       try {
         const res = await axios.get("http://localhost:5000/api/letters");
         const formattedLetters = res.data
@@ -99,6 +108,8 @@ const Inbox = () => {
         console.error("Error fetching letters:", err);
         setLetters([]);
         toast.error("Error fetching letters.");
+      } finally {
+        setLoadingLetters(false);
       }
     };
     fetchLetters();
@@ -266,33 +277,87 @@ const Inbox = () => {
   // Fetch users when department changes
   useEffect(() => {
     if (selectedDepartment) {
-      fetchUsersByDepartment(selectedDepartment).then((users) => setDepartmentUsers(users));
-      setSelectedUsers([]);
+      setLoadingUsers(true);
+      fetchUsersByDepartment(selectedDepartment)
+        .then((users) => setDepartmentUsers(users))
+        .catch((error) => {
+          console.error("Error fetching users:", error);
+          toast.error("Error fetching users for the selected department.");
+          setDepartmentUsers([]);
+        })
+        .finally(() => {
+          setLoadingUsers(false);
+          setSelectedUsers([]);
+          setToEmployee("");
+        });
     } else {
       setDepartmentUsers([]);
       setSelectedUsers([]);
+      setToEmployee("");
     }
   }, [selectedDepartment]);
 
   // Forward letter logic (send to actual users)
   const handleForwardLetter = async () => {
-    if (!openLetter || selectedUsers.length === 0) return;
+    if (!openLetter || (!toEmployee && selectedUsers.length === 0)) return;
+
     try {
-      await axios.post("http://localhost:5000/api/letters/forward", {
-        letterId: openLetter._id,
-        to: selectedUsers.map((u) => u.email),
+      // Find the selected user from the toEmployee field
+      const toUser = departmentUsers.find((u) => u.name === toEmployee);
+      const recipients = toUser ? [toUser, ...selectedUsers] : selectedUsers;
+
+      // Create a new letter for each recipient
+      const forwardPromises = recipients.map(async (recipient) => {
+        const forwardData = {
+          subject: `Fwd: ${openLetter.subject}`,
+          from: user.email, // The server will look up the user by email
+          to: recipient.name, // The server expects the recipient's name
+          department: recipient.department || selectedDepartment,
+          priority: openLetter.priority,
+          content: openLetter.content,
+          ccEmployees: {}, // Empty object for CC
+          cc: [], // Empty array for CC
+          status: "sent",
+        };
+
+        return axios.post("http://localhost:5000/api/letters", forwardData);
       });
-      setForwardStatus(
-        `Message forwarded to: ${selectedUsers.map((u) => u.name).join(", ")}`
-      );
+
+      await Promise.all(forwardPromises);
+
+      const recipientNames = recipients.map((u) => u.name).join(", ");
+      setForwardStatus(`Message forwarded to: ${recipientNames}`);
       setTimeout(() => setForwardStatus(null), 3000);
       setShowForwardModal(false);
       setSelectedDepartment("");
       setSelectedUsers([]);
-      toast.success(
-        `Letter forwarded to: ${selectedUsers.map((u) => u.name).join(", ")}`
-      );
+      setToEmployee("");
+      toast.success(`Letter forwarded to: ${recipientNames}`);
+
+      // Refresh the letters list
+      const res = await axios.get("http://localhost:5000/api/letters");
+      const formattedLetters = res.data
+        .filter((letter: Letter) => letter.toEmail === userEmail)
+        .map((letter: Letter) => ({
+          ...letter,
+          unread: letter.unread ?? true,
+          starred: letter.starred ?? false,
+          priority: letter.priority ?? "normal",
+          createdAt: letter.createdAt || new Date().toISOString(),
+        }))
+        .sort(
+          (a: Letter, b: Letter) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      setLetters(formattedLetters);
+
+      // Update unread count
+      const unreadCount = formattedLetters.filter(
+        (l: Letter) => l.unread
+      ).length;
+      updateUnreadLetters(unreadCount);
     } catch (error) {
+      console.error("Error forwarding letter:", error);
       setForwardStatus("Failed to forward message.");
       toast.error("Failed to forward message.");
     }
@@ -344,7 +409,12 @@ const Inbox = () => {
 
         {/* Letter List */}
         <div className="divide-y divide-gray-200">
-          {currentLetters.length === 0 ? (
+          {loadingLetters ? (
+            <div className="p-4 text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
+              <p className="mt-2 text-gray-600">Loading letters...</p>
+            </div>
+          ) : currentLetters.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
               No letters found.
             </div>
@@ -361,7 +431,9 @@ const Inbox = () => {
                   <div className="flex-1 min-w-0">
                     <h4
                       className={`text-sm font-medium ${
-                        letter.unread ? "text-gray-900 font-semibold" : "text-gray-600"
+                        letter.unread
+                          ? "text-gray-900 font-semibold"
+                          : "text-gray-600"
                       }`}
                     >
                       {letter.subject}
@@ -388,7 +460,9 @@ const Inbox = () => {
                       >
                         <StarIcon
                           className={`h-5 w-5 transition-colors duration-200 ease-in-out ${
-                            letter.starred ? "text-yellow-400 fill-yellow-400" : ""
+                            letter.starred
+                              ? "text-yellow-400 fill-yellow-400"
+                              : ""
                           }`}
                         />
                       </button>
@@ -403,8 +477,7 @@ const Inbox = () => {
         {/* Pagination */}
         <div className="p-4 border-t border-gray-200 flex items-center justify-between">
           <p className="text-sm text-gray-700">
-            Showing{" "}
-            <span className="font-medium">{startIndex + 1}</span> to{" "}
+            Showing <span className="font-medium">{startIndex + 1}</span> to{" "}
             <span className="font-medium">
               {Math.min(endIndex, filteredLetters.length)}
             </span>{" "}
@@ -469,37 +542,40 @@ const Inbox = () => {
                 <div className="mb-2 text-gray-700">
                   <strong>Date:</strong> {formatDate(openLetter.createdAt)}
                 </div>
-                {openLetter.attachments && openLetter.attachments.length > 0 && (
-                  <div className="mb-2">
-                    <strong>Attachment:</strong>
-                    <ul>
-                      {openLetter.attachments.map((file, idx) => (
-                        <li key={idx} className="flex items-center space-x-2">
-                          <a
-                            href={`http://localhost:5000/api/letters/download/${openLetter._id}/${encodeURIComponent(
-                              file.filename
-                            )}`}
-                            className="text-blue-600 hover:text-blue-800 underline"
-                            download={file.filename}
-                          >
-                            Download
-                          </a>
-                          <a
-                            href={`http://localhost:5000/api/letters/view/${openLetter._id}/${encodeURIComponent(
-                              file.filename
-                            )}`}
-                            className="text-green-600 hover:text-green-800 underline"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            View
-                          </a>
-                          <span className="text-gray-700">{file.filename}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                {openLetter.attachments &&
+                  openLetter.attachments.length > 0 && (
+                    <div className="mb-2">
+                      <strong>Attachment:</strong>
+                      <ul>
+                        {openLetter.attachments.map((file, idx) => (
+                          <li key={idx} className="flex items-center space-x-2">
+                            <a
+                              href={`http://localhost:5000/api/letters/download/${
+                                openLetter._id
+                              }/${encodeURIComponent(file.filename)}`}
+                              className="text-blue-600 hover:text-blue-800 underline"
+                              download={file.filename}
+                            >
+                              Download
+                            </a>
+                            <a
+                              href={`http://localhost:5000/api/letters/view/${
+                                openLetter._id
+                              }/${encodeURIComponent(file.filename)}`}
+                              className="text-green-600 hover:text-green-800 underline"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              View
+                            </a>
+                            <span className="text-gray-700">
+                              {file.filename}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 <button
                   onClick={() => setViewMode(true)}
                   className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 mt-4"
@@ -535,72 +611,149 @@ const Inbox = () => {
                 {showForwardModal && (
                   <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-                      <h3 className="text-lg font-semibold mb-2">Forward Letter</h3>
+                      <h3 className="text-lg font-semibold mb-4">
+                        Forward Letter
+                      </h3>
                       {/* Department Selector */}
-                      <label className="block mb-1 text-sm font-medium text-gray-700">
-                        Select Department/Sector
-                      </label>
-                      <select
-                        className="w-full rounded px-3 py-2 border mb-2"
-                        value={selectedDepartment}
-                        onChange={(e) => setSelectedDepartment(e.target.value)}
-                      >
-                        <option value="">-- Select Department --</option>
-                        {departments.map((dept) => (
-                          <option key={dept.name} value={dept.name}>
-                            {dept.name}
-                          </option>
-                        ))}
-                      </select>
-                      {/* User Multi-Selector */}
-                      {departmentUsers.length > 0 && (
-                        <>
-                          <label className="block mb-1 text-sm font-medium text-gray-700">
-                            Select User(s)
-                          </label>
-                          <select
-                            multiple
-                            className="w-full rounded px-3 py-2 border mb-2 h-32"
-                            value={selectedUsers.map((u) => u.email)}
-                            onChange={(e) => {
-                              const options = Array.from(e.target.selectedOptions);
-                              setSelectedUsers(
-                                options.map((opt) =>
-                                  departmentUsers.find((u) => u.email === opt.value)
-                                )
-                              );
-                            }}
-                          >
+                      <div className="mb-4">
+                        <DepartmentSelector
+                          value={selectedDepartment}
+                          onChange={(value) => {
+                            setSelectedDepartment(value);
+                            setSelectedUsers([]);
+                            setToEmployee("");
+                          }}
+                        />
+                      </div>
+                      {/* To Field */}
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          To
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            className="block w-full px-3 py-2 border border-gray-300 rounded-md"
+                            placeholder={
+                              loadingUsers
+                                ? "Loading users..."
+                                : "Select employee"
+                            }
+                            value={toEmployee}
+                            onChange={(e) => setToEmployee(e.target.value)}
+                            list="user-list"
+                            autoComplete="off"
+                            disabled={!selectedDepartment || loadingUsers}
+                          />
+                          {loadingUsers && (
+                            <div className="absolute right-3 top-2.5">
+                              <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
+                            </div>
+                          )}
+                          <datalist id="user-list">
                             {departmentUsers.map((user) => (
-                              <option key={user.email} value={user.email}>
-                                {user.name} ({user.email})
+                              <option key={user.email} value={user.name}>
+                                {user.name}
                               </option>
                             ))}
-                          </select>
-                        </>
-                      )}
-                      <div className="flex space-x-2 mt-2">
-                        <button
-                          className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700"
-                          onClick={handleForwardLetter}
-                          disabled={selectedUsers.length === 0}
-                        >
-                          Send
-                        </button>
-                        <button
-                          className="bg-gray-400 text-white px-4 py-2 rounded shadow hover:bg-gray-500"
-                          onClick={() => {
-                            setShowForwardModal(false);
-                            setSelectedDepartment("");
-                            setSelectedUsers([]);
-                            setForwardStatus(null);
-                          }}
-                        >
-                          Cancel
-                        </button>
+                          </datalist>
+                        </div>
+                      </div>
+                      {/* User Multi-Selector */}
+                      {loadingUsers ? (
+                        <div className="mb-4 p-4 text-center">
+                          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
+                          <p className="mt-2 text-gray-600">Loading users...</p>
+                        </div>
+                      ) : departmentUsers.length > 0 ? (
+                        <div className="mb-4">
+                          <label className="block mb-2 text-sm font-medium text-gray-700">
+                            Additional Recipients (Optional)
+                          </label>
+                          <div className="border rounded-lg p-2 max-h-48 overflow-y-auto">
+                            {departmentUsers.map((user) => (
+                              <div
+                                key={user.email}
+                                className="flex items-center space-x-2 p-2 hover:bg-gray-50"
+                              >
+                                <input
+                                  type="checkbox"
+                                  id={user.email}
+                                  checked={selectedUsers.some(
+                                    (u) => u.email === user.email
+                                  )}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedUsers([
+                                        ...selectedUsers,
+                                        user,
+                                      ]);
+                                    } else {
+                                      setSelectedUsers(
+                                        selectedUsers.filter(
+                                          (u) => u.email !== user.email
+                                        )
+                                      );
+                                    }
+                                  }}
+                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                />
+                                <label
+                                  htmlFor={user.email}
+                                  className="text-sm text-gray-700"
+                                >
+                                  {user.name} ({user.email})
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : selectedDepartment ? (
+                        <div className="mb-4 p-4 text-center text-gray-500">
+                          No users found in this department.
+                        </div>
+                      ) : null}
+                      <div className="flex justify-between items-center mt-4">
+                        <div className="text-sm text-gray-600">
+                          {selectedUsers.length > 0 && (
+                            <span>
+                              {selectedUsers.length} additional recipient
+                              {selectedUsers.length !== 1 ? "s" : ""} selected
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={handleForwardLetter}
+                            disabled={!toEmployee && selectedUsers.length === 0}
+                          >
+                            Forward
+                          </button>
+                          <button
+                            className="bg-gray-400 text-white px-4 py-2 rounded shadow hover:bg-gray-500"
+                            onClick={() => {
+                              setShowForwardModal(false);
+                              setSelectedDepartment("");
+                              setSelectedUsers([]);
+                              setToEmployee("");
+                              setForwardStatus(null);
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </div>
                       {forwardStatus && (
-                        <div className="mt-2 text-green-600">{forwardStatus}</div>
+                        <div
+                          className={`mt-4 p-2 rounded ${
+                            forwardStatus.includes("Failed")
+                              ? "bg-red-100 text-red-700"
+                              : "bg-green-100 text-green-700"
+                          }`}
+                        >
+                          {forwardStatus}
+                        </div>
                       )}
                     </div>
                   </div>
