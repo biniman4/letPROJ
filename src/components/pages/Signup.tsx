@@ -80,12 +80,12 @@ const Signup = () => {
     setSuccess(null);
 
     if (
-      !formData.name ||
-      !formData.email ||
-      !formData.phone ||
-      !formData.departmentOrSector ||
-      !formData.password ||
-      !formData.confirmPassword
+      !formData.name.trim() ||
+      !formData.email.trim() ||
+      !formData.phone.trim() ||
+      !formData.departmentOrSector.trim() ||
+      !formData.password.trim() ||
+      !formData.confirmPassword.trim()
     ) {
       setError("Please fill in all fields.");
       return;
@@ -173,7 +173,6 @@ const Signup = () => {
           {/* DepartmentSelector occupies one column and two rows to align with your layout */}
           <div className="w-full md:col-span-1 md:row-span-2 flex flex-col">
             <DepartmentSelector
-              value={formData.departmentOrSector}
               onChange={(val) =>
                 setFormData((prev) => ({ ...prev, departmentOrSector: val }))
               }

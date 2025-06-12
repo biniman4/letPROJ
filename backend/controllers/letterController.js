@@ -4,6 +4,7 @@ import Notification from "../models/Notification.js";
 import nodemailer from "nodemailer";
 import path from "path";
 import { fileURLToPath } from "url";
+import mongoose from "mongoose";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,10 +24,19 @@ export const createLetter = async (req, res) => {
     }
 
     // Find the sender user by name or email or ID
-    const sender =
-      (await User.findOne({ name: fromValue })) ||
-      (await User.findOne({ email: fromValue })) ||
-      (await User.findById(fromValue));
+    const senderById = mongoose.Types.ObjectId.isValid(fromValue)
+      ? await User.findById(fromValue)
+      : null;
+    const senderByName = await User.findOne({ name: fromValue });
+    const senderByEmail = await User.findOne({ email: fromValue });
+
+    console.log("Sender search results:", {
+      byId: senderById,
+      byName: senderByName,
+      byEmail: senderByEmail,
+    });
+
+    const sender = senderById || senderByName || senderByEmail;
 
     if (!sender) {
       console.log("Sender not found:", fromValue);
