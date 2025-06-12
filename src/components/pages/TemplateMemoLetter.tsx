@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 
+
 // Example departments (replace with API call if needed)
 const DEPARTMENTS = [
   "IT",
