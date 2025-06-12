@@ -15,7 +15,9 @@ interface EmployeesProps {
 const Employees: React.FC<EmployeesProps> = ({ letterData, setLetterData }) => {
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
   const [searchEmployees, setSearchEmployees] = useState<string>("");
-  const [employeesByDepartment, setEmployeesByDepartment] = useState<Record<string, string[]>>({});
+  const [employeesByDepartment, setEmployeesByDepartment] = useState<
+    Record<string, string[]>
+  >({});
   const [loading, setLoading] = useState<boolean>(false);
 
   // Fetch employees from the backend grouped by department
@@ -25,11 +27,13 @@ const Employees: React.FC<EmployeesProps> = ({ letterData, setLetterData }) => {
       try {
         const res = await axios.get("http://localhost:5000/api/users");
         const grouped: Record<string, string[]> = {};
-        res.data.forEach((user: { departmentOrSector: string; name: string }) => {
-          const dept = user.departmentOrSector?.toLowerCase() || "other";
-          if (!grouped[dept]) grouped[dept] = [];
-          grouped[dept].push(user.name);
-        });
+        res.data.forEach(
+          (user: { departmentOrSector: string; name: string }) => {
+            const dept = user.departmentOrSector?.toLowerCase() || "other";
+            if (!grouped[dept]) grouped[dept] = [];
+            grouped[dept].push(user.name);
+          }
+        );
         setEmployeesByDepartment(grouped);
       } catch (err) {
         setEmployeesByDepartment({});
@@ -121,11 +125,14 @@ const Employees: React.FC<EmployeesProps> = ({ letterData, setLetterData }) => {
                     >
                       <input
                         type="checkbox"
-                        checked={letterData.ccEmployees[departmentVal]?.includes(emp)}
+                        checked={letterData.ccEmployees[
+                          departmentVal
+                        ]?.includes(emp)}
                         onChange={(e) => {
                           const updatedEmployees = e.target.checked
                             ? [
-                                ...(letterData.ccEmployees[departmentVal] || []),
+                                ...(letterData.ccEmployees[departmentVal] ||
+                                  []),
                                 emp,
                               ]
                             : letterData.ccEmployees[departmentVal].filter(

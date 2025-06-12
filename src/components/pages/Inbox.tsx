@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { SearchIcon, FilterIcon, FileTextIcon, StarIcon } from "lucide-react";
 import axios from "axios";
 import { Modal } from "react-responsive-modal";
@@ -74,17 +74,71 @@ const Inbox = () => {
   const [toEmployee, setToEmployee] = useState("");
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingLetters, setLoadingLetters] = useState(false);
+  const [totalLetters, setTotalLetters] = useState(0);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user.email || "";
   const { updateUnreadLetters } = useNotifications();
 
+  // Calculate total pages
+  const totalPages = Math.ceil(totalLetters / itemsPerPage);
+
+  // Debounced search handler
+  const debouncedSearch = useMemo(() => {
+    let timeoutId: NodeJS.Timeout;
+    return (searchTerm: string) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setSearch(searchTerm);
+        setCurrentPage(1); // Reset to first page on search
+      }, 300);
+    };
+  }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      const timeoutId = (debouncedSearch as any).timeoutId;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [debouncedSearch]);
+
   useEffect(() => {
     const fetchLetters = async () => {
       setLoadingLetters(true);
       try {
-        const res = await axios.get("http://localhost:5000/api/letters");
-        const formattedLetters = res.data
+        const res = await axios.get(`http://localhost:5000/api/letters`, {
+          params: {
+            page: currentPage,
+            limit: itemsPerPage,
+            filter: selectedFilter,
+            search: search,
+            userEmail: userEmail,
+          },
+        });
+
+        // Handle both response formats
+        let fetchedLetters: Letter[];
+        let total: number;
+
+        if (Array.isArray(res.data)) {
+          // If response is an array, use it directly
+          fetchedLetters = res.data;
+          total = res.data.length;
+        } else if (res.data && Array.isArray(res.data.letters)) {
+          // If response has letters and total properties
+          fetchedLetters = res.data.letters;
+          total = res.data.total || res.data.letters.length;
+        } else {
+          console.error("Invalid response format:", res.data);
+          setLetters([]);
+          setTotalLetters(0);
+          return;
+        }
+
+        const formattedLetters = fetchedLetters
           .filter((letter: Letter) => letter.toEmail === userEmail)
           .map((letter: Letter) => ({
             ...letter,
@@ -97,7 +151,9 @@ const Inbox = () => {
             (a: Letter, b: Letter) =>
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
+
         setLetters(formattedLetters);
+        setTotalLetters(total);
 
         // Update unread count
         const unreadCount = formattedLetters.filter(
@@ -107,137 +163,169 @@ const Inbox = () => {
       } catch (err) {
         console.error("Error fetching letters:", err);
         setLetters([]);
-        toast.error("Error fetching letters.");
+        setTotalLetters(0);
+        toast.error("Error fetching letters. Please try again later.");
       } finally {
         setLoadingLetters(false);
       }
     };
     fetchLetters();
-  }, [userEmail, selectedFilter, updateUnreadLetters]);
+  }, [userEmail, selectedFilter, search, currentPage, updateUnreadLetters]);
 
-  const handleLetterOpen = async (letter: Letter) => {
-    try {
-      // Only update unread status
-      await axios.post(`http://localhost:5000/api/letters/status`, {
-        letterId: letter._id,
-        unread: false,
-      });
+  // Memoize the letter list item component
+  const LetterListItem = useMemo(() => {
+    return React.memo(
+      ({
+        letter,
+        onOpen,
+        onStarToggle,
+      }: {
+        letter: Letter;
+        onOpen: (letter: Letter) => void;
+        onStarToggle: (letter: Letter, e: React.MouseEvent) => void;
+      }) => (
+        <div
+          key={letter._id}
+          className={`p-4 cursor-pointer hover:bg-gray-50 ${
+            letter.unread ? "bg-blue-50/30" : ""
+          }`}
+          onClick={() => onOpen(letter)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex-1 min-w-0">
+              <h4
+                className={`text-sm font-medium ${
+                  letter.unread
+                    ? "text-gray-900 font-semibold"
+                    : "text-gray-600"
+                }`}
+              >
+                {letter.subject}
+              </h4>
+              <div className="flex items-center space-x-2">
+                {letter.priority === "urgent" && (
+                  <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
+                    Urgent
+                  </span>
+                )}
+                <span className="text-sm text-gray-500">
+                  {formatDate(letter.createdAt)}
+                </span>
+              </div>
+            </div>
+            <div className="ml-4 flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-500 truncate">
+                  {letter.fromName} ({letter.department})
+                </p>
+                <button
+                  onClick={(e) => onStarToggle(letter, e)}
+                  className="text-gray-400 hover:text-yellow-400"
+                >
+                  <StarIcon
+                    className={`h-5 w-5 transition-colors duration-200 ease-in-out ${
+                      letter.starred ? "text-yellow-400 fill-yellow-400" : ""
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    );
+  }, []);
 
-      setLetters((prevLetters) =>
-        prevLetters.map((l) =>
-          l._id === letter._id ? { ...l, unread: false } : l
-        )
-      );
+  // Memoize handlers
+  const handleLetterOpen = useCallback(
+    async (letter: Letter) => {
+      try {
+        await axios.post(`http://localhost:5000/api/letters/status`, {
+          letterId: letter._id,
+          unread: false,
+        });
 
-      // Update unread count
-      const unreadCount = letters.filter(
-        (l) => l.unread && l._id !== letter._id
-      ).length;
-      updateUnreadLetters(unreadCount);
+        setLetters((prevLetters) =>
+          prevLetters.map((l) =>
+            l._id === letter._id ? { ...l, unread: false } : l
+          )
+        );
 
-      // Open the letter (don't modify starred state)
-      setOpenLetter({ ...letter, unread: false });
-      setViewMode(false);
-    } catch (error) {
-      console.error("Error updating letter status:", error);
-      toast.error("Error updating letter status.");
-      setLetters((prevLetters) =>
-        prevLetters.map((l) =>
-          l._id === letter._id ? { ...l, unread: false } : l
-        )
-      );
-      setOpenLetter({ ...letter, unread: false });
-      setViewMode(false);
-    }
-  };
+        const unreadCount = letters.filter(
+          (l) => l.unread && l._id !== letter._id
+        ).length;
+        updateUnreadLetters(unreadCount);
 
-  // MODIFIED: Show toast message when star status is toggled
-  const handleStarToggle = async (letter: Letter, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      const newStarredState = !letter.starred;
+        setOpenLetter({ ...letter, unread: false });
+        setViewMode(false);
+      } catch (error) {
+        console.error("Error updating letter status:", error);
+        toast.error("Error updating letter status.");
+        setLetters((prevLetters) =>
+          prevLetters.map((l) =>
+            l._id === letter._id ? { ...l, unread: false } : l
+          )
+        );
+        setOpenLetter({ ...letter, unread: false });
+        setViewMode(false);
+      }
+    },
+    [letters, updateUnreadLetters]
+  );
 
-      // Update backend
-      await axios.post(`http://localhost:5000/api/letters/status`, {
-        letterId: letter._id,
-        starred: newStarredState,
-      });
+  const handleStarToggle = useCallback(
+    async (letter: Letter, e: React.MouseEvent) => {
+      e.stopPropagation();
+      try {
+        const newStarredState = !letter.starred;
 
-      // Update local state
-      setLetters((prevLetters) =>
-        prevLetters.map((l) =>
-          l._id === letter._id ? { ...l, starred: newStarredState } : l
-        )
-      );
+        await axios.post(`http://localhost:5000/api/letters/status`, {
+          letterId: letter._id,
+          starred: newStarredState,
+        });
 
-      // If the letter is open in the modal, update it too
-      if (openLetter && openLetter._id === letter._id) {
-        setOpenLetter((prev) =>
-          prev ? { ...prev, starred: newStarredState } : null
+        setLetters((prevLetters) =>
+          prevLetters.map((l) =>
+            l._id === letter._id ? { ...l, starred: newStarredState } : l
+          )
+        );
+
+        if (openLetter && openLetter._id === letter._id) {
+          setOpenLetter((prev) =>
+            prev ? { ...prev, starred: newStarredState } : null
+          );
+        }
+
+        if (newStarredState) {
+          toast.success(`Letter "${letter.subject}" starred!`);
+        } else {
+          toast.info(`Letter "${letter.subject}" unstarred.`);
+        }
+      } catch (error) {
+        console.error("Error toggling star:", error);
+        toast.error("Error toggling star.");
+        setLetters((prevLetters) =>
+          prevLetters.map((l) =>
+            l._id === letter._id ? { ...l, starred: !l.starred } : l
+          )
         );
       }
+    },
+    [openLetter]
+  );
 
-      // Show custom toast message for starring/un-starring
-      if (newStarredState) {
-        toast.success(`Letter "${letter.subject}" starred!`);
-      } else {
-        toast.info(`Letter "${letter.subject}" unstarred.`);
-      }
-    } catch (error) {
-      console.error("Error toggling star:", error);
-      toast.error("Error toggling star.");
-      // If the update fails, still update the local state to maintain UI consistency
-      setLetters((prevLetters) =>
-        prevLetters.map((l) =>
-          l._id === letter._id ? { ...l, starred: !l.starred } : l
-        )
-      );
-    }
-  };
-
-  // Add "seen" to the filter logic
-  const filteredLetters = letters
-    .filter((letter) => {
-      switch (selectedFilter) {
-        case "unread":
-          return letter.unread === true;
-        case "starred":
-          return letter.starred === true;
-        case "urgent":
-          return letter.priority === "urgent";
-        case "seen":
-          return letter.unread === false;
-        default:
-          return true;
-      }
-    })
-    .filter(
-      (letter) =>
-        letter.subject.toLowerCase().includes(search.toLowerCase()) ||
-        (letter.fromName || "").toLowerCase().includes(search.toLowerCase())
-    )
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredLetters.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentLetters = filteredLetters.slice(startIndex, endIndex);
-
-  const handleNextPage = () => {
+  // Memoize pagination handlers
+  const handleNextPage = useCallback(() => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
-  };
+  }, [currentPage, totalPages]);
 
-  const handlePreviousPage = () => {
+  const handlePreviousPage = useCallback(() => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
-  };
+  }, [currentPage]);
 
   // Reset to first page when filter or search changes
   useEffect(() => {
@@ -363,6 +451,12 @@ const Inbox = () => {
     }
   };
 
+  // Remove the client-side filtering and pagination logic
+  const filteredLetters = letters;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentLetters = filteredLetters.slice(startIndex, endIndex);
+
   return (
     <div>
       <div className="mb-6">
@@ -394,8 +488,7 @@ const Inbox = () => {
                 <input
                   type="text"
                   placeholder="Search letters..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => debouncedSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -420,56 +513,12 @@ const Inbox = () => {
             </div>
           ) : (
             currentLetters.map((letter) => (
-              <div
+              <LetterListItem
                 key={letter._id}
-                className={`p-4 cursor-pointer hover:bg-gray-50 ${
-                  letter.unread ? "bg-blue-50/30" : ""
-                }`}
-                onClick={() => handleLetterOpen(letter)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <h4
-                      className={`text-sm font-medium ${
-                        letter.unread
-                          ? "text-gray-900 font-semibold"
-                          : "text-gray-600"
-                      }`}
-                    >
-                      {letter.subject}
-                    </h4>
-                    <div className="flex items-center space-x-2">
-                      {letter.priority === "urgent" && (
-                        <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
-                          Urgent
-                        </span>
-                      )}
-                      <span className="text-sm text-gray-500">
-                        {formatDate(letter.createdAt)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="ml-4 flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-gray-500 truncate">
-                        {letter.fromName} ({letter.department})
-                      </p>
-                      <button
-                        onClick={(e) => handleStarToggle(letter, e)}
-                        className="text-gray-400 hover:text-yellow-400"
-                      >
-                        <StarIcon
-                          className={`h-5 w-5 transition-colors duration-200 ease-in-out ${
-                            letter.starred
-                              ? "text-yellow-400 fill-yellow-400"
-                              : ""
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                letter={letter}
+                onOpen={handleLetterOpen}
+                onStarToggle={handleStarToggle}
+              />
             ))
           )}
         </div>
@@ -767,4 +816,4 @@ const Inbox = () => {
   );
 };
 
-export default Inbox;
+export default React.memo(Inbox);

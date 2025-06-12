@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 
-
 // Example departments (replace with API call if needed)
 const DEPARTMENTS = [
   "IT",
@@ -199,7 +198,7 @@ const TemplateMemoLetter = ({
       >
         {/* Department Selector */}
         <div className="flex flex-col gap-1 mb-2 pt-3">
-          <label className="block text-xs text-gray-500 font-semibold mb-1">
+          {/* <label className="block text-xs text-gray-500 font-semibold mb-1">
             Department/Sector
           </label>
           <select
@@ -213,7 +212,7 @@ const TemplateMemoLetter = ({
                 {dept}
               </option>
             ))}
-          </select>
+          </select> */}
           <div>
             <span className="block text-xs text-gray-500 font-semibold mb-1">
               NAME

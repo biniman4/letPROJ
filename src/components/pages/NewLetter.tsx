@@ -33,24 +33,26 @@ const NewLetter = () => {
 
   useEffect(() => {
     setLoadingUsers(true);
-    axios.get("http://localhost:5000/api/users")
-      .then(res => setUsers(res.data))
+    axios
+      .get("http://localhost:5000/api/users")
+      .then((res) => setUsers(res.data))
       .finally(() => setLoadingUsers(false));
   }, []);
 
   useEffect(() => {
-    setLetterData(prev => ({ ...prev, department: selectedDepartment }));
+    setLetterData((prev) => ({ ...prev, department: selectedDepartment }));
     setToEmployee("");
   }, [selectedDepartment]);
 
   useEffect(() => {
-    setLetterData(prev => ({ ...prev, to: toEmployee }));
+    setLetterData((prev) => ({ ...prev, to: toEmployee }));
   }, [toEmployee]);
 
   const filteredUsers = selectedDepartment
     ? users.filter(
         (u) =>
-          u.departmentOrSector?.toLowerCase() === selectedDepartment.toLowerCase()
+          u.departmentOrSector?.toLowerCase() ===
+          selectedDepartment.toLowerCase()
       )
     : [];
 
@@ -243,7 +245,10 @@ const NewLetter = () => {
         <form onSubmit={handleSubmit}>
           {/* Department */}
           <div className="mb-4">
-            <label htmlFor="department" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="department"
+              className="block text-sm font-medium text-gray-700"
+            >
               {t.department[lang]}
             </label>
             <DepartmentSelector
@@ -260,20 +265,17 @@ const NewLetter = () => {
               className="block w-full px-3 py-2 border border-gray-300 rounded-md"
               placeholder={t.selectEmployee[lang]}
               value={toEmployee}
-              onChange={e => setToEmployee(e.target.value)}
+              onChange={(e) => setToEmployee(e.target.value)}
               list="user-list"
               autoComplete="off"
               disabled={!selectedDepartment || loadingUsers}
             />
             <datalist id="user-list">
-              {filteredUsers.map(user =>
-                <option
-                  key={user._id}
-                  value={user.name}
-                >
+              {filteredUsers.map((user) => (
+                <option key={user._id} value={user.name}>
                   {user.name}
                 </option>
-              )}
+              ))}
             </datalist>
           </div>
 
@@ -337,13 +339,11 @@ const NewLetter = () => {
               body={
                 <textarea
                   value={letterData.content}
-                  onChange={e =>
+                  onChange={(e) =>
                     setLetterData({ ...letterData, content: e.target.value })
                   }
                   placeholder={
-                    lang === "am"
-                      ? "የደብዳቤውን ይዘት ያስገቡ"
-                      : "Enter letter content"
+                    lang === "am" ? "የደብዳቤውን ይዘት ያስገቡ" : "Enter letter content"
                   }
                   className="w-full min-h-[180px] text-base outline-none border-none bg-transparent resize-vertical"
                   style={{
