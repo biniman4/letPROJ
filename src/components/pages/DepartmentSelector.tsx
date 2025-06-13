@@ -82,14 +82,14 @@ const flattenDepartments = (
   return result;
 };
 
-const DepartmentSelector: React.FC<{ value?: string; onChange: (value: string) => void }> = ({
-  value,
+const DepartmentSelector: React.FC<{ onChange: (value: string) => void; showBreadcrumb?: boolean; showSubDropdowns?: boolean }> = ({
   onChange,
+  showBreadcrumb = true,
+  showSubDropdowns = true,
 }) => {
   const [selectedMainCategory, setSelectedMainCategory] = useState<string>(value || "");
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
-  const [selectedSubSubCategory, setSelectedSubSubCategory] =
-    useState<string>("");
+  const [selectedSubSubCategory, setSelectedSubSubCategory] = useState<string>("");
 
   const handleMainCategoryChange = (
     event: React.ChangeEvent<HTMLSelectElement>
@@ -140,7 +140,7 @@ const DepartmentSelector: React.FC<{ value?: string; onChange: (value: string) =
         ))}
       </select>
 
-      {subCategories.length > 0 && (
+      {showSubDropdowns && subCategories.length > 0 && (
         <>
           <label className="block text-gray-700 font-medium mb-1">
             ንዑስ ምድብ
@@ -160,7 +160,7 @@ const DepartmentSelector: React.FC<{ value?: string; onChange: (value: string) =
         </>
       )}
 
-      {subSubCategories.length > 0 && (
+      {showSubDropdowns && subSubCategories.length > 0 && (
         <>
           <label className="block text-gray-700 font-medium mb-1">
             ንዑስ ንዑስ ምድብ
@@ -180,11 +180,11 @@ const DepartmentSelector: React.FC<{ value?: string; onChange: (value: string) =
         </>
       )}
 
-      {(selectedMainCategory ||
+      {(showBreadcrumb && (selectedMainCategory ||
         selectedSubCategory ||
-        selectedSubSubCategory) && (
+        selectedSubSubCategory)) && (
         <div style={{ marginTop: "20px", color: "green" }}>
-          የተመረጠ ምድብ:{" "}
+          የተመረጠ ምድብ: {" "}
           <strong>
             {[selectedMainCategory, selectedSubCategory, selectedSubSubCategory]
               .filter(Boolean)

@@ -56,9 +56,9 @@ const AdminPanel = () => {
           <Mail className="w-5 h-5" /> Letters
         </button>
       </div>
-      {/* Panel content, only inner panel is scrollable */}
-      <div className="bg-white rounded-b-xl shadow-lg min-h-[410px] max-h-[70vh] overflow-hidden">
-        <div className="h-full overflow-y-auto p-4">
+      {/* Panel content with proper height calculation */}
+      <div className="bg-white rounded-b-xl shadow-lg h-[calc(100vh-180px)] overflow-hidden">
+        <div className="h-full">
           {activeTab === 'users' ? (
             <UserManagement setSuccessMsg={setSuccessMsg} />
           ) : (
