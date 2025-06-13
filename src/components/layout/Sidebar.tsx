@@ -29,9 +29,15 @@ const navItems = [
 
 const adminItems = [{ icon: ShieldIcon, label: "Admin Panel", path: "/admin" }];
 
-export const Sidebar = ({ isAdmin = false }) => {
-  const [isOpen, setIsOpen] = useState(true);
-
+export const Sidebar = ({
+  isAdmin = false,
+  isOpen,
+  setIsOpen,
+}: {
+  isAdmin?: boolean;
+  isOpen: boolean;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   const items = isAdmin ? [...navItems, ...adminItems] : navItems;
 
   return (
@@ -50,9 +56,12 @@ export const Sidebar = ({ isAdmin = false }) => {
 
       {/* Sidebar */}
       <div
-        className={`fixed z-40 top-0 left-0 h-screen bg-white transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:block ${
-          isOpen ? "w-64" : "w-20"
-        }`}
+      className={`fixed z-40 bg-white transform transition-transform duration-300 ease-in-out
+      top-16 h-[calc(100vh-64px)] /* Mobile: always positioned below header and takes remaining height */
+      ${isOpen ? "translate-x-0 w-80" : "translate-x-0 w-12"} /* Mobile width: open 80, closed 12 */
+      md:translate-x-0 md:static md:block md:h-screen /* Desktop: always visible, static, full height */
+      ${isOpen ? "md:w-64" : "md:w-20"} /* Desktop width: open 64, closed 20 */
+      `}
       >
         <div className="h-full border-r-2 border-gray-300 rounded-tr-[32px] rounded-br-[32px] relative">
           {/* Toggle Button */}
@@ -77,13 +86,18 @@ export const Sidebar = ({ isAdmin = false }) => {
           {/* Navigation Container */}
           <div className="flex flex-col h-[calc(100vh-64px)]">
             {/* Navigation Items */}
-            <nav className="px-2 py-6 flex flex-col space-y-3">
+            <nav className={`px-2 py-6 flex flex-col ${isOpen ? 'space-y-3' : 'space-y-1'}`}>
               {items.map((item) => (
                 <NavLink
                   key={item.label}
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex items-center gap-4 px-4 py-2.5 rounded-md text-[16px] transition-all
+                    `flex items-center rounded-md text-[16px] transition-all
+                    ${
+                      isOpen
+                        ? "w-full gap-8 px-4 py-2.5"
+                        : "justify-center py-2.5"
+                    }
                     ${
                       isActive
                         ? "bg-blue-50 text-blue-600 font-medium"
@@ -92,9 +106,11 @@ export const Sidebar = ({ isAdmin = false }) => {
                   }
                 >
                   <item.icon className={`w-[22px] h-[22px] flex-shrink-0`} />
-                  <span className={`transition-all ${!isOpen && "hidden"}`}>
-                    {item.label}
-                  </span>
+                  {isOpen && (
+                    <span className="flex-grow truncate">
+                      {item.label}
+                    </span>
+                  )}
                 </NavLink>
               ))}
             </nav>

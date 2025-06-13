@@ -55,6 +55,7 @@ export function App() {
     adminRequired?: boolean;
   }) => {
     const navigate = useNavigate();
+    const [isOpen, setIsOpen] = useState(true);
 
     useEffect(() => {
       if (!isAuthenticated) {
@@ -70,8 +71,13 @@ export function App() {
 
     return (
       <div className="flex w-full min-h-screen bg-gray-50">
-        <Sidebar isAdmin={isAdmin} />
-        <div className="flex-1 overflow-hidden">
+        <Sidebar isAdmin={isAdmin} isOpen={isOpen} setIsOpen={setIsOpen} />
+        <div
+          className={`flex-1 overflow-hidden transition-all duration-300 ease-in-out
+          ${isOpen ? "ml-80" : "ml-12"}
+          md:ml-0
+          `}
+        >
           <Header onLogout={handleLogout} />
           <main
             className="p-6 overflow-auto"
