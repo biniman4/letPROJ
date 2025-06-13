@@ -197,8 +197,8 @@ const TemplateMemoLetter = ({
         }}
       >
         {/* Department Selector */}
-        <div className="flex flex-col gap-1 mb-2 pt-3">
-          {/* <label className="block text-xs text-gray-500 font-semibold mb-1">
+        {/* <div className="flex flex-col gap-1 mb-2 pt-3"> */}
+        {/* <label className="block text-xs text-gray-500 font-semibold mb-1">
             Department/Sector
           </label>
           <select
@@ -213,20 +213,20 @@ const TemplateMemoLetter = ({
               </option>
             ))}
           </select> */}
-          <div>
-            <span className="block text-xs text-gray-500 font-semibold mb-1">
+        {/* <div> */}
+        {/* <span className="block text-xs text-gray-500 font-semibold mb-1">
               NAME
             </span>
             <span className="block text-base font-bold text-[#03619c]">
               {userName || <span className="text-gray-400">No Name</span>}
-            </span>
-          </div>
-        </div>
-        <div className="text-sm font-medium text-gray-700 mb-2 mt-2">
+            </span> */}
+        {/* </div> */}
+        {/* </div> */}
+        {/* <div className="text-sm font-medium text-gray-700 mb-2 mt-2">
           Comment:
-        </div>
-        <div className="flex flex-col gap-2">
-          {/* List all comments */}
+        </div> */}
+        {/* List all comments */}
+        {/* <div className="flex flex-col gap-2">
           {comments.length > 0 ? (
             <div className="flex flex-col gap-2">
               {comments.map((c, idx) => (
@@ -293,7 +293,7 @@ const TemplateMemoLetter = ({
               Add
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* SIGNATURE */}

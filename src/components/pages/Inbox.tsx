@@ -75,6 +75,7 @@ const Inbox = () => {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingLetters, setLoadingLetters] = useState(false);
   const [totalLetters, setTotalLetters] = useState(0);
+  const [forwardComment, setForwardComment] = useState("");
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user.email || "";
@@ -402,7 +403,9 @@ const Inbox = () => {
           to: recipient.name, // The server expects the recipient's name
           department: recipient.department || selectedDepartment,
           priority: openLetter.priority,
-          content: openLetter.content,
+          content: forwardComment
+            ? `${forwardComment}\n\n--- Forwarded Message ---\n\n${openLetter.content}`
+            : `--- Forwarded Message ---\n\n${openLetter.content}`,
           ccEmployees: {}, // Empty object for CC
           cc: [], // Empty array for CC
           status: "sent",
@@ -420,6 +423,7 @@ const Inbox = () => {
       setSelectedDepartment("");
       setSelectedUsers([]);
       setToEmployee("");
+      setForwardComment("");
       toast.success(`Letter forwarded to: ${recipientNames}`);
 
       // Refresh the letters list
@@ -708,6 +712,19 @@ const Inbox = () => {
                           </datalist>
                         </div>
                       </div>
+                      {/* Comment Field */}
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Add Comment (Optional)
+                        </label>
+                        <textarea
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-md"
+                          placeholder="Add a comment to the forwarded message..."
+                          value={forwardComment}
+                          onChange={(e) => setForwardComment(e.target.value)}
+                          rows={3}
+                        />
+                      </div>
                       {/* User Multi-Selector */}
                       {loadingUsers ? (
                         <div className="mb-4 p-4 text-center">
@@ -751,59 +768,34 @@ const Inbox = () => {
                                   htmlFor={user.email}
                                   className="text-sm text-gray-700"
                                 >
-                                  {user.name} ({user.email})
+                                  {user.name}
                                 </label>
                               </div>
                             ))}
                           </div>
                         </div>
-                      ) : selectedDepartment ? (
-                        <div className="mb-4 p-4 text-center text-gray-500">
-                          No users found in this department.
-                        </div>
                       ) : null}
-                      <div className="flex justify-between items-center mt-4">
-                        <div className="text-sm text-gray-600">
-                          {selectedUsers.length > 0 && (
-                            <span>
-                              {selectedUsers.length} additional recipient
-                              {selectedUsers.length !== 1 ? "s" : ""} selected
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex space-x-2">
-                          <button
-                            className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={handleForwardLetter}
-                            disabled={!toEmployee && selectedUsers.length === 0}
-                          >
-                            Forward
-                          </button>
-                          <button
-                            className="bg-gray-400 text-white px-4 py-2 rounded shadow hover:bg-gray-500"
-                            onClick={() => {
-                              setShowForwardModal(false);
-                              setSelectedDepartment("");
-                              setSelectedUsers([]);
-                              setToEmployee("");
-                              setForwardStatus(null);
-                            }}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                      {forwardStatus && (
-                        <div
-                          className={`mt-4 p-2 rounded ${
-                            forwardStatus.includes("Failed")
-                              ? "bg-red-100 text-red-700"
-                              : "bg-green-100 text-green-700"
-                          }`}
+                      <div className="flex justify-end space-x-2">
+                        <button
+                          onClick={() => {
+                            setShowForwardModal(false);
+                            setSelectedDepartment("");
+                            setSelectedUsers([]);
+                            setToEmployee("");
+                            setForwardComment("");
+                          }}
+                          className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                         >
-                          {forwardStatus}
-                        </div>
-                      )}
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleForwardLetter}
+                          disabled={!toEmployee && selectedUsers.length === 0}
+                          className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Forward
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
