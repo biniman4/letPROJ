@@ -8,6 +8,7 @@ import TemplateMemoLetter from "./TemplateMemoLetter";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import DepartmentSelector from "./DepartmentSelector";
+import { useInbox } from "../../context/InboxContext";
 
 interface Letter {
   _id: string;
@@ -37,7 +38,7 @@ const getLetterSentDate = (dateString: string) => {
 const fetchDepartments = async () => {
   try {
     const res = await axios.get("http://localhost:5000/api/departments");
-    return res.data; // [{ name: "HR", ... }]
+    return res.data;
   } catch (err) {
     return [];
   }
@@ -51,7 +52,7 @@ const fetchUsersByDepartment = async (departmentName: string) => {
         departmentName
       )}`
     );
-    return res.data; // [{ name, email }, ...]
+    return res.data;
   } catch (err) {
     return [];
   }
@@ -59,7 +60,6 @@ const fetchUsersByDepartment = async (departmentName: string) => {
 
 const Inbox = () => {
   const [selectedFilter, setSelectedFilter] = useState("all");
-  const [letters, setLetters] = useState<Letter[]>([]);
   const [search, setSearch] = useState("");
   const [openLetter, setOpenLetter] = useState<Letter | null>(null);
   const [viewMode, setViewMode] = useState(false);
@@ -73,16 +73,63 @@ const Inbox = () => {
   const [forwardStatus, setForwardStatus] = useState<string | null>(null);
   const [toEmployee, setToEmployee] = useState("");
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [loadingLetters, setLoadingLetters] = useState(false);
-  const [totalLetters, setTotalLetters] = useState(0);
   const [forwardComment, setForwardComment] = useState("");
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user.email || "";
   const { updateUnreadLetters } = useNotifications();
+  const {
+    letters,
+    loadingLetters,
+    isRefreshing,
+    totalLetters,
+    hasInitialLoad,
+    fetchLetters,
+    updateLetterStatus,
+  } = useInbox();
 
   // Calculate total pages
   const totalPages = Math.ceil(totalLetters / itemsPerPage);
+
+  // Initial fetch only once when component mounts
+  useEffect(() => {
+    if (!hasInitialLoad) {
+      fetchLetters();
+    }
+  }, [hasInitialLoad, fetchLetters]);
+
+  // Filter letters based on selected filter and search
+  const filteredLetters = useMemo(() => {
+    return letters.filter((letter) => {
+      const matchesSearch = search
+        ? letter.subject.toLowerCase().includes(search.toLowerCase()) ||
+          letter.fromName.toLowerCase().includes(search.toLowerCase()) ||
+          letter.content.toLowerCase().includes(search.toLowerCase())
+        : true;
+
+      const matchesFilter = (() => {
+        switch (selectedFilter) {
+          case "unread":
+            return letter.unread;
+          case "starred":
+            return letter.starred;
+          case "urgent":
+            return letter.priority === "urgent";
+          case "seen":
+            return !letter.unread;
+          default:
+            return true;
+        }
+      })();
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [letters, search, selectedFilter]);
+
+  // Calculate pagination
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentLetters = filteredLetters.slice(startIndex, endIndex);
 
   // Debounced search handler
   const debouncedSearch = useMemo(() => {
@@ -91,7 +138,7 @@ const Inbox = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         setSearch(searchTerm);
-        setCurrentPage(1); // Reset to first page on search
+        setCurrentPage(1);
       }, 300);
     };
   }, []);
@@ -106,72 +153,61 @@ const Inbox = () => {
     };
   }, [debouncedSearch]);
 
-  useEffect(() => {
-    const fetchLetters = async () => {
-      setLoadingLetters(true);
+  const handleLetterOpen = useCallback(
+    async (letter: Letter) => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/letters`, {
-          params: {
-            page: currentPage,
-            limit: itemsPerPage,
-            filter: selectedFilter,
-            search: search,
-            userEmail: userEmail,
-          },
+        await axios.post(`http://localhost:5000/api/letters/status`, {
+          letterId: letter._id,
+          unread: false,
         });
 
-        // Handle both response formats
-        let fetchedLetters: Letter[];
-        let total: number;
+        updateLetterStatus(letter._id, { unread: false });
+        setOpenLetter({ ...letter, unread: false });
+        setViewMode(false);
 
-        if (Array.isArray(res.data)) {
-          // If response is an array, use it directly
-          fetchedLetters = res.data;
-          total = res.data.length;
-        } else if (res.data && Array.isArray(res.data.letters)) {
-          // If response has letters and total properties
-          fetchedLetters = res.data.letters;
-          total = res.data.total || res.data.letters.length;
-        } else {
-          console.error("Invalid response format:", res.data);
-          setLetters([]);
-          setTotalLetters(0);
-          return;
-        }
-
-        const formattedLetters = fetchedLetters
-          .filter((letter: Letter) => letter.toEmail === userEmail)
-          .map((letter: Letter) => ({
-            ...letter,
-            unread: letter.unread ?? true,
-            starred: letter.starred ?? false,
-            priority: letter.priority ?? "normal",
-            createdAt: letter.createdAt || new Date().toISOString(),
-          }))
-          .sort(
-            (a: Letter, b: Letter) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-
-        setLetters(formattedLetters);
-        setTotalLetters(total);
-
-        // Update unread count
-        const unreadCount = formattedLetters.filter(
-          (l: Letter) => l.unread
+        const unreadCount = letters.filter(
+          (l) => l.unread && l._id !== letter._id
         ).length;
         updateUnreadLetters(unreadCount);
-      } catch (err) {
-        console.error("Error fetching letters:", err);
-        setLetters([]);
-        setTotalLetters(0);
-        toast.error("Error fetching letters. Please try again later.");
-      } finally {
-        setLoadingLetters(false);
+      } catch (error) {
+        console.error("Error updating letter status:", error);
+        toast.error("Error updating letter status.");
       }
-    };
-    fetchLetters();
-  }, [userEmail, selectedFilter, search, currentPage, updateUnreadLetters]);
+    },
+    [letters, updateUnreadLetters, updateLetterStatus]
+  );
+
+  const handleStarToggle = useCallback(
+    async (letter: Letter, e: React.MouseEvent) => {
+      e.stopPropagation();
+      try {
+        const newStarredState = !letter.starred;
+
+        await axios.post(`http://localhost:5000/api/letters/status`, {
+          letterId: letter._id,
+          starred: newStarredState,
+        });
+
+        updateLetterStatus(letter._id, { starred: newStarredState });
+
+        if (openLetter && openLetter._id === letter._id) {
+          setOpenLetter((prev) =>
+            prev ? { ...prev, starred: newStarredState } : null
+          );
+        }
+
+        if (newStarredState) {
+          toast.success(`Letter "${letter.subject}" starred!`);
+        } else {
+          toast.info(`Letter "${letter.subject}" unstarred.`);
+        }
+      } catch (error) {
+        console.error("Error toggling star:", error);
+        toast.error("Error toggling star.");
+      }
+    },
+    [openLetter, updateLetterStatus]
+  );
 
   // Memoize the letter list item component
   const LetterListItem = useMemo(() => {
@@ -236,84 +272,6 @@ const Inbox = () => {
       )
     );
   }, []);
-
-  // Memoize handlers
-  const handleLetterOpen = useCallback(
-    async (letter: Letter) => {
-      try {
-        await axios.post(`http://localhost:5000/api/letters/status`, {
-          letterId: letter._id,
-          unread: false,
-        });
-
-        setLetters((prevLetters) =>
-          prevLetters.map((l) =>
-            l._id === letter._id ? { ...l, unread: false } : l
-          )
-        );
-
-        const unreadCount = letters.filter(
-          (l) => l.unread && l._id !== letter._id
-        ).length;
-        updateUnreadLetters(unreadCount);
-
-        setOpenLetter({ ...letter, unread: false });
-        setViewMode(false);
-      } catch (error) {
-        console.error("Error updating letter status:", error);
-        toast.error("Error updating letter status.");
-        setLetters((prevLetters) =>
-          prevLetters.map((l) =>
-            l._id === letter._id ? { ...l, unread: false } : l
-          )
-        );
-        setOpenLetter({ ...letter, unread: false });
-        setViewMode(false);
-      }
-    },
-    [letters, updateUnreadLetters]
-  );
-
-  const handleStarToggle = useCallback(
-    async (letter: Letter, e: React.MouseEvent) => {
-      e.stopPropagation();
-      try {
-        const newStarredState = !letter.starred;
-
-        await axios.post(`http://localhost:5000/api/letters/status`, {
-          letterId: letter._id,
-          starred: newStarredState,
-        });
-
-        setLetters((prevLetters) =>
-          prevLetters.map((l) =>
-            l._id === letter._id ? { ...l, starred: newStarredState } : l
-          )
-        );
-
-        if (openLetter && openLetter._id === letter._id) {
-          setOpenLetter((prev) =>
-            prev ? { ...prev, starred: newStarredState } : null
-          );
-        }
-
-        if (newStarredState) {
-          toast.success(`Letter "${letter.subject}" starred!`);
-        } else {
-          toast.info(`Letter "${letter.subject}" unstarred.`);
-        }
-      } catch (error) {
-        console.error("Error toggling star:", error);
-        toast.error("Error toggling star.");
-        setLetters((prevLetters) =>
-          prevLetters.map((l) =>
-            l._id === letter._id ? { ...l, starred: !l.starred } : l
-          )
-        );
-      }
-    },
-    [openLetter]
-  );
 
   // Memoize pagination handlers
   const handleNextPage = useCallback(() => {
@@ -441,7 +399,8 @@ const Inbox = () => {
           (a: Letter, b: Letter) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-      setLetters(formattedLetters);
+      updateLetterStatus(openLetter._id, { unread: false, starred: false });
+      fetchLetters();
 
       // Update unread count
       const unreadCount = formattedLetters.filter(
@@ -455,17 +414,44 @@ const Inbox = () => {
     }
   };
 
-  // Remove the client-side filtering and pagination logic
-  const filteredLetters = letters;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentLetters = filteredLetters.slice(startIndex, endIndex);
-
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800">Inbox</h2>
-        <p className="text-gray-600">Manage your incoming letters</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-800">Inbox</h2>
+            <p className="text-gray-600">Manage your incoming letters</p>
+          </div>
+          <button
+            onClick={() => fetchLetters(true)}
+            disabled={isRefreshing}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isRefreshing ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                Refresh
+              </>
+            )}
+          </button>
+        </div>
       </div>
       <div className="bg-white rounded-lg border border-gray-200">
         {/* Filters and Search */}
