@@ -82,10 +82,11 @@ const flattenDepartments = (
   return result;
 };
 
-const DepartmentSelector: React.FC<{ onChange: (value: string) => void }> = ({
+const DepartmentSelector: React.FC<{ value?: string; onChange: (value: string) => void }> = ({
+  value,
   onChange,
 }) => {
-  const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
+  const [selectedMainCategory, setSelectedMainCategory] = useState<string>(value || "");
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
   const [selectedSubSubCategory, setSelectedSubSubCategory] =
     useState<string>("");

@@ -7,6 +7,7 @@ import {
   FileCheck,
   Upload,
   Search,
+  Trash2,
 } from "lucide-react";
 import axios from "axios";
 import { Modal } from "react-responsive-modal";
@@ -53,10 +54,12 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ 
     axios
       .get("http://localhost:5000/api/letters")
       .then((res) => {
+        console.log("Fetched letters:", res.data); // Debugging log
         setLetters(res.data);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error("Error fetching letters:", error); // Debugging log
         setLetters([]);
         setLoading(false);
       });
@@ -122,6 +125,23 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ 
       );
       setTimeout(() => setSuccessMsg(""), 2000);
     }
+  };
+
+  const handleDeleteLetter = (id: string) => {
+    console.log("Deleting letter with ID:", id); // Debugging log
+    axios
+      .delete(`http://localhost:5000/api/letters/${id}`)
+      .then(() => {
+        console.log("Letter deleted successfully:", id); // Debugging log
+        setLetters((prev) => prev.filter((letter) => letter._id !== id));
+        setSuccessMsg(`Letter ${id} deleted successfully!`);
+        setTimeout(() => setSuccessMsg(""), 2000);
+      })
+      .catch((error) => {
+        console.error("Error deleting letter:", error); // Debugging log
+        setSuccessMsg("Failed to delete letter.");
+        setTimeout(() => setSuccessMsg(""), 2000);
+      });
   };
 
   // Chronological sort (newest first)
@@ -270,6 +290,12 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ 
                     <Check className="w-4 h-4" /> Accept
                   </button>
                 )}
+                <button
+                  className="bg-red-600 text-white px-3 py-1 rounded shadow flex items-center gap-1 hover:bg-red-700"
+                  onClick={() => handleDeleteLetter(letter._id)}
+                >
+                  <Trash2 className="w-4 h-4" /> Delete
+                </button>
               </div>
             </div>
           ))}

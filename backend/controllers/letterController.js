@@ -177,9 +177,12 @@ export const createLetter = async (req, res) => {
 // GET ALL LETTERS
 export const getLetters = async (req, res) => {
   try {
+    console.log("Fetching all letters from the database...");
     const letters = await Letter.find();
+    console.log("Fetched letters:", letters);
     res.status(200).json(letters);
   } catch (error) {
+    console.error("Error in getLetters:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -303,5 +306,25 @@ export const getSentLetters = async (req, res) => {
   } catch (error) {
     console.error("Error in getSentLetters:", error);
     res.status(500).json({ error: error.message });
+  }
+};
+
+// DELETE LETTER
+export const deleteLetter = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log("Received request to delete letter with ID:", id); // Debugging log
+    const deletedLetter = await Letter.findByIdAndDelete(id);
+
+    if (!deletedLetter) {
+      console.log("Letter not found with ID:", id); // Debugging log
+      return res.status(404).json({ error: "Letter not found or already deleted" });
+    }
+
+    console.log("Letter deleted successfully:", deletedLetter); // Debugging log
+    res.status(200).json({ message: "Letter deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting letter:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
