@@ -44,8 +44,8 @@ export const Sidebar = ({
     <>
       {/* Fixed Top Toggle Button for Mobile */}
       <div className="fixed top-0 left-0 w-full bg-white border-b md:hidden z-50 flex items-center justify-between p-4">
-        <h1 className="text-xl font-semibold text-gray-800">LetterFlow</h1>
-        <button onClick={() => setIsOpen(!isOpen)} className="text-gray-800">
+        <h1 className="text-xl font-semibold text-main-text">LetterFlow</h1>
+        <button onClick={() => setIsOpen(!isOpen)} className="text-main-text">
           {isOpen ? (
             <XIcon className="w-6 h-6" />
           ) : (
@@ -75,7 +75,7 @@ export const Sidebar = ({
           {/* Logo Section */}
           <div className="px-5 py-4">
             <h1
-              className={`text-2xl font-bold text-gray-900 transition-all ${
+              className={`text-2xl font-bold text-main-text transition-all ${
                 !isOpen && "scale-0"
               }`}
             >
@@ -91,21 +91,21 @@ export const Sidebar = ({
                 <NavLink
                   key={item.label}
                   to={item.path}
-                  className={({ isActive }) =>
-                    `flex items-center rounded-md text-[16px] transition-all
-                    ${
-                      isOpen
-                        ? "w-full gap-8 px-4 py-2.5"
-                        : "justify-center py-2.5"
-                    }
+                  className={({ isActive }) => {
+                    const iconColorClasses = isActive
+                      ? "text-hover-gold"
+                      : "text-main-text group-hover:text-hover-gold";
+
+                    return `flex items-center rounded-md text-[16px] transition-all group
+                    ${isOpen ? "w-full gap-8 px-4 py-2.5" : "justify-center py-2.5"}
                     ${
                       isActive
-                        ? "bg-blue-50 text-blue-600 font-medium"
-                        : "text-[#6b7280] hover:bg-gray-50 hover:text-gray-900"
-                    }`
-                  }
+                        ? "bg-active-bg-dark font-medium text-hover-gold"
+                        : "text-main-text hover:bg-gray-50 hover:text-hover-gold"
+                    }`;
+                  }}
                 >
-                  <item.icon className={`w-[22px] h-[22px] flex-shrink-0`} />
+                  <item.icon className={`w-[22px] h-[22px] flex-shrink-0 ${iconColorClasses}`} />
                   {isOpen && (
                     <span className="flex-grow truncate">
                       {item.label}

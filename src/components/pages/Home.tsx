@@ -224,8 +224,8 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 variants={wordVariants}
                 className="relative"
               >
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight font-extrabold text-gray-900">
-                  <span className="block bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight font-extrabold text-main-text">
+                  <span className="block">
                     {t.title.split("").map((char, i) => (
                       <motion.span
                         key={i}
@@ -237,7 +237,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                       </motion.span>
                     ))}
                   </span>
-                  <span className="block mt-2 sm:mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-blue-600">
+                  <span className="block mt-2 sm:mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-main-text">
                     {t.subtitle.split("").map((char, i) => (
                       <motion.span
                         key={i}
@@ -291,7 +291,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="text-3xl sm:text-4xl font-extrabold text-gray-900 sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600"
+                className="text-3xl sm:text-4xl font-extrabold text-main-text sm:text-5xl hover:text-hover-gold transition-colors duration-200"
               >
                 {t.featuresHeading}
               </motion.h2>
@@ -317,13 +317,13 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 >
                   <div>
                     <span className="p-2 sm:p-3 bg-blue-50 rounded-xl inline-block group-hover:bg-blue-100 transition-colors duration-200">
-                      <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                      <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-main-text group-hover:text-hover-gold" />
                     </span>
                   </div>
-                  <h3 className="mt-4 sm:mt-6 text-lg sm:text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+                  <h3 className="mt-4 sm:mt-6 text-lg sm:text-xl font-semibold text-main-text group-hover:text-hover-gold transition-colors duration-200">
                     {feature.name[lang]}
                   </h3>
-                  <p className="mt-3 sm:mt-4 text-sm sm:text-base text-gray-500 leading-relaxed">
+                  <p className="mt-3 sm:mt-4 text-sm sm:text-base text-main-text leading-relaxed">
                     {feature.description[lang]}
                   </p>
                 </motion.div>
@@ -343,7 +343,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="text-3xl sm:text-4xl font-extrabold text-gray-900 sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600"
+                className="text-3xl sm:text-4xl font-extrabold text-main-text sm:text-5xl hover:text-hover-gold transition-colors duration-200"
               >
                 {lang === "am"
                   ? "የሙያተኛ አገልግሎቶቻችን"
@@ -373,13 +373,13 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 >
                   <div>
                     <span className="p-3 sm:p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl inline-block shadow-md group-hover:shadow-lg transition-all duration-200">
-                      <service.icon className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+                      <service.icon className="h-6 w-6 sm:h-7 sm:w-7 text-main-text group-hover:text-hover-gold" />
                     </span>
                   </div>
-                  <h3 className="mt-4 sm:mt-6 text-xl sm:text-2xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+                  <h3 className="mt-4 sm:mt-6 text-xl sm:text-2xl font-semibold text-main-text group-hover:text-hover-gold transition-colors duration-200">
                     {service.name[lang]}
                   </h3>
-                  <p className="mt-3 sm:mt-4 text-base sm:text-lg text-gray-600 leading-relaxed">
+                  <p className="mt-3 sm:mt-4 text-base sm:text-lg text-main-text leading-relaxed">
                     {service.description[lang]}
                   </p>
                 </motion.div>
