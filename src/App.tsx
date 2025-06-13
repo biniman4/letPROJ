@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { NotificationProvider } from "./context/NotificationContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { InboxProvider } from "./context/InboxContext";
 
 import { Sidebar } from "./components/layout/Sidebar";
 import { Header } from "./components/layout/Header";
@@ -91,107 +92,112 @@ export function App() {
   };
 
   return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <NotificationProvider>
-          <Router>
-            <>
-              <ToastContainer />
-              <Routes>
-                <Route path="/login" element={<Login onLogin={handleLogin} />} />
-                <Route path="/forgot-password" element={<Forget />} />
-                <Route
-                  path="/reset-password/:token"
-                  element={<ResetPassword />}
-                />
-                <Route path="/" element={<Home onLogin={handleLogin} />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <PrivateRoute>
-                      <Dashboard />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/new-letter"
-                  element={
-                    <PrivateRoute>
-                      <NewLetter />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/inbox"
-                  element={
-                    <PrivateRoute>
-                      <Inbox />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/sent"
-                  element={
-                    <PrivateRoute>
-                      <Sent />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/archive"
-                  element={
-                    <PrivateRoute>
-                      <Archive />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/notifications"
-                  element={
-                    <PrivateRoute>
-                      <Notifications />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/users"
-                  element={
-                    <PrivateRoute>
-                      <Users />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/settings"
-                  element={
-                    <PrivateRoute>
-                      <Settings />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/profile"
-                  element={
-                    <PrivateRoute>
-                      <Profile />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/admin"
-                  element={
-                    <PrivateRoute adminRequired={true}>
-                      <AdminPanel />
-                    </PrivateRoute>
-                  }
-                />
-              </Routes>
-            </>
-          </Router>
-        </NotificationProvider>
-      </LanguageProvider>
-    </ThemeProvider>
+    <InboxProvider>
+      <ThemeProvider>
+        <LanguageProvider>
+          <NotificationProvider>
+            <Router>
+              <>
+                <ToastContainer />
+                <Routes>
+                  <Route
+                    path="/login"
+                    element={<Login onLogin={handleLogin} />}
+                  />
+                  <Route path="/forgot-password" element={<Forget />} />
+                  <Route
+                    path="/reset-password/:token"
+                    element={<ResetPassword />}
+                  />
+                  <Route path="/" element={<Home onLogin={handleLogin} />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <PrivateRoute>
+                        <Dashboard />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/new-letter"
+                    element={
+                      <PrivateRoute>
+                        <NewLetter />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/inbox"
+                    element={
+                      <PrivateRoute>
+                        <Inbox />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/sent"
+                    element={
+                      <PrivateRoute>
+                        <Sent />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/archive"
+                    element={
+                      <PrivateRoute>
+                        <Archive />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/notifications"
+                    element={
+                      <PrivateRoute>
+                        <Notifications />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/users"
+                    element={
+                      <PrivateRoute>
+                        <Users />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/settings"
+                    element={
+                      <PrivateRoute>
+                        <Settings />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <PrivateRoute>
+                        <Profile />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin"
+                    element={
+                      <PrivateRoute adminRequired={true}>
+                        <AdminPanel />
+                      </PrivateRoute>
+                    }
+                  />
+                </Routes>
+              </>
+            </Router>
+          </NotificationProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </InboxProvider>
   );
 }
 /*******  0cfabed7-dce5-43a5-8d65-b66ce1d202f6  *******/
