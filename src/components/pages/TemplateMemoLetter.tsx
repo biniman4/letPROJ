@@ -54,8 +54,6 @@ const TemplateMemoLetter = ({
   copyTo?: React.ReactNode;
   children?: React.ReactNode;
 }) => {
-  const [comment, setComment] = useState("");
-  const [comments, setComments] = useState<string[]>([]);
   const [userName, setUserName] = useState("");
   const [userDepartment, setUserDepartment] = useState("");
   const [departments, setDepartments] = useState<string[]>([]);
@@ -82,13 +80,6 @@ const TemplateMemoLetter = ({
       user.department && user.department !== "undefined" ? user.department : ""
     );
   }, []);
-
-  const handleSendComment = () => {
-    if (comment.trim()) {
-      setComments((prev) => [...prev, comment]);
-      setComment("");
-    }
-  };
 
   return (
     <div
@@ -185,115 +176,6 @@ const TemplateMemoLetter = ({
             <span className="text-gray-400">Enter letter content</span>
           )}
         </div>
-      </div>
-
-      {/* COMMENT SECTION */}
-      <div
-        className="px-2 xs:px-4 sm:px-8 pb-2 rounded-lg mt-4"
-        style={{
-          background: "linear-gradient(90deg, #f3f7fa 0%, #e3f0fa 100%)",
-          border: "1.5px solid #b07642",
-          boxShadow: "0 2px 8px 0 rgba(176,118,66,0.07)",
-        }}
-      >
-        {/* Department Selector */}
-        {/* <div className="flex flex-col gap-1 mb-2 pt-3"> */}
-        {/* <label className="block text-xs text-gray-500 font-semibold mb-1">
-            Department/Sector
-          </label>
-          <select
-            className="w-full max-w-xs rounded px-3 py-2 border mb-2"
-            value={selectedDepartment}
-            onChange={(e) => setSelectedDepartment(e.target.value)}
-          >
-            <option value="">-- Select Department --</option>
-            {departments.map((dept) => (
-              <option key={dept} value={dept}>
-                {dept}
-              </option>
-            ))}
-          </select> */}
-        {/* <div> */}
-        {/* <span className="block text-xs text-gray-500 font-semibold mb-1">
-              NAME
-            </span>
-            <span className="block text-base font-bold text-[#03619c]">
-              {userName || <span className="text-gray-400">No Name</span>}
-            </span> */}
-        {/* </div> */}
-        {/* </div> */}
-        {/* <div className="text-sm font-medium text-gray-700 mb-2 mt-2">
-          Comment:
-        </div> */}
-        {/* List all comments */}
-        {/* <div className="flex flex-col gap-2">
-          {comments.length > 0 ? (
-            <div className="flex flex-col gap-2">
-              {comments.map((c, idx) => (
-                <div
-                  key={idx}
-                  className="text-base text-gray-800 min-h-[40px] rounded px-3 py-2 shadow-sm"
-                  style={{
-                    wordBreak: "break-word",
-                    overflowWrap: "break-word",
-                    whiteSpace: "pre-wrap",
-                    maxWidth: "100%",
-                    outline: "none",
-                    background: "#fffbe9",
-                  }}
-                >
-                  {c}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <span className="text-gray-400 text-base min-h-[40px]">
-              No comment sent yet.
-            </span>
-          )}
-          <div className="flex gap-2 mt-2">
-            <input
-              type="text"
-              className="flex-1 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#b07642] text-gray-800 shadow-sm"
-              placeholder="Type your comment..."
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSendComment();
-              }}
-              style={{
-                wordBreak: "break-word",
-                overflowWrap: "break-word",
-                whiteSpace: "pre-line",
-                maxWidth: "100%",
-                background:
-                  "linear-gradient(90deg, #f9e7d0 0%, #f3f7fa 50%, #e3f0fa 100%)",
-              }}
-            />
-            <button
-              className="bg-[#b07642] hover:bg-[#a06a3a] text-white font-semibold px-4 py-2 rounded shadow transition-colors flex items-center gap-1"
-              onClick={handleSendComment}
-              type="button"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M12 5v14m7-7H5"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Add
-            </button>
-          </div>
-        </div> */}
       </div>
 
       {/* SIGNATURE */}
@@ -508,21 +390,11 @@ const TemplateMemoLetter = ({
                 }}
               >
                 <svg width="18" height="18" fill="white" viewBox="0 0 24 24">
-                  <rect
-                    x="4"
-                    y="4"
-                    width="16"
-                    height="16"
-                    rx="2"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="2"
-                  />
                   <path
-                    d="M8 4v4h8V4"
-                    fill="none"
+                    d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"
                     stroke="white"
                     strokeWidth="2"
+                    fill="none"
                   />
                 </svg>
               </span>
@@ -530,7 +402,7 @@ const TemplateMemoLetter = ({
                 className="text-[#194b5a] text-[12px] xs:text-xs sm:text-base md:text-lg mt-1 text-center"
                 style={{ fontFamily: "inherit" }}
               >
-                +251 118 72 02 83
+                +251 118 96 10 51
               </span>
             </div>
           </div>

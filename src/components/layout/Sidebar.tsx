@@ -105,11 +105,19 @@ export const Sidebar = ({
                     }`;
                   }}
                 >
-                  <item.icon className={`w-[22px] h-[22px] flex-shrink-0 ${iconColorClasses}`} />
-                  {isOpen && (
-                    <span className="flex-grow truncate">
-                      {item.label}
-                    </span>
+                  {({ isActive }) => (
+                    <>
+                      <item.icon 
+                        className={`w-[22px] h-[22px] flex-shrink-0 ${
+                          isActive ? "text-hover-gold" : "text-main-text group-hover:text-hover-gold"
+                        }`} 
+                      />
+                      {isOpen && (
+                        <span className="flex-grow truncate">
+                          {item.label}
+                        </span>
+                      )}
+                    </>
                   )}
                 </NavLink>
               ))}
