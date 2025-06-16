@@ -261,21 +261,14 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 {t.description}
               </motion.p>
 
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7 }}
-                className="mt-8 sm:mt-12 md:mt-16 max-w-md mx-auto sm:flex sm:justify-center md:mt-20 gap-4 px-4 sm:px-0"
-              >
-                <div className="rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 w-full">
-                  <button
-                    onClick={() => setShowLogin(true)}
-                    className="w-full flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 border border-transparent text-base sm:text-lg font-medium rounded-xl text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transform hover:-translate-y-0.5 transition-all duration-200"
-                  >
-                    {t.login}
-                  </button>
-                </div>
-              </motion.div>
+              <div className="mt-10 flex justify-center">
+                <button
+                  onClick={() => navigate('/login')}
+                  className="px-12 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold text-lg shadow-lg hover:from-blue-700 hover:to-blue-900 transition duration-300 transform hover:scale-105"
+                >
+                  {t.login}
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
-  useNavigate,
+  Navigate,
 } from "react-router-dom";
 import { NotificationProvider } from "./context/NotificationContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -32,13 +32,13 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export function App() {
-  // State to track if user is authenticated
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  // Initialize states directly from localStorage for synchronous access on first render
+  const initialUser = localStorage.getItem("user");
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!initialUser);
+  const [isAdmin, setIsAdmin] = useState<boolean>(initialUser ? JSON.parse(initialUser).role === "admin" : false);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
-    // Check if user is admin - you'll need to implement this logic
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     setIsAdmin(user.role === "admin");
   };
@@ -46,6 +46,8 @@ export function App() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setIsAdmin(false);
+    localStorage.removeItem("user"); // Ensure user data is cleared from localStorage on logout
+    localStorage.removeItem("userId"); // Ensure userId is cleared from localStorage on logout
   };
 
   const PrivateRoute = ({
@@ -55,19 +57,14 @@ export function App() {
     children: React.ReactNode;
     adminRequired?: boolean;
   }) => {
-    const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(true);
 
-    useEffect(() => {
-      if (!isAuthenticated) {
-        navigate("/login");
-      } else if (adminRequired && !isAdmin) {
-        navigate("/dashboard");
-      }
-    }, [isAuthenticated, isAdmin, navigate]);
+    if (!isAuthenticated) {
+      return <Navigate to="/login" replace />;
+    }
 
-    if (!isAuthenticated || (adminRequired && !isAdmin)) {
-      return null;
+    if (adminRequired && !isAdmin) {
+      return <Navigate to="/dashboard" replace />;
     }
 
     return (

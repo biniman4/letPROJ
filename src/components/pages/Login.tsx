@@ -44,7 +44,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
   const goHome = () => navigate("/");
 
   return (
-    <div className="h-screen bg-gradient-to-br from-blue-500 via-teal-500 to-indigo-500 flex items-center justify-center">
+    <div className="h-screen bg-gray-100 flex items-center justify-center">
       <div
         className="w-full max-w-4xl bg-white p-10 rounded-3xl shadow-2xl border border-gray-200"
         style={{ height: "90%" }}
