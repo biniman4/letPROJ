@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import DepartmentSelector from "./DepartmentSelector";
 import { useInbox } from "../../context/InboxContext";
+import { useLanguage } from "./LanguageContext";
 
 interface Letter {
   _id: string;
@@ -25,6 +26,20 @@ interface Letter {
   starred: boolean;
   attachments?: Array<{ filename: string }>;
 }
+
+// Format date function (for modal and lists) - Moved here to be accessible
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleString("en-US", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+};
 
 const getLetterSentDate = (dateString: string) => {
   const d = new Date(dateString);
@@ -87,6 +102,7 @@ const Inbox = () => {
     fetchLetters,
     updateLetterStatus,
   } = useInbox();
+  const { t } = useLanguage();
 
   // Calculate total pages
   const totalPages = Math.ceil(totalLetters / itemsPerPage);
@@ -171,10 +187,10 @@ const Inbox = () => {
         updateUnreadLetters(unreadCount);
       } catch (error) {
         console.error("Error updating letter status:", error);
-        toast.error("Error updating letter status.");
+        toast.error(t.inbox.errorUpdatingStatus);
       }
     },
-    [letters, updateUnreadLetters, updateLetterStatus]
+    [letters, updateUnreadLetters, updateLetterStatus, t.inbox.errorUpdatingStatus]
   );
 
   const handleStarToggle = useCallback(
@@ -197,16 +213,16 @@ const Inbox = () => {
         }
 
         if (newStarredState) {
-          toast.success(`Letter "${letter.subject}" starred!`);
+          toast.success(t.inbox.letterStarred(letter.subject));
         } else {
-          toast.info(`Letter "${letter.subject}" unstarred.`);
+          toast.info(t.inbox.letterUnstarred(letter.subject));
         }
       } catch (error) {
         console.error("Error toggling star:", error);
-        toast.error("Error toggling star.");
+        toast.error(t.inbox.errorTogglingStar);
       }
     },
-    [openLetter, updateLetterStatus]
+    [openLetter, updateLetterStatus, t.inbox.letterStarred, t.inbox.letterUnstarred, t.inbox.errorTogglingStar]
   );
 
   // Memoize the letter list item component
@@ -242,7 +258,7 @@ const Inbox = () => {
               <div className="flex items-center space-x-2">
                 {letter.priority === "urgent" && (
                   <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
-                    Urgent
+                    {t.inbox.filterOptions.urgent}
                   </span>
                 )}
                 <span className="text-sm text-gray-500">
@@ -271,7 +287,7 @@ const Inbox = () => {
         </div>
       )
     );
-  }, []);
+  }, [t.inbox.filterOptions.urgent]);
 
   // Memoize pagination handlers
   const handleNextPage = useCallback(() => {
@@ -290,20 +306,6 @@ const Inbox = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedFilter, search]);
-
-  // Format date function (for modal and lists)
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString("en-US", {
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true,
-    });
-  };
 
   // Helper: receiver full name, fallback to username part of email if name not present
   const getRecipientDisplayName = (letter: Letter) =>
@@ -329,7 +331,7 @@ const Inbox = () => {
         .then((users) => setDepartmentUsers(users))
         .catch((error) => {
           console.error("Error fetching users:", error);
-          toast.error("Error fetching users for the selected department.");
+          toast.error(t.inbox.errorFetchingUsers);
           setDepartmentUsers([]);
         })
         .finally(() => {
@@ -342,7 +344,7 @@ const Inbox = () => {
       setSelectedUsers([]);
       setToEmployee("");
     }
-  }, [selectedDepartment]);
+  }, [selectedDepartment, t.inbox.errorFetchingUsers]);
 
   // Forward letter logic (send to actual users)
   const handleForwardLetter = async () => {
@@ -362,8 +364,8 @@ const Inbox = () => {
           department: recipient.department || selectedDepartment,
           priority: openLetter.priority,
           content: forwardComment
-            ? `${forwardComment}\n\n--- Forwarded Message ---\n\n${openLetter.content}`
-            : `--- Forwarded Message ---\n\n${openLetter.content}`,
+            ? `${forwardComment}\n\n--- ${t.inbox.forwardedMessage} ---\n\n${openLetter.content}`
+            : `--- ${t.inbox.forwardedMessage} ---\n\n${openLetter.content}`,
           ccEmployees: {}, // Empty object for CC
           cc: [], // Empty array for CC
           status: "sent",
@@ -375,14 +377,14 @@ const Inbox = () => {
       await Promise.all(forwardPromises);
 
       const recipientNames = recipients.map((u) => u.name).join(", ");
-      setForwardStatus(`Message forwarded to: ${recipientNames}`);
+      setForwardStatus(`${t.inbox.messageForwarded} ${recipientNames}`);
       setTimeout(() => setForwardStatus(null), 3000);
       setShowForwardModal(false);
       setSelectedDepartment("");
       setSelectedUsers([]);
       setToEmployee("");
       setForwardComment("");
-      toast.success(`Letter forwarded to: ${recipientNames}`);
+      toast.success(`${t.inbox.messageForwarded} ${recipientNames}`);
 
       // Refresh the letters list
       const res = await axios.get("http://localhost:5000/api/letters");
@@ -409,8 +411,8 @@ const Inbox = () => {
       updateUnreadLetters(unreadCount);
     } catch (error) {
       console.error("Error forwarding letter:", error);
-      setForwardStatus("Failed to forward message.");
-      toast.error("Failed to forward message.");
+      setForwardStatus(t.inbox.failedToForward);
+      toast.error(t.inbox.failedToForward);
     }
   };
 
@@ -419,8 +421,8 @@ const Inbox = () => {
       <div className="mb-6">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-semibold text-gray-800">Inbox</h2>
-            <p className="text-gray-600">Manage your incoming letters</p>
+            <h2 className="text-2xl font-semibold text-gray-800">{t.inbox.title}</h2>
+            <p className="text-gray-600">{t.inbox.manageLetters}</p>
           </div>
           <button
             onClick={() => fetchLetters(true)}
@@ -430,7 +432,7 @@ const Inbox = () => {
             {isRefreshing ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                Refreshing...
+                {t.inbox.refreshing}
               </>
             ) : (
               <>
@@ -447,7 +449,7 @@ const Inbox = () => {
                     d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                   />
                 </svg>
-                Refresh
+                {t.inbox.refresh}
               </>
             )}
           </button>
@@ -458,33 +460,37 @@ const Inbox = () => {
         <div className="p-4 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
             <div className="flex space-x-2">
-              {["all", "unread", "starred", "urgent", "seen"].map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setSelectedFilter(filter)}
-                  className={`px-3 py-1 rounded-md text-sm ${
-                    selectedFilter === filter
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  {filter.charAt(0).toUpperCase() + filter.slice(1)}
-                </button>
-              ))}
+              {[t.inbox.filterOptions.all, t.inbox.filterOptions.unread, t.inbox.filterOptions.starred, t.inbox.filterOptions.urgent, t.inbox.filterOptions.seen].map((filterKey) => {
+                // Map filter keys to their display names for buttons
+                const filterValue = Object.keys(t.inbox.filterOptions).find(key => t.inbox.filterOptions[key as keyof typeof t.inbox.filterOptions] === filterKey);
+                return (
+                  <button
+                    key={filterValue}
+                    onClick={() => setSelectedFilter(filterValue || "all")}
+                    className={`px-3 py-1 rounded-md text-sm ${
+                      selectedFilter === filterValue
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    {filterKey}
+                  </button>
+                );
+              })}
             </div>
             <div className="flex items-center space-x-2">
               <div className="relative w-full sm:w-64">
                 <SearchIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search letters..."
+                  placeholder={t.inbox.searchPlaceholder}
                   onChange={(e) => debouncedSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <button className="px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700">
                 <FilterIcon className="h-5 w-5 mr-2 -ml-1" />
-                Filter
+                {t.inbox.filterButton}
               </button>
             </div>
           </div>
@@ -495,11 +501,11 @@ const Inbox = () => {
           {loadingLetters ? (
             <div className="p-4 text-center">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
-              <p className="mt-2 text-gray-600">Loading letters...</p>
+              <p className="mt-2 text-gray-600">{t.inbox.loadingLetters}</p>
             </div>
           ) : currentLetters.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
-              No letters found.
+              {t.inbox.noLettersFound}
             </div>
           ) : (
             currentLetters.map((letter) => (
@@ -516,12 +522,12 @@ const Inbox = () => {
         {/* Pagination */}
         <div className="p-4 border-t border-gray-200 flex items-center justify-between">
           <p className="text-sm text-gray-700">
-            Showing <span className="font-medium">{startIndex + 1}</span> to{" "}
+            {t.inbox.showing} <span className="font-medium">{startIndex + 1}</span> {t.inbox.to}{" "}
             <span className="font-medium">
               {Math.min(endIndex, filteredLetters.length)}
             </span>{" "}
-            of <span className="font-medium">{filteredLetters.length}</span>{" "}
-            letters
+            {t.inbox.of} <span className="font-medium">{filteredLetters.length}</span>{" "}
+            {t.inbox.letters}
           </p>
           <div className="flex space-x-2">
             <button
@@ -533,7 +539,7 @@ const Inbox = () => {
                   : "text-gray-600 hover:bg-gray-50"
               }`}
             >
-              Previous
+              {t.inbox.previous}
             </button>
             <button
               onClick={handleNextPage}
@@ -544,7 +550,7 @@ const Inbox = () => {
                   : "text-gray-600 hover:bg-gray-50"
               }`}
             >
-              Next
+              {t.inbox.next}
             </button>
           </div>
         </div>
@@ -564,27 +570,27 @@ const Inbox = () => {
             {!viewMode ? (
               <div className="p-4">
                 <div className="mb-2 text-gray-700">
-                  <strong>Subject:</strong> {openLetter.subject}
+                  <strong>{t.inbox.subject}</strong> {openLetter.subject}
                 </div>
                 <div className="mb-2 text-gray-700">
-                  <strong>To:</strong> {getRecipientDisplayName(openLetter)}
+                  <strong>{t.inbox.recipient}</strong> {getRecipientDisplayName(openLetter)}
                 </div>
                 <div className="mb-2 text-gray-700">
-                  <strong>From:</strong> {getSenderDisplayName(openLetter)}
+                  <strong>{t.inbox.from}</strong> {getSenderDisplayName(openLetter)}
                 </div>
                 <div className="mb-2 text-gray-700">
-                  <strong>Department:</strong> {openLetter.department}
+                  <strong>{t.inbox.department}</strong> {openLetter.department}
                 </div>
                 <div className="mb-2 text-gray-700">
-                  <strong>Priority:</strong> {openLetter.priority}
+                  <strong>{t.inbox.priority}</strong> {openLetter.priority}
                 </div>
                 <div className="mb-2 text-gray-700">
-                  <strong>Date:</strong> {formatDate(openLetter.createdAt)}
+                  <strong>{t.inbox.date}</strong> {formatDate(openLetter.createdAt)}
                 </div>
                 {openLetter.attachments &&
                   openLetter.attachments.length > 0 && (
                     <div className="mb-2">
-                      <strong>Attachment:</strong>
+                      <strong>{t.inbox.attachment}</strong>
                       <ul>
                         {openLetter.attachments.map((file, idx) => (
                           <li key={idx} className="flex items-center space-x-2">
@@ -595,7 +601,7 @@ const Inbox = () => {
                               className="text-blue-600 hover:text-blue-800 underline"
                               download={file.filename}
                             >
-                              Download
+                              {t.inbox.download}
                             </a>
                             <a
                               href={`http://localhost:5000/api/letters/view/${
@@ -605,7 +611,7 @@ const Inbox = () => {
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              View
+                              {t.inbox.view}
                             </a>
                             <span className="text-gray-700">
                               {file.filename}
@@ -619,7 +625,7 @@ const Inbox = () => {
                   onClick={() => setViewMode(true)}
                   className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 mt-4"
                 >
-                  View
+                  {t.inbox.viewButton}
                 </button>
               </div>
             ) : (
@@ -637,13 +643,13 @@ const Inbox = () => {
                     onClick={() => setViewMode(false)}
                     className="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700"
                   >
-                    Back
+                    {t.inbox.backButton}
                   </button>
                   <button
                     onClick={() => setShowForwardModal(true)}
                     className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700"
                   >
-                    Forward
+                    {t.inbox.forwardButton}
                   </button>
                 </div>
                 {/* Forward Modal */}
@@ -651,12 +657,11 @@ const Inbox = () => {
                   <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
                       <h3 className="text-lg font-semibold mb-4">
-                        Forward Letter
+                        {t.inbox.forwardLetter}
                       </h3>
                       {/* Department Selector */}
                       <div className="mb-4">
                         <DepartmentSelector
-                          value={selectedDepartment}
                           onChange={(value) => {
                             setSelectedDepartment(value);
                             setSelectedUsers([]);
@@ -667,7 +672,7 @@ const Inbox = () => {
                       {/* To Field */}
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          To
+                          {t.inbox.recipient}
                         </label>
                         <div className="relative">
                           <input
@@ -675,8 +680,8 @@ const Inbox = () => {
                             className="block w-full px-3 py-2 border border-gray-300 rounded-md"
                             placeholder={
                               loadingUsers
-                                ? "Loading users..."
-                                : "Select employee"
+                                ? t.inbox.loadingUsers
+                                : t.inbox.selectEmployee
                             }
                             value={toEmployee}
                             onChange={(e) => setToEmployee(e.target.value)}
@@ -701,11 +706,11 @@ const Inbox = () => {
                       {/* Comment Field */}
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Add Comment (Optional)
+                          {t.inbox.addComment}
                         </label>
                         <textarea
                           className="block w-full px-3 py-2 border border-gray-300 rounded-md"
-                          placeholder="Add a comment to the forwarded message..."
+                          placeholder={t.inbox.addCommentPlaceholder}
                           value={forwardComment}
                           onChange={(e) => setForwardComment(e.target.value)}
                           rows={3}
@@ -715,12 +720,12 @@ const Inbox = () => {
                       {loadingUsers ? (
                         <div className="mb-4 p-4 text-center">
                           <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
-                          <p className="mt-2 text-gray-600">Loading users...</p>
+                          <p className="mt-2 text-gray-600">{t.inbox.loadingUsers}</p>
                         </div>
                       ) : departmentUsers.length > 0 ? (
                         <div className="mb-4">
                           <label className="block mb-2 text-sm font-medium text-gray-700">
-                            Additional Recipients (Optional)
+                            {t.inbox.additionalRecipients}
                           </label>
                           <div className="border rounded-lg p-2 max-h-48 overflow-y-auto">
                             {departmentUsers.map((user) => (
@@ -772,14 +777,14 @@ const Inbox = () => {
                           }}
                           className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                         >
-                          Cancel
+                          {t.inbox.cancel}
                         </button>
                         <button
                           onClick={handleForwardLetter}
                           disabled={!toEmployee && selectedUsers.length === 0}
                           className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          Forward
+                          {t.inbox.forwardButton}
                         </button>
                       </div>
                     </div>

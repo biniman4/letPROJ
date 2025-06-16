@@ -59,6 +59,7 @@ export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [appLoading, setAppLoading] = useState<boolean>(true); // New state for overall app loading
+  const [isOpen, setIsOpen] = useState(true); // Move isOpen state here
 
   useEffect(() => {
     // Simulate a brief loading time for the logo and then check authentication
@@ -94,7 +95,7 @@ export function App() {
     children: React.ReactNode;
     adminRequired?: boolean;
   }) => {
-    const [isOpen, setIsOpen] = useState(true); // Reintroduce isOpen state for sidebar
+    // Remove isOpen state from here since it's now in the parent
 
     // Wait for the main app to finish loading before checking auth status
     if (appLoading) {

@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { GlobeIcon } from "lucide-react";
+import { SupportedLang } from "../pages/LanguageContext";
 
 interface PublicNavbarProps {
-  lang?: "am" | "en";
-  onLanguageChange?: (lang: "am" | "en") => void;
+  lang?: SupportedLang;
+  onLanguageChange?: (lang: SupportedLang) => void;
 }
 
 export const PublicNavbar = ({
-  lang = "am",
+  lang = SupportedLang.Am,
   onLanguageChange,
 }: PublicNavbarProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -63,11 +64,11 @@ export const PublicNavbar = ({
 
             {/* Language Switch */}
             <button
-              onClick={() => onLanguageChange?.(lang === "am" ? "en" : "am")}
+              onClick={() => onLanguageChange?.(lang === SupportedLang.Am ? SupportedLang.En : SupportedLang.Am)}
               className="flex items-center px-3 py-1 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors duration-200 text-sm font-medium"
             >
               <GlobeIcon className="w-4 h-4 mr-1.5" />
-              {lang === "am" ? "Switch to English" : "ወደ አማርኛ ቀይር"}
+              {lang === SupportedLang.Am ? "Switch to English" : "ወደ አማርኛ ቀይር"}
             </button>
           </div>
         </div>

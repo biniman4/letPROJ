@@ -14,6 +14,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import TemplateMemoLetter from "./TemplateMemoLetter";
+import { useLanguage } from "./LanguageContext";
 
 interface Attachment {
   filename: string;
@@ -49,6 +50,7 @@ const Sent: React.FC = () => {
   const [form] = Form.useForm();
   const [attachment, setAttachment] = useState<File | null>(null);
   const memoPrintRef = useRef<HTMLDivElement>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchSentLetters();
@@ -64,7 +66,7 @@ const Sent: React.FC = () => {
     } catch (error) {
       console.error("Error fetching sent letters:", error);
       setLoading(false);
-      toast.error("Failed to fetch sent letters.");
+      toast.error(t.sent.errorFetchingSentLetters);
     }
   };
 
@@ -84,7 +86,7 @@ const Sent: React.FC = () => {
       link.remove();
     } catch (error) {
       console.error("Error downloading file:", error);
-      toast.error("Failed to download file");
+      toast.error(t.sent.errorDownloadingFile);
     }
   };
 
@@ -107,7 +109,7 @@ const Sent: React.FC = () => {
       setPreviewVisible(true);
     } catch (error) {
       console.error("Error viewing file:", error);
-      toast.error("Failed to view file");
+      toast.error(t.sent.errorViewingFile);
     }
   };
 
@@ -131,7 +133,7 @@ const Sent: React.FC = () => {
         printWindow.document.write(`
           <html>
             <head>
-              <title>Print Letter</title>
+              <title>${t.sent.memoLetterView}</title>
               <style>
                 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;700&display=swap");
                 body {
@@ -161,42 +163,42 @@ const Sent: React.FC = () => {
 
   const columns = [
     {
-      title: "Subject",
+      title: t.sent.subjectColumn,
       dataIndex: "subject",
       key: "subject",
     },
     {
-      title: "To",
+      title: t.sent.toColumn,
       dataIndex: "to",
       key: "to",
     },
     {
-      title: "Department",
+      title: t.sent.departmentColumn,
       dataIndex: "department",
       key: "department",
     },
     {
-      title: "Date",
+      title: t.sent.dateColumn,
       dataIndex: "createdAt",
       key: "createdAt",
       render: (date: string) => new Date(date).toLocaleDateString(),
     },
     {
-      title: "Status",
+      title: t.sent.statusColumn,
       dataIndex: "status",
       key: "status",
       render: (status: string) =>
         status.charAt(0).toUpperCase() + status.slice(1),
     },
     {
-      title: "Priority",
+      title: t.sent.priorityColumn,
       dataIndex: "priority",
       key: "priority",
       render: (priority: string) =>
         priority.charAt(0).toUpperCase() + priority.slice(1),
     },
     {
-      title: "Attachments",
+      title: t.sent.attachmentsColumn,
       key: "attachments",
       render: (record: Letter) => (
         <div className="flex gap-2">
@@ -230,13 +232,13 @@ const Sent: React.FC = () => {
               </div>
             ))
           ) : (
-            <span className="text-gray-400">No attachments</span>
+            <span className="text-gray-400">{t.sent.noAttachments}</span>
           )}
         </div>
       ),
     },
     {
-      title: "Memo View",
+      title: t.sent.memoViewColumn,
       key: "memoView",
       render: (record: Letter) => (
         <Button
@@ -245,7 +247,7 @@ const Sent: React.FC = () => {
           onClick={() => handleMemoView(record)}
           size="small"
         >
-          View Memo
+          {t.sent.viewMemoButton}
         </Button>
       ),
     },
@@ -289,13 +291,13 @@ const Sent: React.FC = () => {
       );
 
       setLetters((prev) => [response.data.letter, ...prev]);
-      toast.success("Letter sent successfully!");
+      toast.success(t.sent.letterSentSuccess);
       setComposeVisible(false);
       form.resetFields();
       setAttachment(null);
     } catch (error) {
       console.error("Error sending letter:", error);
-      toast.error("Failed to send the letter.");
+      toast.error(t.sent.failedToSendLetter);
     }
   };
 
@@ -312,19 +314,19 @@ const Sent: React.FC = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Sent Letters</h1>
+        <h1 className="text-2xl font-bold">{t.sent.title}</h1>
         <Button
           type="primary"
           icon={<SendOutlined />}
           onClick={() => setComposeVisible(true)}
         >
-          New Letter
+          {t.sent.newLetterButton}
         </Button>
       </div>
 
       <div className="flex gap-4 mb-4">
         <Input
-          placeholder="Search letters..."
+          placeholder={t.sent.searchPlaceholder}
           prefix={<SearchOutlined />}
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
@@ -335,10 +337,10 @@ const Sent: React.FC = () => {
           onChange={setStatusFilter}
           className="w-40"
         >
-          <Select.Option value="all">All Status</Select.Option>
-          <Select.Option value="sent">Sent</Select.Option>
-          <Select.Option value="delivered">Delivered</Select.Option>
-          <Select.Option value="read">Read</Select.Option>
+          <Select.Option value="all">{t.sent.allStatus}</Select.Option>
+          <Select.Option value="sent">{t.sent.statusSent}</Select.Option>
+          <Select.Option value="delivered">{t.sent.statusDelivered}</Select.Option>
+          <Select.Option value="read">{t.sent.statusRead}</Select.Option>
         </Select>
       </div>
 
@@ -351,7 +353,7 @@ const Sent: React.FC = () => {
       />
 
       <Modal
-        title="Compose New Letter"
+        title={t.sent.composeNewLetter}
         open={composeVisible}
         onCancel={() => {
           setComposeVisible(false);
@@ -362,34 +364,34 @@ const Sent: React.FC = () => {
       >
         <Form form={form} layout="vertical" onFinish={handleSendLetter}>
           <Form.Item
-            label="Subject"
+            label={t.sent.subjectLabel}
             name="subject"
-            rules={[{ required: true, message: "Please enter the subject" }]}
+            rules={[{ required: true, message: t.sent.subjectRequired }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
-            label="Recipient"
+            label={t.sent.recipientLabel}
             name="recipient"
-            rules={[{ required: true, message: "Please enter the recipient" }]}
+            rules={[{ required: true, message: t.sent.recipientRequired }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
-            label="Department"
+            label={t.sent.departmentLabel}
             name="department"
-            rules={[{ required: true, message: "Please enter the department" }]}
+            rules={[{ required: true, message: t.sent.departmentRequired }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
-            label="Content"
+            label={t.sent.contentLabel}
             name="content"
-            rules={[{ required: true, message: "Please enter the content" }]}
+            rules={[{ required: true, message: t.sent.contentRequired }]}
           >
             <Input.TextArea rows={4} />
           </Form.Item>
-          <Form.Item label="Attachment">
+          <Form.Item label={t.sent.attachmentLabel}>
             <div className="flex flex-col gap-2">
               <Input
                 type="file"
@@ -406,7 +408,7 @@ const Sent: React.FC = () => {
                     onClick={removeAttachment}
                     size="small"
                   >
-                    Remove
+                    {t.sent.removeAttachment}
                   </Button>
                 </div>
               )}
@@ -419,7 +421,7 @@ const Sent: React.FC = () => {
               icon={<SendOutlined />}
               block
             >
-              Send Letter
+              {t.sent.sendLetterButton}
             </Button>
           </Form.Item>
         </Form>
@@ -427,12 +429,12 @@ const Sent: React.FC = () => {
 
       {/* Preview Modal */}
       <Modal
-        title="File Preview"
+        title={t.sent.filePreview}
         open={previewVisible}
         onCancel={handlePreviewClose}
         footer={[
           <Button key="close" onClick={handlePreviewClose}>
-            Close
+            {t.sent.closeButton}
           </Button>,
           <Button
             key="download"
@@ -449,7 +451,7 @@ const Sent: React.FC = () => {
               }
             }}
           >
-            Download
+            {t.sent.downloadButton}
           </Button>,
         ]}
         width={800}
@@ -470,10 +472,10 @@ const Sent: React.FC = () => {
           ) : (
             <div className="text-center">
               <p className="text-gray-500">
-                Preview not available for this file type
+                {t.sent.previewNotAvailable}
               </p>
               <p className="text-sm text-gray-400">
-                Please download the file to view it
+                {t.sent.downloadToView}
               </p>
             </div>
           )}
@@ -482,7 +484,7 @@ const Sent: React.FC = () => {
 
       {/* Memo View Modal */}
       <Modal
-        title="Memo Letter View"
+        title={t.sent.memoLetterView}
         open={memoViewVisible}
         onCancel={() => {
           setMemoViewVisible(false);
@@ -496,7 +498,7 @@ const Sent: React.FC = () => {
               setSelectedLetter(null);
             }}
           >
-            Close
+            {t.sent.closeButton}
           </Button>,
           <Button
             key="print"
@@ -504,7 +506,7 @@ const Sent: React.FC = () => {
             icon={<PrinterOutlined />}
             onClick={handlePrint}
           >
-            Print Letter
+            {t.sent.printButton}
           </Button>,
         ]}
         width={800}
@@ -513,9 +515,9 @@ const Sent: React.FC = () => {
           <div className="p-4" ref={memoPrintRef}>
             <TemplateMemoLetter
               subject={selectedLetter.subject}
-              date={new Date(selectedLetter.createdAt).toLocaleDateString()}
+              date={selectedLetter.createdAt}
               recipient={selectedLetter.to}
-              reference=""
+              reference={""}
               body={selectedLetter.content}
               signature={selectedLetter.fromName}
             />

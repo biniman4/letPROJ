@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { SettingsIcon, Bell, Moon, Sun, Mail, User } from "lucide-react";
 import { useNotifications } from "../../context/NotificationContext";
 import { useTheme } from "../../context/ThemeContext";
+import { useLanguage } from "./LanguageContext";
 import axios from "axios";
 
 interface UserProfile {
@@ -15,6 +16,7 @@ interface UserProfile {
 const Settings = () => {
   const { unreadNotifications } = useNotifications();
   const { theme, toggleTheme } = useTheme();
+  const { t } = useLanguage();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [notificationSound, setNotificationSound] = useState(true);
   const [profileName, setProfileName] = useState("");
@@ -65,11 +67,11 @@ const Settings = () => {
       // Update localStorage with new user data
       localStorage.setItem("user", JSON.stringify(response.data));
 
-      setMessage({ type: "success", text: "Profile updated successfully!" });
+      setMessage({ type: "success", text: t.settings.profile.saveChanges });
     } catch (error: any) {
       setMessage({
         type: "error",
-        text: error.response?.data?.message || "Failed to update profile",
+        text: error.response?.data?.message || t.settings.profile.errorUpdating,
       });
     } finally {
       setIsLoading(false);
@@ -90,10 +92,10 @@ const Settings = () => {
             theme === "dark" ? "text-gray-100" : "text-gray-800"
           }`}
         >
-          Settings
+          {t.settings.title}
         </h2>
         <p className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
-          Configure your application preferences
+          {t.settings.profile.title}
         </p>
       </div>
 
@@ -117,7 +119,7 @@ const Settings = () => {
                 theme === "dark" ? "text-gray-100" : "text-gray-900"
               }`}
             >
-              Profile Settings
+              {t.settings.profile.title}
             </h3>
           </div>
 
@@ -144,7 +146,7 @@ const Settings = () => {
                   theme === "dark" ? "text-gray-300" : "text-gray-700"
                 }`}
               >
-                Name
+                {t.settings.profile.name}
               </label>
               <input
                 type="text"
@@ -164,7 +166,7 @@ const Settings = () => {
                   theme === "dark" ? "text-gray-300" : "text-gray-700"
                 }`}
               >
-                Email
+                {t.settings.profile.email}
               </label>
               <input
                 type="email"
@@ -184,7 +186,7 @@ const Settings = () => {
                   theme === "dark" ? "text-gray-300" : "text-gray-700"
                 }`}
               >
-                Phone
+                {t.settings.profile.phone}
               </label>
               <input
                 type="tel"
@@ -203,7 +205,7 @@ const Settings = () => {
                   theme === "dark" ? "text-gray-300" : "text-gray-700"
                 }`}
               >
-                Department/Sector
+                {t.settings.profile.department}
               </label>
               <input
                 type="text"
@@ -225,7 +227,7 @@ const Settings = () => {
                   : "bg-blue-600 hover:bg-blue-700 text-white"
               } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              {isLoading ? "Updating..." : "Update Profile"}
+              {isLoading ? t.settings.profile.saving : t.settings.profile.saveChanges}
             </button>
           </form>
         </div>
@@ -249,7 +251,7 @@ const Settings = () => {
                 theme === "dark" ? "text-gray-100" : "text-gray-900"
               }`}
             >
-              Notification Settings
+              {t.settings.notifications.title}
             </h3>
           </div>
           <div className="space-y-4">
@@ -260,14 +262,14 @@ const Settings = () => {
                     theme === "dark" ? "text-gray-100" : "text-gray-900"
                   }`}
                 >
-                  Email Notifications
+                  {t.settings.notifications.emailNotifications}
                 </h4>
                 <p
                   className={`text-sm ${
                     theme === "dark" ? "text-gray-400" : "text-gray-500"
                   }`}
                 >
-                  Receive notifications via email
+                  {t.settings.notifications.emailNotificationsDesc}
                 </p>
               </div>
               <button
@@ -296,14 +298,14 @@ const Settings = () => {
                     theme === "dark" ? "text-gray-100" : "text-gray-900"
                   }`}
                 >
-                  Notification Sound
+                  {t.settings.notifications.notificationSound}
                 </h4>
                 <p
                   className={`text-sm ${
                     theme === "dark" ? "text-gray-400" : "text-gray-500"
                   }`}
                 >
-                  Play sound for new notifications
+                  {t.settings.notifications.notificationSoundDesc}
                 </p>
               </div>
               <button
@@ -347,7 +349,7 @@ const Settings = () => {
                 theme === "dark" ? "text-gray-100" : "text-gray-900"
               }`}
             >
-              Theme Settings
+              {t.settings.appearance.title}
             </h3>
           </div>
           <div className="flex items-center justify-between">
@@ -357,14 +359,14 @@ const Settings = () => {
                   theme === "dark" ? "text-gray-100" : "text-gray-900"
                 }`}
               >
-                Dark Mode
+                {t.settings.appearance.theme}
               </h4>
               <p
                 className={`text-sm ${
                   theme === "dark" ? "text-gray-400" : "text-gray-500"
                 }`}
               >
-                Switch between light and dark theme
+                {theme === "dark" ? t.settings.appearance.dark : t.settings.appearance.light}
               </p>
             </div>
             <button

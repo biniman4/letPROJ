@@ -4,6 +4,7 @@ import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 // @ts-ignore
 import { registerUser } from "../../services/api";
 import DepartmentSelector from "./DepartmentSelector";
+import { useLanguage } from "./LanguageContext";
 
 const InputField = ({
   label,
@@ -54,6 +55,7 @@ const InputField = ({
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -87,12 +89,12 @@ const Signup = () => {
       !formData.password.trim() ||
       !formData.confirmPassword.trim()
     ) {
-      setError("Please fill in all fields.");
+      setError(t.signup.fillAllFields);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t.signup.passwordsMismatch);
       return;
     }
 
@@ -104,7 +106,7 @@ const Signup = () => {
         departmentOrSector: formData.departmentOrSector,
         password: formData.password,
       });
-      setSuccess("Registration successful!");
+      setSuccess(t.signup.registrationSuccessful);
       setFormData({
         name: "",
         email: "",
@@ -115,7 +117,7 @@ const Signup = () => {
       });
     } catch (err: any) {
       setError(
-        "Registration failed: " +
+        `${t.signup.registrationFailed}: ` +
           (err.response?.data?.error ||
             err.response?.data?.message ||
             err.message)
@@ -127,10 +129,10 @@ const Signup = () => {
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-indigo-400 via-blue-400 to-teal-300">
       <div className="w-full max-w-4xl bg-gradient-to-br from-teal-50 via-blue-100 to-indigo-100/90 rounded-2xl shadow-2xl border border-blue-200 p-10">
         <h2 className="text-3xl font-extrabold text-center text-indigo-900 mb-2 tracking-tight">
-          Create Your Account
+          {t.signup.title}
         </h2>
         <p className="text-center text-base text-indigo-800 mb-6">
-          Welcome! Fill in your details to join the platform.
+          {t.signup.subtitle}
         </p>
         {(error || success) && (
           <div
@@ -148,27 +150,27 @@ const Signup = () => {
           className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6"
         >
           <InputField
-            label="Full Name"
+            label={t.signup.fullNameLabel}
             id="name"
             value={formData.name}
             onChange={handleChange}
-            placeholder="John Doe"
+            placeholder={t.signup.fullNamePlaceholder}
           />
           <InputField
-            label="Email Address"
+            label={t.signup.emailLabel}
             id="email"
             type="email"
             value={formData.email}
             onChange={handleChange}
-            placeholder="john@example.com"
+            placeholder={t.signup.emailPlaceholder}
           />
           <InputField
-            label="Phone Number"
+            label={t.signup.phoneNumberLabel}
             id="phone"
             type="tel"
             value={formData.phone}
             onChange={handleChange}
-            placeholder="+1234567890"
+            placeholder={t.signup.phoneNumberPlaceholder}
           />
           {/* DepartmentSelector occupies one column and two rows to align with your layout */}
           <div className="w-full md:col-span-1 md:row-span-2 flex flex-col">
@@ -182,23 +184,23 @@ const Signup = () => {
           <div className="w-full md:col-span-1 flex flex-col md:flex-row gap-6">
             <div className="flex-1">
               <InputField
-                label="Password"
+                label={t.signup.passwordLabel}
                 id="password"
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="••••••••"
+                placeholder={t.signup.passwordPlaceholder}
                 isPassword={true}
               />
             </div>
             <div className="flex-1">
               <InputField
-                label="Confirm Password"
+                label={t.signup.confirmPasswordLabel}
                 id="confirmPassword"
                 type="password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="••••••••"
+                placeholder={t.signup.passwordPlaceholder}
                 isPassword={true}
               />
             </div>
@@ -211,12 +213,12 @@ const Signup = () => {
               className="accent-indigo-600"
             />
             <label htmlFor="terms" className="select-none">
-              I agree to the{" "}
+              {t.signup.termsAgreement}{" "}
               <a
                 href="#"
                 className="underline text-indigo-600 hover:text-teal-700 transition"
               >
-                Terms and Conditions
+                {t.signup.termsAndConditions}
               </a>
             </label>
           </div>
@@ -225,14 +227,14 @@ const Signup = () => {
               type="submit"
               className="w-full py-3 bg-gradient-to-r from-indigo-600 via-blue-500 to-teal-500 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-teal-600 transition-all shadow-md"
             >
-              Sign Up
+              {t.signup.signUpButton}
             </button>
             <button
               type="button"
               onClick={() => navigate("/admin")}
               className="w-full py-3 bg-white text-indigo-900 font-semibold rounded-xl hover:bg-indigo-100 shadow transition border border-indigo-200"
             >
-              Back to Admin Page
+              {t.signup.backToAdmin}
             </button>
           </div>
         </form>

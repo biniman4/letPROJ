@@ -18,32 +18,7 @@ import {
   LockIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const translations = {
-  am: {
-    title: "የደብዳቤ አስተዳደር ስርዓት",
-    subtitle: "የክፍል ሳይንስ እና ጀኦስፓሺያል ኢንስቲትዩት (SSGI)",
-    description: "ለSSGI የተዘጋጀ መደበኛ መዝገብን በትክክል፣ በደህናነት እና በቀና ማድረግ የሚችል መድረክ።",
-    getStarted: "መጀመሪያ ጀምር",
-    login: "ግባ",
-    featuresHeading: "የSSGI ኮሚዩኒኬሽን ፍሎውን በኃይል መሞላ",
-    featuresSub: "የዲጂታል ለውጥዎን ዛሬ ይጀምሩ።",
-    ctaTitle: "መጀመሪያ ለመጀመር ዝግጁ ነዎት?",
-    ctaSubtitle: "የነፃ ሙከራዎን ዛሬ ይጀምሩ።",
-  },
-  en: {
-    title: "Letter Management System",
-    subtitle: "Space Science and Geospatial Institute (SSGI)",
-    description:
-      "A centralized platform designed for SSGI to manage, track, and organize official correspondence with precision, security, and efficiency.",
-    getStarted: "Get Started",
-    login: "Log In",
-    featuresHeading: "Empowering SSGI's Communication Flow",
-    featuresSub: "Launch your digital transformation journey today.",
-    ctaTitle: "Ready to get started?",
-    ctaSubtitle: "Start your free trial today.",
-  },
-};
+import { useLanguage } from "../../components/pages/LanguageContext";
 
 const letterVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -69,96 +44,56 @@ const wordVariants = {
 
 const features = [
   {
-    name: {
-      am: "አንድ ቦታ ውስጥ ደብዳቤዎችን ማስተዳደር",
-      en: "Smart Document Management",
-    },
-    description: {
-      am: "በቀና እና በቅን እንዲያስተዳድሩ ሁሉንም ደብዳቤዎች ያንድ ቦታ ውስጥ ያደርጉ።",
-      en: "Efficiently organize and manage all your business correspondence in one place.",
-    },
+    name: "",
+    description: "",
     icon: MailIcon,
   },
   {
-    name: { am: "በእውነተኛው ጊዜ መከታተያ", en: "Real-time Tracking" },
-    description: {
-      am: "ደብዳቤዎችን በእውነተኛ ጊዜ ይከታተሉ።",
-      en: "Track the status of your letters and documents in real-time.",
-    },
+    name: "",
+    description: "",
     icon: ClockIcon,
   },
   {
-    name: { am: "የተፋጠነ ደህንነት", en: "Advanced Security" },
-    description: {
-      am: "በኢንተርፕላይዝ ደህንነት ደረጃ አስተዳደር ያድርጉ።",
-      en: "Enterprise-grade security to keep your sensitive documents safe.",
-    },
+    name: "",
+    description: "",
     icon: ShieldCheckIcon,
   },
   {
-    name: { am: "ኃይለኛ ፍለጋ", en: "Powerful Search" },
-    description: {
-      am: "አንዱን ሰነድ በቅርብ ጊዜ ያግኙ።",
-      en: "Find any document instantly with our advanced search capabilities.",
-    },
+    name: "",
+    description: "",
     icon: SearchIcon,
   },
   {
-    name: { am: "በራስ-ሰር የሚሰሩ ስራዎች", en: "Automated Workflows" },
-    description: {
-      am: "የማጽደቅ ሂደቶችን ቀላል ያድርጉ።",
-      en: "Streamline your approval processes with automated workflows.",
-    },
+    name: "",
+    description: "",
     icon: CheckCircleIcon,
   },
   {
-    name: { am: "ትክክለኛ ትንተና", en: "Analytics & Insights" },
-    description: {
-      am: "ከስራዎ ሂደቶች ጠቃሚ ትንተና ያግኙ።",
-      en: "Gain valuable insights into your document workflows.",
-    },
+    name: "",
+    description: "",
     icon: BarChartIcon,
   },
 ];
 
 const services = [
   {
-    name: {
-      am: "የደብዳቤ ሂደት",
-      en: "Letter Processing",
-    },
-    description: {
-      am: "የመግቢያ እና የውጪ ይፋዊ ደብዳቤዎችን ውጤታማ ማስተናገድ",
-      en: "Efficient handling of incoming and outgoing official correspondence.",
-    },
+    name: "",
+    description: "",
     icon: FileTextIcon,
   },
   {
-    name: {
-      am: "ሰነድ ማህደረ ትውስታ",
-      en: "Document Archiving",
-    },
-    description: {
-      am: "የተቋማት ሰነዶች ደህንነታቸው የተጠበቀ ረጅም ጊዜ ማከማቻ እና ማግኛ",
-      en: "Secure long-term storage and retrieval of institutional documents.",
-    },
+    name: "",
+    description: "",
     icon: LayersIcon,
   },
   {
-    name: {
-      am: "የማጽደቅ ስራ ፍሰቶች",
-      en: "Approval Workflows",
-    },
-    description: {
-      am: "ለማጽደቅ እና ፊርማ የተመቻቸ መስመር",
-      en: "Streamlined routing for authorization and signatures.",
-    },
+    name: "",
+    description: "",
     icon: SendIcon,
   },
 ];
 
 const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
-  const [lang, setLang] = useState<"am" | "en">("am");
   const [showLogin, setShowLogin] = useState(false);
   const [credentials, setCredentials] = useState({
     email: "",
@@ -166,7 +101,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
   });
   const [loginError, setLoginError] = useState("");
   const navigate = useNavigate();
-  const t = translations[lang];
+  const { t, lang, setLang } = useLanguage();
 
   const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -226,7 +161,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
               >
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight font-extrabold text-main-text">
                   <span className="block">
-                    {t.title.split("").map((char, i) => (
+                    {t.home.title.split("").map((char, i) => (
                       <motion.span
                         key={i}
                         custom={i}
@@ -238,7 +173,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                     ))}
                   </span>
                   <span className="block mt-2 sm:mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-main-text">
-                    {t.subtitle.split("").map((char, i) => (
+                    {t.home.subtitle.split("").map((char, i) => (
                       <motion.span
                         key={i}
                         custom={i}
@@ -250,25 +185,33 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                     ))}
                   </span>
                 </h1>
-              </motion.div>
-
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="mt-4 sm:mt-6 max-w-2xl mx-auto text-lg sm:text-xl text-gray-500 leading-relaxed px-4 sm:px-0"
-              >
-                {t.description}
-              </motion.p>
-
-              <div className="mt-10 flex justify-center">
-                <button
-                  onClick={() => navigate('/login')}
-                  className="px-12 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold text-lg shadow-lg hover:from-blue-700 hover:to-blue-900 transition duration-300 transform hover:scale-105"
+                <motion.p
+                  key={lang + "-description"}
+                  initial="hidden"
+                  animate="visible"
+                  variants={wordVariants}
+                  className="mt-6 text-lg sm:text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto"
                 >
-                  {t.login}
-                </button>
-              </div>
+                  {t.home.description.split("").map((char, i) => (
+                    <motion.span
+                      key={i}
+                      custom={i}
+                      variants={letterVariants}
+                      className="inline-block"
+                    >
+                      {char === " " ? "\u00A0" : char}
+                    </motion.span>
+                  ))}
+                </motion.p>
+                <div className="mt-10 flex justify-center">
+                  <button
+                    onClick={() => navigate('/login')}
+                    className="px-12 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold text-lg shadow-lg hover:from-blue-700 hover:to-blue-900 transition duration-300 transform hover:scale-105"
+                  >
+                    {t.home.login}
+                  </button>
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -286,7 +229,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 viewport={{ once: true }}
                 className="text-3xl sm:text-4xl font-extrabold text-main-text sm:text-5xl hover:text-hover-gold transition-colors duration-200"
               >
-                {t.featuresHeading}
+                {t.home.featuresHeading}
               </motion.h2>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -295,13 +238,13 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 transition={{ delay: 0.2 }}
                 className="mt-3 sm:mt-4 text-lg sm:text-xl text-gray-500 px-4 sm:px-0"
               >
-                {t.featuresSub}
+                {t.home.featuresSub}
               </motion.p>
             </div>
             <div className="mt-12 sm:mt-16 md:mt-20 grid grid-cols-1 gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {features.map((feature, index) => (
                 <motion.div
-                  key={feature.name.en}
+                  key={index}
                   initial={{ opacity: 0, y: 50 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -314,10 +257,10 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                     </span>
                   </div>
                   <h3 className="mt-4 sm:mt-6 text-lg sm:text-xl font-semibold text-main-text group-hover:text-hover-gold transition-colors duration-200">
-                    {feature.name[lang]}
+                    {t.features[index].name}
                   </h3>
                   <p className="mt-3 sm:mt-4 text-sm sm:text-base text-main-text leading-relaxed">
-                    {feature.description[lang]}
+                    {t.features[index].description}
                   </p>
                 </motion.div>
               ))}
@@ -357,7 +300,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
             <div className="mt-12 sm:mt-16 md:mt-20 grid grid-cols-1 gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {services.map((service, index) => (
                 <motion.div
-                  key={service.name.en}
+                  key={index}
                   initial={{ opacity: 0, y: 50 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -370,10 +313,10 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                     </span>
                   </div>
                   <h3 className="mt-4 sm:mt-6 text-xl sm:text-2xl font-semibold text-main-text group-hover:text-hover-gold transition-colors duration-200">
-                    {service.name[lang]}
+                    {t.services[index].name}
                   </h3>
                   <p className="mt-3 sm:mt-4 text-base sm:text-lg text-main-text leading-relaxed">
-                    {service.description[lang]}
+                    {t.services[index].description}
                   </p>
                 </motion.div>
               ))}
@@ -397,9 +340,9 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
               className="max-w-2xl mx-auto lg:mx-0 text-center lg:text-left"
             >
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                <span className="block">{t.ctaTitle}</span>
+                <span className="block">{t.home.ctaTitle}</span>
                 <span className="block mt-2 text-blue-200">
-                  {t.ctaSubtitle}
+                  {t.home.ctaSubtitle}
                 </span>
               </h2>
             </motion.div>
@@ -413,82 +356,86 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
         open={showLogin}
         onClose={() => setShowLogin(false)}
         center
-        classNames={{
-          modal:
-            "rounded-2xl p-4 sm:p-8 w-[95%] sm:w-full max-w-md bg-white shadow-2xl",
-          overlay: "bg-gray-900/50 backdrop-blur-sm",
+        styles={{
+          modal: {
+            borderRadius: "1.5rem",
+            padding: "2.5rem",
+            maxWidth: "40rem",
+          },
         }}
       >
-        <div className="mb-4 sm:mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Sign In
-          </h2>
-          <p className="text-sm sm:text-base text-gray-600">
-            Sign in with your credentials
-          </p>
-        </div>
-
+        <h2 className="text-3xl font-bold text-center text-teal-700 mb-6">
+          Log In to Your Account
+        </h2>
         {loginError && (
-          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-100 text-sm sm:text-base text-red-700 rounded-xl">
+          <p className="text-red-600 bg-red-100 p-3 rounded text-center mb-4">
             {loginError}
-          </div>
+          </p>
         )}
-
-        <form onSubmit={handleLogin} className="space-y-4 sm:space-y-6">
+        <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-sm sm:text-base text-gray-700 mb-2 font-medium">
-              Email
+            <label
+              htmlFor="email"
+              className="block text-gray-700 text-sm font-medium mb-1"
+            >
+              Email Address
             </label>
-            <div className="relative">
-              <UserIcon className="absolute left-3 sm:left-4 top-3 sm:top-3.5 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-              <input
-                type="email"
-                className="pl-10 sm:pl-12 w-full p-2.5 sm:p-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                placeholder="user@example.com"
-                value={credentials.email}
-                onChange={(e) =>
-                  setCredentials({ ...credentials, email: e.target.value })
-                }
-                required
-              />
-            </div>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={credentials.email}
+              onChange={(e) =>
+                setCredentials({ ...credentials, email: e.target.value })
+              }
+              className="w-full px-4 py-2 rounded-lg bg-gray-100 text-gray-800 border border-gray-300 focus:ring-teal-400 focus:border-teal-400"
+              placeholder="john@example.com"
+              required
+            />
           </div>
-
           <div>
-            <label className="block text-sm sm:text-base text-gray-700 mb-2 font-medium">
+            <label
+              htmlFor="password"
+              className="block text-gray-700 text-sm font-medium mb-1"
+            >
               Password
             </label>
-            <div className="relative">
-              <LockIcon className="absolute left-3 sm:left-4 top-3 sm:top-3.5 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-              <input
-                type="password"
-                className="pl-10 sm:pl-12 w-full p-2.5 sm:p-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                placeholder="••••••••"
-                value={credentials.password}
-                onChange={(e) =>
-                  setCredentials({ ...credentials, password: e.target.value })
-                }
-                required
-              />
-            </div>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={credentials.password}
+              onChange={(e) =>
+                setCredentials({ ...credentials, password: e.target.value })
+              }
+              className="w-full px-4 py-2 rounded-lg bg-gray-100 text-gray-800 border border-gray-300 focus:ring-teal-400 focus:border-teal-400"
+              placeholder="••••••••"
+              required
+            />
           </div>
-
-          <div className="flex justify-between items-center">
-            <button
-              type="button"
-              className="text-xs sm:text-sm text-blue-600 hover:underline focus:outline-none"
-              onClick={() => navigate("/forgot-password")}
-            >
-              Forgot Password?
-            </button>
-          </div>
-
           <button
             type="submit"
-            className="w-full py-2.5 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-indigo-700 transform hover:-translate-y-0.5 transition-all duration-200"
+            className="w-full py-3 bg-teal-600 text-white font-semibold rounded-xl hover:bg-teal-700 transition shadow-md"
           >
-            Sign In
+            Log In
           </button>
+          <p className="text-center text-gray-600 text-sm mt-4">
+            Don't have an account?{" "}
+            <Link
+              to="/signup"
+              className="underline text-teal-600 hover:text-teal-800 transition"
+            >
+              Sign up
+            </Link>
+          </p>
+          <p className="text-center text-gray-600 text-sm mt-2">
+            <Link
+              to="/forgot-password"
+              className="underline text-blue-600 hover:text-blue-800 transition"
+            >
+              Forgot Password?
+            </Link>
+          </p>
         </form>
       </Modal>
 

@@ -3,6 +3,7 @@ import axios from "axios";
 import { Bell, Trash2, Check, CheckCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useNotifications } from "../../context/NotificationContext";
+import { useLanguage } from "./LanguageContext";
 
 interface Notification {
   _id: string;
@@ -24,6 +25,7 @@ const Notifications = () => {
   const { updateUnreadNotifications } = useNotifications();
   const [loading, setLoading] = useState(true);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -39,13 +41,13 @@ const Notifications = () => {
         updateUnreadNotifications(unreadCount);
         setLoading(false);
       } catch (err) {
-        console.error("Error fetching notifications:", err);
+        console.error(t.notifications.errorFetchingNotifications, err);
         setNotifications([]);
         setLoading(false);
       }
     };
     fetchNotifications();
-  }, [updateUnreadNotifications, user._id]);
+  }, [updateUnreadNotifications, user._id, t.notifications.errorFetchingNotifications]);
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
@@ -62,7 +64,7 @@ const Notifications = () => {
       ).length;
       updateUnreadNotifications(unreadCount);
     } catch (err) {
-      console.error("Error marking notification as read:", err);
+      console.error(t.notifications.errorMarkingRead, err);
     }
   };
 
@@ -73,7 +75,7 @@ const Notifications = () => {
       );
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (error) {
-      console.error("Error marking all notifications as read:", error);
+      console.error(t.notifications.errorMarkingAllRead, error);
     }
   };
 
@@ -90,7 +92,7 @@ const Notifications = () => {
       ).length;
       updateUnreadNotifications(unreadCount);
     } catch (err) {
-      console.error("Error deleting notification:", err);
+      console.error(t.notifications.errorDeletingNotification, err);
     }
   };
 
@@ -109,6 +111,7 @@ const Notifications = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <p className="mt-2 text-gray-600">{t.notifications.loading}</p>
       </div>
     );
   }
@@ -116,14 +119,14 @@ const Notifications = () => {
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800">Notifications</h2>
+        <h2 className="text-2xl font-semibold text-gray-800">{t.notifications.title}</h2>
         {notifications.some((n) => !n.read) && (
           <button
             onClick={handleMarkAllAsRead}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
           >
             <CheckCircle className="w-4 h-4" />
-            Mark all as read
+            {t.notifications.markAllAsRead}
           </button>
         )}
       </div>
@@ -132,10 +135,10 @@ const Notifications = () => {
         <div className="text-center py-12">
           <Bell className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">
-            No notifications
+            {t.notifications.noNotifications}
           </h3>
           <p className="mt-1 text-sm text-gray-500">
-            You're all caught up! We'll notify you when something new arrives.
+            {t.notifications.allCaughtUp}
           </p>
         </div>
       ) : (
@@ -160,7 +163,9 @@ const Notifications = () => {
                         notification.priority
                       )}`}
                     >
-                      {notification.priority}
+                      {notification.priority === "high" ? t.notifications.priorityHigh :
+                       notification.priority === "medium" ? t.notifications.priorityMedium :
+                       t.notifications.priorityLow}
                     </span>
                   </div>
                   <p className="mt-1 text-sm text-gray-600">
@@ -168,7 +173,7 @@ const Notifications = () => {
                   </p>
                   {notification.relatedLetter && (
                     <p className="mt-2 text-sm text-gray-500">
-                      Related to: {notification.relatedLetter.subject}
+                      {t.notifications.relatedTo} {notification.relatedLetter.subject}
                     </p>
                   )}
                   <p className="mt-1 text-xs text-gray-400">
@@ -182,7 +187,7 @@ const Notifications = () => {
                     <button
                       onClick={() => handleMarkAsRead(notification._id)}
                       className="p-1 text-gray-400 hover:text-gray-600"
-                      title="Mark as read"
+                      title={t.notifications.markAsRead}
                     >
                       <Check className="w-4 h-4" />
                     </button>
@@ -190,7 +195,7 @@ const Notifications = () => {
                   <button
                     onClick={() => handleDelete(notification._id)}
                     className="p-1 text-gray-400 hover:text-red-600"
-                    title="Delete notification"
+                    title={t.notifications.deleteNotification}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
