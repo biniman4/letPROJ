@@ -9,6 +9,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { useNotifications } from "../../context/NotificationContext";
+import { useLanguage, SupportedLang } from "../../components/pages/LanguageContext";
 
 interface HeaderProps {
   onLogout: () => void;
@@ -20,6 +21,7 @@ export const Header = ({ onLogout }: HeaderProps) => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const { unreadNotifications } = useNotifications();
+  const { lang, setLang } = useLanguage();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -49,6 +51,10 @@ export const Header = ({ onLogout }: HeaderProps) => {
     onLogout();
   };
 
+  const handleLanguageSwitch = () => {
+    setLang(lang === SupportedLang.Am ? SupportedLang.En : SupportedLang.Am);
+  };
+
   return (
     <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0">
       {/* Left: Search */}
@@ -58,6 +64,14 @@ export const Header = ({ onLogout }: HeaderProps) => {
 
       {/* Right: Notification + Profile */}
       <div className="flex items-center space-x-4">
+        {/* Language Switcher Button */}
+        <button
+          onClick={handleLanguageSwitch}
+          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-sm font-medium"
+        >
+          {lang === SupportedLang.Am ? "Switch to English" : "ወደ አማርኛ ቀይር"}
+        </button>
+
         <button
           onClick={() => navigate("/notifications")}
           className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
