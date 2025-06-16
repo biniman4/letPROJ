@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -31,11 +31,48 @@ import { LanguageProvider } from "./components/pages/LanguageContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { motion, AnimatePresence } from "framer-motion"; // Import framer-motion
+
+const letterVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.05,
+      duration: 0.5,
+    },
+  }),
+};
+
+const wordVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
 export function App() {
-  // Initialize states directly from localStorage for synchronous access on first render
-  const initialUser = localStorage.getItem("user");
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!initialUser);
-  const [isAdmin, setIsAdmin] = useState<boolean>(initialUser ? JSON.parse(initialUser).role === "admin" : false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [appLoading, setAppLoading] = useState<boolean>(true); // New state for overall app loading
+
+  useEffect(() => {
+    // Simulate a brief loading time for the logo and then check authentication
+    const timer = setTimeout(() => {
+      const user = localStorage.getItem("user");
+      if (user) {
+        setIsAuthenticated(true);
+        setIsAdmin(JSON.parse(user).role === "admin");
+      }
+      setAppLoading(false); // Set appLoading to false after initial checks
+    }, 2000); // Display logo for 2 seconds (increased from 1s)
+
+    return () => clearTimeout(timer); // Clean up the timer
+  }, []);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
@@ -57,7 +94,12 @@ export function App() {
     children: React.ReactNode;
     adminRequired?: boolean;
   }) => {
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(true); // Reintroduce isOpen state for sidebar
+
+    // Wait for the main app to finish loading before checking auth status
+    if (appLoading) {
+      return null; // Or a very simple loading spinner if needed within private routes
+    }
 
     if (!isAuthenticated) {
       return <Navigate to="/login" replace />;
@@ -87,6 +129,41 @@ export function App() {
       </div>
     );
   };
+
+  if (appLoading) {
+    return (
+      <div
+        className="flex items-center justify-center h-screen bg-[#FAFBFF] relative overflow-hidden"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(170, 180, 255, 0.5) 1px, transparent 1px)`,
+          backgroundSize: `20px 20px`,
+        }}
+      >
+        {/* Removed the larger blob-like water drops */}
+        
+        <motion.div
+          key="letterflow-loading"
+          initial="hidden"
+          animate="visible"
+          variants={wordVariants}
+          className="relative z-10" // Ensure text is above blobs
+        >
+          <h1 className="text-6xl font-extrabold text-teal-700">
+            {"LetterFlow".split("").map((char, i) => (
+              <motion.span
+                key={i}
+                custom={i}
+                variants={letterVariants}
+                className="inline-block"
+              >
+                {char === " " ? "\u00A0" : char}
+              </motion.span>
+            ))}
+          </h1>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <InboxProvider>
