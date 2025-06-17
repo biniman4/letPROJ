@@ -7,6 +7,7 @@ import {
   LogOutIcon,
   SettingsIcon,
   XIcon,
+  GlobeIcon,
 } from "lucide-react";
 import { useNotifications } from "../../context/NotificationContext";
 import { useLanguage, SupportedLang } from "../../components/pages/LanguageContext";
@@ -67,9 +68,10 @@ export const Header = ({ onLogout }: HeaderProps) => {
         {/* Language Switcher Button */}
         <button
           onClick={handleLanguageSwitch}
-          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-sm font-medium"
+          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-sm font-medium flex items-center space-x-2"
         >
-          {lang === SupportedLang.Am ? "Switch to English" : "ወደ አማርኛ ቀይር"}
+          <GlobeIcon className="w-5 h-5" />
+          <span>{lang === SupportedLang.Am ? "Switch to English" : "ወደ አማርኛ ቀይር"}</span>
         </button>
 
         <button

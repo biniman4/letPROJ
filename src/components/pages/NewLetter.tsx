@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useContext } from "react";
-import { PaperclipIcon, SendIcon, SaveIcon, GlobeIcon } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { PaperclipIcon, SendIcon, SaveIcon } from "lucide-react";
 import CCSection from "./Employees";
-import { LanguageContext } from "./LanguageContext";
+import { useLanguage } from "./LanguageContext";
 import axios from "axios";
 import TemplateMemoLetter from "./TemplateMemoLetter";
 import DepartmentSelector from "./DepartmentSelector";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "../types/letter.d.ts"; // Import the new interface
 
 const NewLetter = () => {
-  const { lang, setLang } = useContext(LanguageContext);
+  const { lang, setLang } = useLanguage();
 
-  const [letterData, setLetterData] = useState({
+  const [letterData, setLetterData] = useState<LetterData>({
     subject: "",
     to: "",
     department: "",
@@ -30,6 +31,69 @@ const NewLetter = () => {
 
   const [attachment, setAttachment] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
+
+  const t = {
+    title: {
+      en: "Create New Letter",
+      am: "አዲስ ደብዳቤ ይፃፉ",
+    },
+    subtitle: {
+      en: "Compose and send a new letter",
+      am: "አዲስ ደብዳቤ ይፃፉ እና ይላኩ",
+    },
+    department: {
+      en: "Department",
+      am: "መደብ",
+    },
+    to: {
+      en: "To",
+      am: "ወደ",
+    },
+    subject: {
+      en: "Subject",
+      am: "ርዕስ",
+    },
+    priority: {
+      en: "Priority",
+      am: "ቅደም ተከተል",
+    },
+    content: {
+      en: "Content",
+      am: "ይዘት",
+    },
+    attachments: {
+      en: "Attachments",
+      am: "አባሪዎች",
+    },
+    upload: {
+      en: "Upload a file",
+      am: "ፋይል ያስገቡ",
+    },
+    orDrag: {
+      en: "or drag and drop",
+      am: "ወደዚህ ይጎትቱ",
+    },
+    uploadHint: {
+      en: "PDF, DOC up to 10MB",
+      am: "ፒዲኤፍ፣ ዶክ እስከ 10MB",
+    },
+    send: {
+      en: "Send Letter",
+      am: "ደብዳቤ ላክ",
+    },
+    saveDraft: {
+      en: "Save as Draft",
+      am: "እንደ ረቂቅ አስቀምጥ",
+    },
+    selectDepartment: {
+      en: "Select Department",
+      am: "የመደብ ምረጥ",
+    },
+    selectEmployee: {
+      en: "Select Employee",
+      am: "ሰራተኛ ምረጥ",
+    },
+  };
 
   useEffect(() => {
     setLoadingUsers(true);
@@ -122,10 +186,12 @@ const NewLetter = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAttachment(file);
       setLetterData((prev) => ({
         ...prev,
-        attachments: [e.target.files[0].name],
+        attachments: [file.name],
       }));
     }
   };
@@ -160,69 +226,6 @@ const NewLetter = () => {
     }));
   };
 
-  const t = {
-    title: {
-      en: "Create New Letter",
-      am: "አዲስ ደብዳቤ ይፃፉ",
-    },
-    subtitle: {
-      en: "Compose and send a new letter",
-      am: "አዲስ ደብዳቤ ይፃፉ እና ይላኩ",
-    },
-    department: {
-      en: "Department",
-      am: "መደብ",
-    },
-    to: {
-      en: "To",
-      am: "ወደ",
-    },
-    subject: {
-      en: "Subject",
-      am: "ርዕስ",
-    },
-    priority: {
-      en: "Priority",
-      am: "ቅደም ተከተል",
-    },
-    content: {
-      en: "Content",
-      am: "ይዘት",
-    },
-    attachments: {
-      en: "Attachments",
-      am: "አባሪዎች",
-    },
-    upload: {
-      en: "Upload a file",
-      am: "ፋይል ያስገቡ",
-    },
-    orDrag: {
-      en: "or drag and drop",
-      am: "ወደዚህ ይጎትቱ",
-    },
-    uploadHint: {
-      en: "PDF, DOC up to 10MB",
-      am: "ፒዲኤፍ፣ ዶክ እስከ 10MB",
-    },
-    send: {
-      en: "Send Letter",
-      am: "ደብዳቤ ላክ",
-    },
-    saveDraft: {
-      en: "Save as Draft",
-      am: "እንደ ረቂቅ አስቀምጥ",
-    },
-    selectDepartment: {
-      en: "Select Department",
-      am: "የመደብ ምረጥ",
-    },
-    selectEmployee: {
-      en: "Select Employee",
-      am: "ሰራተኛ ምረጥ",
-    },
-  };
-
   return (
     <div>
       <div className="mb-6 flex justify-between items-center">
@@ -232,13 +235,6 @@ const NewLetter = () => {
           </h2>
           <p className="text-gray-600">{t.subtitle[lang]}</p>
         </div>
-        <button
-          className="text-gray-700 hover:text-gray-900 flex items-center"
-          onClick={() => setLang(lang === "en" ? "am" : "en")}
-        >
-          <GlobeIcon className="w-6 h-6 mr-2" />
-          <span>{lang === "en" ? "English" : "አማርኛ"}</span>
-        </button>
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 p-6">

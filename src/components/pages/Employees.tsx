@@ -2,14 +2,14 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import DepartmentSelector from "./DepartmentSelector";
 
-interface LetterData {
+interface CCLetterData {
   cc: string[];
   ccEmployees: Record<string, string[]>;
 }
 
 interface EmployeesProps {
-  letterData: LetterData;
-  setLetterData: React.Dispatch<React.SetStateAction<LetterData>>;
+  letterData: CCLetterData;
+  setLetterData: React.Dispatch<React.SetStateAction<CCLetterData>>;
 }
 
 const Employees: React.FC<EmployeesProps> = ({ letterData, setLetterData }) => {
@@ -42,30 +42,6 @@ const Employees: React.FC<EmployeesProps> = ({ letterData, setLetterData }) => {
     };
     fetchEmployees();
   }, []);
-
-  const handleSendLetter = async () => {
-    // Logic to send the letter
-    const ccUsers = Object.values(letterData.ccEmployees).flat();
-    const letterContent = "This is the content of the letter."; // Replace with actual letter content
-
-    // Grant privilege to CC users to view the letter
-    try {
-      await Promise.all(
-        ccUsers.map(async (user) => {
-          console.log(`Granting view privilege to: ${user}`);
-          // Replace with actual API call to send email or letter
-          await axios.post("http://localhost:5000/api/letters/send", {
-            recipient: user,
-            access: "view-only",
-            content: letterContent,
-          });
-        })
-      );
-      console.log("Letter sent successfully to CC users.");
-    } catch (error) {
-      console.error("Failed to send letter to CC users:", error);
-    }
-  };
 
   return (
     <div className="mb-6">
@@ -171,13 +147,6 @@ const Employees: React.FC<EmployeesProps> = ({ letterData, setLetterData }) => {
           )}
         </div>
       ))}
-
-      <button
-        onClick={handleSendLetter}
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-      >
-        Send Letter
-      </button>
     </div>
   );
 };
