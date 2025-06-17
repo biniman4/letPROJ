@@ -7,6 +7,7 @@ import {
   FileCheck,
   Upload,
   Search,
+  Trash,
 } from "lucide-react";
 import axios from "axios";
 import { Modal } from "react-responsive-modal";
@@ -48,6 +49,7 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ 
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const [openLetter, setOpenLetter] = useState<Letter | null>(null);
   const [viewMode, setViewMode] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
 
   useEffect(() => {
     axios
@@ -121,6 +123,20 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ 
         `File "${file.name}" submitted to letter ${letterId}! (demo)`
       );
       setTimeout(() => setSuccessMsg(""), 2000);
+    }
+  };
+
+  const handleDeleteLetter = async (id: string) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/letters/${id}`);
+      setLetters((prev) => prev.filter((letter) => letter._id !== id));
+      setSuccessMsg(`Letter ${id} deleted successfully!`);
+      setTimeout(() => setSuccessMsg(""), 2000);
+      setShowDeleteDialog(null);
+    } catch (error) {
+      setSuccessMsg(`Failed to delete letter ${id}. Please try again.`);
+      setTimeout(() => setSuccessMsg(""), 2000);
+      setShowDeleteDialog(null);
     }
   };
 
@@ -270,6 +286,12 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ 
                     <Check className="w-4 h-4" /> Accept
                   </button>
                 )}
+                <button
+                  className="bg-red-600 text-white px-3 py-1 rounded shadow flex items-center gap-1 hover:bg-red-700"
+                  onClick={() => setShowDeleteDialog(letter._id)}
+                >
+                  <Trash className="w-4 h-4" /> Delete
+                </button>
               </div>
             </div>
           ))}
@@ -362,6 +384,33 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ 
               </button>
             </div>
           )}
+        </Modal>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteDialog && (
+        <Modal
+          open={!!showDeleteDialog}
+          onClose={() => setShowDeleteDialog(null)}
+          center
+        >
+          <div className="p-4">
+            <p className="text-gray-700 mb-4">Are you sure you want to delete this letter?</p>
+            <div className="flex justify-end gap-2">
+              <button
+                className="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700"
+                onClick={() => setShowDeleteDialog(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700"
+                onClick={() => handleDeleteLetter(showDeleteDialog)}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </Modal>
       )}
     </div>
