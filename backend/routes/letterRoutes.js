@@ -8,7 +8,6 @@ import {
   updateLetterStatus,
   getSentLetters,
   deleteLetter,
-  deleteLetter,
 } from "../controllers/letterController.js";
 
 const router = express.Router();
@@ -47,8 +46,6 @@ router.get("/sent", getSentLetters);
 router.get("/download/:letterId/:filename", downloadFile);
 router.get("/view/:letterId/:filename", viewFile);
 router.post("/status", updateLetterStatus);
-router.delete("/:id", deleteLetter);
-// DELETE route for letter deletion
 router.delete("/:id", deleteLetter);
 
 export default router;

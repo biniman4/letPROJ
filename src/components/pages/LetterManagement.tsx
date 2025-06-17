@@ -50,16 +50,17 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ 
   const [openLetter, setOpenLetter] = useState<Letter | null>(null);
   const [viewMode, setViewMode] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
+  const [showAdminApprovalDialog, setShowAdminApprovalDialog] = useState<string | null>(null);
 
   useEffect(() => {
     axios
       .get("http://localhost:5000/api/letters")
-      .then((res) => {
+      .then((res: { data: Letter[] }) => {
         console.log("Fetched letters:", res.data); // Debugging log
         setLetters(res.data);
         setLoading(false);
       })
-      .catch((error) => {
+      .catch((error: Error) => {
         console.error("Error fetching letters:", error); // Debugging log
         setLetters([]);
         setLoading(false);
@@ -129,20 +130,21 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ 
   };
 
   const handleDeleteLetter = (id: string) => {
-    console.log("Deleting letter with ID:", id); // Debugging log
-    axios
-      .delete(`http://localhost:5000/api/letters/${id}`)
-      .then(() => {
-        console.log("Letter deleted successfully:", id); // Debugging log
-        setLetters((prev) => prev.filter((letter) => letter._id !== id));
-        setSuccessMsg(`Letter ${id} deleted successfully!`);
-        setTimeout(() => setSuccessMsg(""), 2000);
-      })
-      .catch((error) => {
-        console.error("Error deleting letter:", error); // Debugging log
-        setSuccessMsg("Failed to delete letter.");
-        setTimeout(() => setSuccessMsg(""), 2000);
-      });
+    setShowAdminApprovalDialog(id);
+  };
+
+  const handleAdminApproval = async (id: string) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/letters/${id}`);
+      setLetters((prev) => prev.filter((letter) => letter._id !== id));
+      setSuccessMsg(`Letter ${id} deleted successfully!`);
+      setTimeout(() => setSuccessMsg(""), 2000);
+      setShowAdminApprovalDialog(null);
+    } catch (error) {
+      setSuccessMsg(`Failed to delete letter ${id}. Please try again.`);
+      setTimeout(() => setSuccessMsg(""), 2000);
+      setShowAdminApprovalDialog(null);
+    }
   };
 
   // Chronological sort (newest first)
@@ -413,6 +415,33 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ 
                 onClick={() => handleDeleteLetter(showDeleteDialog)}
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Admin Approval Dialog */}
+      {showAdminApprovalDialog && (
+        <Modal
+          open={!!showAdminApprovalDialog}
+          onClose={() => setShowAdminApprovalDialog(null)}
+          center
+        >
+          <div className="p-4">
+            <p className="text-gray-700 mb-4">Admin approval required to delete this letter. Are you sure?</p>
+            <div className="flex justify-end gap-2">
+              <button
+                className="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700"
+                onClick={() => setShowAdminApprovalDialog(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700"
+                onClick={() => handleAdminApproval(showAdminApprovalDialog)}
+              >
+                Approve
               </button>
             </div>
           </div>

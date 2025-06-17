@@ -7,7 +7,7 @@ import TemplateMemoLetter from "./TemplateMemoLetter";
 import DepartmentSelector from "./DepartmentSelector";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "../types/letter.d.ts"; // Import the new interface
+import "../../types/letter.d.ts"; // Corrected the import path for letter.d.ts
 
 const NewLetter = () => {
   const { lang, setLang } = useLanguage();
