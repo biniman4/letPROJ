@@ -7,6 +7,7 @@ import {
   AlertCircleIcon,
 } from "lucide-react";
 import axios from "axios";
+import { useLanguage } from '../pages/LanguageContext';
 
 interface Letter {
   _id: string;
@@ -52,6 +53,7 @@ export const RecentLetters = () => {
   const [letters, setLetters] = useState<Letter[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchLetters = async () => {
@@ -111,10 +113,10 @@ export const RecentLetters = () => {
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-800">
-            Recent Letters
+            {t.dashboard.recentLetters}
           </h3>
           <button className="text-sm text-blue-600 hover:text-blue-700 flex items-center">
-            View all
+            {t.dashboard.viewAll}
             <ArrowRightIcon className="w-4 h-4 ml-1" />
           </button>
         </div>

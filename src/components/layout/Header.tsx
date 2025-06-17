@@ -7,8 +7,10 @@ import {
   LogOutIcon,
   SettingsIcon,
   XIcon,
+  GlobeIcon,
 } from "lucide-react";
 import { useNotifications } from "../../context/NotificationContext";
+import { useLanguage, SupportedLang } from "../../components/pages/LanguageContext";
 
 interface HeaderProps {
   onLogout: () => void;
@@ -20,6 +22,7 @@ export const Header = ({ onLogout }: HeaderProps) => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const { unreadNotifications } = useNotifications();
+  const { lang, setLang, t } = useLanguage();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -49,6 +52,10 @@ export const Header = ({ onLogout }: HeaderProps) => {
     onLogout();
   };
 
+  const handleLanguageSwitch = () => {
+    setLang(lang === SupportedLang.Am ? SupportedLang.En : SupportedLang.Am);
+  };
+
   return (
     <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0">
       {/* Left: Search */}
@@ -58,6 +65,15 @@ export const Header = ({ onLogout }: HeaderProps) => {
 
       {/* Right: Notification + Profile */}
       <div className="flex items-center space-x-4">
+        {/* Language Switcher Button */}
+        <button
+          onClick={handleLanguageSwitch}
+          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-sm font-medium flex items-center space-x-2"
+        >
+          <GlobeIcon className="w-5 h-5" />
+          <span>{lang === SupportedLang.Am ? "Switch to English" : "ወደ አማርኛ ቀይር"}</span>
+        </button>
+
         <button
           onClick={() => navigate("/notifications")}
           className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
@@ -77,13 +93,13 @@ export const Header = ({ onLogout }: HeaderProps) => {
           >
             <img
               src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                user.name || "User"
+                user.name || t.header.profile
               )}&background=E3F2FD&color=2563EB`}
               alt="User Avatar"
               className="w-8 h-8 rounded-full"
             />
             <span className="text-sm font-medium text-gray-700">
-              {user.name || "User"}
+              {user.name || t.header.profile}
             </span>
           </button>
 
@@ -101,21 +117,21 @@ export const Header = ({ onLogout }: HeaderProps) => {
                 className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 <UserIcon className="w-4 h-4" />
-                <span>Profile</span>
+                <span>{t.header.profile}</span>
               </button>
               <button
                 onClick={handleSettingsClick}
                 className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 <SettingsIcon className="w-4 h-4" />
-                <span>Settings</span>
+                <span>{t.header.settings}</span>
               </button>
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 <LogOutIcon className="w-4 h-4" />
-                <span>Sign out</span>
+                <span>{t.header.signOut}</span>
               </button>
             </div>
           </div>

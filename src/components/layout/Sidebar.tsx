@@ -15,19 +15,20 @@ import {
   ChevronsRight,
   SendIcon,
 } from "lucide-react";
+import { useLanguage } from "../../components/pages/LanguageContext";
 
 const navItems = [
-  { icon: LayoutDashboardIcon, label: "Dashboard", path: "/dashboard" },
-  { icon: MailPlusIcon, label: "New Letter", path: "/new-letter" },
-  { icon: InboxIcon, label: "Inbox", path: "/inbox" },
-  { icon: SendIcon, label: "Sent", path: "/sent" },
-  { icon: ArchiveIcon, label: "Archive", path: "/archive" },
-  { icon: BellIcon, label: "Notifications", path: "/notifications" },
-  { icon: UsersIcon, label: "Users", path: "/users" },
-  { icon: SettingsIcon, label: "Settings", path: "/settings" },
+  { icon: LayoutDashboardIcon, labelKey: "dashboard", path: "/dashboard" },
+  { icon: MailPlusIcon, labelKey: "newLetter", path: "/new-letter" },
+  { icon: InboxIcon, labelKey: "inbox", path: "/inbox" },
+  { icon: SendIcon, labelKey: "sent", path: "/sent" },
+  { icon: ArchiveIcon, labelKey: "archive", path: "/archive" },
+  { icon: BellIcon, labelKey: "notifications", path: "/notifications" },
+  { icon: UsersIcon, labelKey: "users", path: "/users" },
+  { icon: SettingsIcon, labelKey: "settings", path: "/settings" },
 ];
 
-const adminItems = [{ icon: ShieldIcon, label: "Admin Panel", path: "/admin" }];
+const adminItems = [{ icon: ShieldIcon, labelKey: "adminPanel", path: "/admin" }];
 
 export const Sidebar = ({
   isAdmin = false,
@@ -38,13 +39,14 @@ export const Sidebar = ({
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
+  const { t } = useLanguage();
   const items = isAdmin ? [...navItems, ...adminItems] : navItems;
 
   return (
     <>
       {/* Fixed Top Toggle Button for Mobile */}
       <div className="fixed top-0 left-0 w-full bg-white border-b md:hidden z-50 flex items-center justify-between p-4">
-        <h1 className="text-xl font-semibold text-main-text">LetterFlow</h1>
+        <h1 className="text-xl font-semibold text-main-text">{t.sidebar.letterFlow}</h1>
         <button onClick={() => setIsOpen(!isOpen)} className="text-main-text">
           {isOpen ? (
             <XIcon className="w-6 h-6" />
@@ -79,7 +81,7 @@ export const Sidebar = ({
                 !isOpen && "scale-0"
               }`}
             >
-              LetterFlow
+              {t.sidebar.letterFlow}
             </h1>
           </div>
 
@@ -89,7 +91,7 @@ export const Sidebar = ({
             <nav className={`px-2 py-6 flex flex-col ${isOpen ? 'space-y-3' : 'space-y-1'}`}>
               {items.map((item) => (
                 <NavLink
-                  key={item.label}
+                  key={item.path}
                   to={item.path}
                   className={({ isActive }) => {
                     const iconColorClasses = isActive
@@ -114,7 +116,7 @@ export const Sidebar = ({
                       />
                       {isOpen && (
                         <span className="flex-grow truncate">
-                          {item.label}
+                          {t.sidebar[item.labelKey as keyof typeof t.sidebar]}
                         </span>
                       )}
                     </>

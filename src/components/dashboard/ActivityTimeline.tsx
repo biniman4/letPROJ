@@ -5,49 +5,54 @@ import {
   MailIcon,
   UserIcon,
 } from "lucide-react";
-const activities = [
-  {
-    id: 1,
-    type: "approval",
-    title: "Budget Proposal Approved",
-    description: "Finance department budget proposal was approved",
-    time: "30 minutes ago",
-    icon: CheckCircleIcon,
-    iconColor: "text-green-500 bg-green-50",
-  },
-  {
-    id: 2,
-    type: "new_letter",
-    title: "New Policy Document",
-    description: "HR department published new work-from-home policy",
-    time: "2 hours ago",
-    icon: FileTextIcon,
-    iconColor: "text-blue-500 bg-blue-50",
-  },
-  {
-    id: 3,
-    type: "sent",
-    title: "Meeting Minutes Sent",
-    description: "Q4 Planning meeting minutes distributed to all departments",
-    time: "4 hours ago",
-    icon: MailIcon,
-    iconColor: "text-purple-500 bg-purple-50",
-  },
-  {
-    id: 4,
-    type: "mention",
-    title: "You were mentioned",
-    description: "Sarah mentioned you in IT Infrastructure proposal",
-    time: "Yesterday",
-    icon: UserIcon,
-    iconColor: "text-yellow-500 bg-yellow-50",
-  },
-];
+import { useLanguage } from '../pages/LanguageContext';
+
 export const ActivityTimeline = () => {
+  const { t } = useLanguage();
+  
+  const activities = [
+    {
+      id: 1,
+      type: "approval",
+      title: t.dashboard.activities.approval.title,
+      description: t.dashboard.activities.approval.description,
+      time: t.dashboard.activities.approval.time,
+      icon: CheckCircleIcon,
+      iconColor: "text-green-500 bg-green-50",
+    },
+    {
+      id: 2,
+      type: "new_letter",
+      title: t.dashboard.activities.newPolicy.title,
+      description: t.dashboard.activities.newPolicy.description,
+      time: t.dashboard.activities.newPolicy.time,
+      icon: FileTextIcon,
+      iconColor: "text-blue-500 bg-blue-50",
+    },
+    {
+      id: 3,
+      type: "sent",
+      title: t.dashboard.activities.meeting.title,
+      description: t.dashboard.activities.meeting.description,
+      time: t.dashboard.activities.meeting.time,
+      icon: MailIcon,
+      iconColor: "text-purple-500 bg-purple-50",
+    },
+    {
+      id: 4,
+      type: "mention",
+      title: t.dashboard.activities.mention.title,
+      description: t.dashboard.activities.mention.description,
+      time: t.dashboard.activities.mention.time,
+      icon: UserIcon,
+      iconColor: "text-yellow-500 bg-yellow-50",
+    },
+  ];
+
   return (
     <div className="bg-white rounded-lg border border-gray-200">
       <div className="p-6 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-800">Recent Activity</h3>
+        <h3 className="text-lg font-semibold text-gray-800">{t.dashboard.recentActivity}</h3>
       </div>
       <div className="p-6">
         <div className="relative">

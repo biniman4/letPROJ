@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"; // Import axios
+import { useLanguage } from "./LanguageContext";
 
 const Login = ({ onLogin }: { onLogin: () => void }) => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
 
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -20,7 +22,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
-      setError("Both fields are required");
+      setError(t.login.requiredFields);
       return;
     }
 
@@ -37,20 +39,20 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
       onLogin();
       navigate("/dashboard");
     } catch (err: any) {
-      setError(err.response?.data?.message || "An error occurred");
+      setError(err.response?.data?.message || t.login.errorOccurred);
     }
   };
 
   const goHome = () => navigate("/");
 
   return (
-    <div className="h-screen bg-gradient-to-br from-blue-500 via-teal-500 to-indigo-500 flex items-center justify-center">
+    <div className="h-screen bg-gray-100 flex items-center justify-center">
       <div
         className="w-full max-w-4xl bg-white p-10 rounded-3xl shadow-2xl border border-gray-200"
         style={{ height: "90%" }}
       >
         <h2 className="text-4xl font-bold text-center text-teal-700 mb-8">
-          Log In to Your Account
+          {t.login.title}
         </h2>
 
         {error && (
@@ -61,21 +63,21 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <InputField
-            label="Email Address"
+            label={t.login.emailLabel}
             id="email"
             type="email"
             value={formData.email}
             onChange={handleChange}
-            placeholder="john@example.com"
+            placeholder={t.login.emailPlaceholder}
           />
 
           <InputField
-            label="Password"
+            label={t.login.passwordLabel}
             id="password"
             type="password"
             value={formData.password}
             onChange={handleChange}
-            placeholder="••••••••"
+            placeholder={t.login.passwordPlaceholder}
           />
 
           {/* Buttons & Redirect */}
@@ -84,7 +86,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
               type="submit"
               className="w-full py-3 bg-teal-600 text-white font-semibold rounded-xl hover:bg-teal-700 transition shadow-md"
             >
-              Log In
+              {t.login.loginButton}
             </button>
 
             <button
@@ -92,16 +94,16 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
               onClick={goHome}
               className="w-full py-2 bg-gray-100 text-teal-700 rounded-xl hover:bg-gray-200 transition border border-gray-300"
             >
-              Back to Home
+              {t.login.backToHome}
             </button>
 
             <p className="text-center text-gray-600 text-sm mt-4">
-              Don't have an account?{" "}
+              {t.login.noAccount}{" "}
               <a
                 href="/signup"
                 className="underline text-teal-600 hover:text-teal-800 transition"
               >
-                Sign up
+                {t.login.signUp}
               </a>
             </p>
 
@@ -111,7 +113,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
                 className="underline text-blue-600 hover:text-blue-800 transition"
                 onClick={() => navigate('/forgot-password')}
               >
-                Forgot Password?
+                {t.login.forgotPassword}
               </button>
             </p>
           </div>

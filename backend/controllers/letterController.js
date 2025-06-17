@@ -177,9 +177,12 @@ export const createLetter = async (req, res) => {
 // GET ALL LETTERS
 export const getLetters = async (req, res) => {
   try {
+    console.log("Fetching all letters from the database...");
     const letters = await Letter.find();
+    console.log("Fetched letters:", letters);
     res.status(200).json(letters);
   } catch (error) {
+    console.error("Error in getLetters:", error);
     res.status(500).json({ error: error.message });
   }
 };
