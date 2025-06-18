@@ -30,7 +30,7 @@ const letterSchema = new mongoose.Schema(
     toEmail: { type: String, required: true },
     status: {
       type: String,
-      enum: ["draft", "sent", "delivered", "read"],
+      enum: ["draft", "pending", "approved", "sent", "delivered", "read"],
       default: "draft",
     },
   },

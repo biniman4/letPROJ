@@ -93,6 +93,7 @@ export const createLetter = async (req, res) => {
     }
 
     // Only include fields that exist in the schema (NO "reference" field)
+    const isHighPriority = req.body.priority && ["high", "urgent"].includes(req.body.priority.toLowerCase());
     const letterData = {
       subject: req.body.subject,
       from: sender._id,
@@ -108,12 +109,17 @@ export const createLetter = async (req, res) => {
       ccEmployees: ccEmployees,
       unread: true,
       starred: false,
-      status: "sent",
+      status: isHighPriority ? "pending" : "sent",
     };
 
     const letter = new Letter(letterData);
     await letter.save();
     console.log("Letter saved to DB:", letter);
+
+    if (isHighPriority) {
+      // Do not send email, just notify admin (optional: create admin notification here)
+      return res.status(201).json({ message: "High/urgent priority letter pending admin approval.", letter });
+    }
 
     // Create notification for the recipient
     const notification = new Notification({
@@ -322,5 +328,107 @@ export const deleteLetter = async (req, res) => {
     res.status(200).json({ message: "Letter deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting letter", error });
+  }
+};
+
+// ADMIN: Approve a pending letter and send it
+export const approveLetter = async (req, res) => {
+  try {
+    const { letterId } = req.body;
+    const letter = await Letter.findById(letterId);
+    if (!letter) {
+      return res.status(404).json({ error: "Letter not found" });
+    }
+    if (letter.status !== "pending") {
+      return res.status(400).json({ error: "Letter is not pending approval" });
+    }
+
+    // Find sender and recipient
+    const sender = await User.findById(letter.from);
+    const recipient = await User.findOne({ name: letter.to });
+    if (!sender || !recipient) {
+      return res.status(404).json({ error: "Sender or recipient not found" });
+    }
+
+    // Optionally, resolve CC emails
+    let ccEmails = [];
+    if (Array.isArray(letter.ccEmployees)) {
+      ccEmails = letter.ccEmployees;
+    } else if (letter.ccEmployees && typeof letter.ccEmployees === "object") {
+      for (const dept in letter.ccEmployees) {
+        const names = letter.ccEmployees[dept];
+        if (Array.isArray(names)) {
+          const users = await User.find({ name: { $in: names } });
+          ccEmails.push(...users.map((u) => u.email));
+        }
+      }
+    }
+
+    // Send email
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: `"${sender.name} (${letter.department})" <${sender.email}>`,
+      to: recipient.email,
+      cc: ccEmails,
+      subject: letter.subject,
+      text:
+        `From: ${sender.name} <${sender.email}>\n` +
+        `Department: ${letter.department}\n\n` +
+        `Subject: ${letter.subject}\n\n` +
+        `${letter.content}`,
+      html: `
+      <div>
+        <p><strong>From:</strong> ${sender.name} &lt;${sender.email}&gt;</p>
+        <p><strong>Department:</strong> ${letter.department}</p>
+        <p><strong>Subject:</strong> ${letter.subject}</p>
+        <hr>
+        <p>${letter.content.replace(/\n/g, "<br>")}</p>
+      </div>
+    `,
+      attachments: letter.attachments && letter.attachments.length > 0
+        ? letter.attachments.map(att => ({
+            filename: att.filename,
+            content: att.data,
+          }))
+        : [],
+    };
+
+    await transporter.sendMail(mailOptions);
+    letter.status = "sent";
+    await letter.save();
+
+    // Create notification for the recipient
+    const notification = new Notification({
+      recipient: recipient._id,
+      type: "new_letter",
+      title: "New Letter Received",
+      message: `You have received a new letter from ${sender.name} regarding "${letter.subject}"`,
+      relatedLetter: letter._id,
+      priority: letter.priority === "urgent" ? "high" : "medium",
+    });
+    await notification.save();
+
+    res.status(200).json({ message: "Letter approved and sent", letter });
+  } catch (error) {
+    console.error("Error in approveLetter:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// GET ALL PENDING LETTERS (for admin)
+export const getPendingLetters = async (req, res) => {
+  try {
+    const pendingLetters = await Letter.find({ status: "pending" }).sort({ createdAt: -1 });
+    res.status(200).json(pendingLetters);
+  } catch (error) {
+    console.error("Error in getPendingLetters:", error);
+    res.status(500).json({ error: error.message });
   }
 };
