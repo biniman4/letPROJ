@@ -61,7 +61,8 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({ 
         setLoading(false);
       })
       .catch((error: Error) => {
-        console.error("Error fetching letters:", error); // Debugging log
+         // Debugging log
+        console.error("Error fetching letters:", error);
         setLetters([]);
         setLoading(false);
       });
