@@ -253,16 +253,16 @@ export const viewFile = async (req, res) => {
 // UPDATE LETTER STATUS
 export const updateLetterStatus = async (req, res) => {
   try {
-    const { letterId, unread, starred } = req.body;
+    const { letterId, unread, starred, status } = req.body;
+
+    const updateFields = {};
+    if (unread !== undefined) updateFields.unread = unread;
+    if (starred !== undefined) updateFields.starred = starred;
+    if (status !== undefined) updateFields.status = status;
 
     const updatedLetter = await Letter.findByIdAndUpdate(
       letterId,
-      {
-        $set: {
-          unread: unread !== undefined ? unread : undefined,
-          starred: starred !== undefined ? starred : undefined,
-        },
-      },
+      { $set: updateFields },
       { new: true }
     );
 
@@ -305,12 +305,11 @@ export const updateLetterStatus = async (req, res) => {
 // GET SENT LETTERS
 export const getSentLetters = async (req, res) => {
   try {
-    const sentLetters = await Letter.find({ status: "sent" })
-      .sort({ createdAt: -1 })
-      .populate("from", "name email");
+    const sentLetters = await Letter.find({ status: "sent" }).sort({
+      createdAt: -1,
+    });
     res.status(200).json(sentLetters);
   } catch (error) {
-    console.error("Error in getSentLetters:", error);
     res.status(500).json({ error: error.message });
   }
 };
