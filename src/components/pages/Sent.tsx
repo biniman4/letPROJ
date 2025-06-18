@@ -9,12 +9,15 @@ import {
   EyeOutlined,
   FileTextOutlined,
   PrinterOutlined,
+  MailOutlined,
 } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import TemplateMemoLetter from "./TemplateMemoLetter";
 import { useLanguage } from "./LanguageContext";
+import { useNavigate } from "react-router-dom";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 interface Attachment {
   filename: string;
@@ -27,6 +30,7 @@ interface Letter {
   subject: string;
   to: string;
   toEmail: string;
+  fromEmail: string;
   createdAt: string;
   status: string;
   department: string;
@@ -51,6 +55,11 @@ const Sent: React.FC = () => {
   const [attachment, setAttachment] = useState<File | null>(null);
   const memoPrintRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
+  const navigate = useNavigate();
+
+  // Get current user from localStorage
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const userEmail = user.email || "";
 
   useEffect(() => {
     fetchSentLetters();
@@ -58,15 +67,21 @@ const Sent: React.FC = () => {
 
   const fetchSentLetters = async () => {
     try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const userEmail = user.email || "";
       const response = await axios.get(
         "http://localhost:5000/api/letters/sent"
       );
-      setLetters(response.data);
+      // Filter letters to only those sent by the current user
+      const filtered = response.data.filter(
+        (letter: Letter) => letter.fromEmail === userEmail
+      );
+      setLetters(filtered);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching sent letters:", error);
       setLoading(false);
-      toast.error(t.sent.errorFetchingSentLetters);
+      toast.error("Failed to fetch sent letters.");
     }
   };
 
@@ -275,6 +290,7 @@ const Sent: React.FC = () => {
       formData.append("content", values.content);
       formData.append("department", values.department);
       formData.append("priority", "normal");
+      formData.append("fromEmail", userEmail); // Add sender's email
 
       if (attachment) {
         formData.append("attachment", attachment);
@@ -290,7 +306,10 @@ const Sent: React.FC = () => {
         }
       );
 
-      setLetters((prev) => [response.data.letter, ...prev]);
+      // Only add the letter if it was sent by the current user
+      if (response.data.letter.fromEmail === userEmail) {
+        setLetters((prev) => [response.data.letter, ...prev]);
+      }
       toast.success(t.sent.letterSentSuccess);
       setComposeVisible(false);
       form.resetFields();
@@ -312,45 +331,161 @@ const Sent: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">{t.sent.title}</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6">
+      <div className="flex flex-col items-center mb-10">
+        <div className="flex items-center gap-3 mb-2">
+          <MailOutlined className="text-4xl text-blue-500 animate-bounce" />
+          <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 drop-shadow-lg">
+            {t.sent.title || "Sent Letters"}
+          </h1>
+        </div>
+        <p className="text-lg text-gray-500 font-medium">
+          Easily track and manage all your sent correspondence
+        </p>
+      </div>
+
+      <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8 justify-between">
+        <div className="flex gap-4 w-full md:w-auto">
+          <Input
+            placeholder={t.sent.searchPlaceholder || "Search letters..."}
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="max-w-xs rounded-lg shadow-sm border-blue-200 focus:border-blue-400"
+          />
+          <Select
+            value={statusFilter}
+            onChange={setStatusFilter}
+            className="w-40 rounded-lg shadow-sm border-blue-200"
+          >
+            <Select.Option value="all">
+              {t.sent.allStatus || "All Status"}
+            </Select.Option>
+            <Select.Option value="sent">
+              {t.sent.statusSent || "Sent"}
+            </Select.Option>
+            <Select.Option value="delivered">
+              {t.sent.statusDelivered || "Delivered"}
+            </Select.Option>
+          </Select>
+        </div>
         <Button
           type="primary"
           icon={<SendOutlined />}
-          onClick={() => setComposeVisible(true)}
+          className="bg-gradient-to-r from-blue-500 to-pink-500 border-0 shadow-lg hover:from-pink-500 hover:to-blue-500 transition-all duration-300"
+          onClick={() => navigate("/new-letter")}
         >
-          {t.sent.newLetterButton}
+          {t.sent.newLetterButton || "New Letter"}
         </Button>
       </div>
 
-      <div className="flex gap-4 mb-4">
-        <Input
-          placeholder={t.sent.searchPlaceholder}
-          prefix={<SearchOutlined />}
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          className="max-w-xs"
-        />
-        <Select
-          value={statusFilter}
-          onChange={setStatusFilter}
-          className="w-40"
-        >
-          <Select.Option value="all">{t.sent.allStatus}</Select.Option>
-          <Select.Option value="sent">{t.sent.statusSent}</Select.Option>
-          <Select.Option value="delivered">{t.sent.statusDelivered}</Select.Option>
-          <Select.Option value="read">{t.sent.statusRead}</Select.Option>
-        </Select>
-      </div>
-
-      <Table
-        columns={columns}
-        dataSource={filteredLetters}
-        loading={loading}
-        rowKey="_id"
-        pagination={{ pageSize: 10 }}
-      />
+      {loading ? (
+        <LoadingSpinner message="Loading your sent letters..." />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {letters.length === 0 && (
+            <div className="col-span-full text-center text-gray-400 text-xl font-semibold py-20">
+              <MailOutlined className="text-6xl mb-4 animate-pulse text-blue-300" />
+              <div>No sent letters found.</div>
+            </div>
+          )}
+          {filteredLetters.map((letter) => (
+            <div
+              key={letter._id}
+              className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300 border-t-4 border-blue-400 hover:border-pink-400 relative group"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-lg font-bold text-blue-700 group-hover:text-pink-600 transition-colors duration-300">
+                  {letter.subject}
+                </span>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    letter.priority === "urgent"
+                      ? "bg-pink-100 text-pink-600"
+                      : "bg-blue-100 text-blue-600"
+                  }`}
+                >
+                  {letter.priority.charAt(0).toUpperCase() +
+                    letter.priority.slice(1)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-gray-500 text-sm">
+                  To:{" "}
+                  <span className="font-medium text-gray-700">{letter.to}</span>
+                </span>
+                <span className="text-gray-400 text-xs">
+                  {new Date(letter.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+              <div className="mb-2 text-gray-600 text-sm">
+                Department:{" "}
+                <span className="font-medium">{letter.department}</span>
+              </div>
+              <div className="mb-3 text-gray-700 line-clamp-2">
+                {letter.content}
+              </div>
+              <div className="flex gap-2 mb-2">
+                {letter.attachments && letter.attachments.length > 0 ? (
+                  letter.attachments.map((attachment, idx) => (
+                    <Button
+                      key={idx}
+                      type="link"
+                      icon={<PaperClipOutlined />}
+                      className="text-blue-500 hover:text-pink-500"
+                      onClick={() =>
+                        handleDownload(letter._id, attachment.filename)
+                      }
+                    >
+                      {attachment.filename}
+                    </Button>
+                  ))
+                ) : (
+                  <span className="text-gray-300 italic">No attachments</span>
+                )}
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <Button
+                  type="default"
+                  icon={<EyeOutlined />}
+                  className="hover:bg-blue-50 hover:text-blue-700"
+                  onClick={() =>
+                    handleView(
+                      letter._id,
+                      letter.attachments[0]?.filename,
+                      letter.attachments[0]?.contentType
+                    )
+                  }
+                  disabled={
+                    !letter.attachments || letter.attachments.length === 0
+                  }
+                >
+                  View
+                </Button>
+                <Button
+                  type="default"
+                  icon={<FileTextOutlined />}
+                  className="hover:bg-pink-50 hover:text-pink-700"
+                  onClick={() => handleMemoView(letter)}
+                >
+                  Memo
+                </Button>
+              </div>
+              <span
+                className={`absolute top-4 right-4 px-2 py-1 rounded text-xs font-bold ${
+                  letter.status === "read"
+                    ? "bg-green-100 text-green-600"
+                    : letter.status === "delivered"
+                    ? "bg-yellow-100 text-yellow-600"
+                    : "bg-gray-100 text-gray-500"
+                }`}
+              >
+                {letter.status.charAt(0).toUpperCase() + letter.status.slice(1)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <Modal
         title={t.sent.composeNewLetter}
@@ -471,12 +606,8 @@ const Sent: React.FC = () => {
             />
           ) : (
             <div className="text-center">
-              <p className="text-gray-500">
-                {t.sent.previewNotAvailable}
-              </p>
-              <p className="text-sm text-gray-400">
-                {t.sent.downloadToView}
-              </p>
+              <p className="text-gray-500">{t.sent.previewNotAvailable}</p>
+              <p className="text-sm text-gray-400">{t.sent.downloadToView}</p>
             </div>
           )}
         </div>

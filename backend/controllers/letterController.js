@@ -299,12 +299,11 @@ export const updateLetterStatus = async (req, res) => {
 // GET SENT LETTERS
 export const getSentLetters = async (req, res) => {
   try {
-    const sentLetters = await Letter.find({ status: "sent" })
-      .sort({ createdAt: -1 })
-      .populate("from", "name email");
+    const sentLetters = await Letter.find({ status: "sent" }).sort({
+      createdAt: -1,
+    });
     res.status(200).json(sentLetters);
   } catch (error) {
-    console.error("Error in getSentLetters:", error);
     res.status(500).json({ error: error.message });
   }
 };
