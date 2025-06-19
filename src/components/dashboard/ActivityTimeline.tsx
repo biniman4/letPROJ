@@ -4,50 +4,48 @@ import {
   FileTextIcon,
   MailIcon,
   UserIcon,
+  AlertCircleIcon,
+  ClockIcon,
 } from "lucide-react";
 import { useLanguage } from '../pages/LanguageContext';
+import { useInbox } from '../../context/InboxContext';
+import { useSent } from '../../context/SentContext';
+
+const getActivityIcon = (letter: any, userEmail: string) => {
+  if (letter.priority === 'urgent') return <AlertCircleIcon className="w-4 h-4 text-red-500 bg-red-50 p-1 rounded-full" />;
+  if (letter.fromEmail === userEmail) return <MailIcon className="w-4 h-4 text-blue-500 bg-blue-50 p-1 rounded-full" />;
+  return <FileTextIcon className="w-4 h-4 text-green-500 bg-green-50 p-1 rounded-full" />;
+};
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - date.getTime());
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return `Today, ${date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
+  } else if (diffDays === 1) {
+    return "Yesterday";
+  } else {
+    return date.toLocaleDateString();
+  }
+};
 
 export const ActivityTimeline = () => {
   const { t } = useLanguage();
-  
-  const activities = [
-    {
-      id: 1,
-      type: "approval",
-      title: t.dashboard.activities.approval.title,
-      description: t.dashboard.activities.approval.description,
-      time: t.dashboard.activities.approval.time,
-      icon: CheckCircleIcon,
-      iconColor: "text-green-500 bg-green-50",
-    },
-    {
-      id: 2,
-      type: "new_letter",
-      title: t.dashboard.activities.newPolicy.title,
-      description: t.dashboard.activities.newPolicy.description,
-      time: t.dashboard.activities.newPolicy.time,
-      icon: FileTextIcon,
-      iconColor: "text-blue-500 bg-blue-50",
-    },
-    {
-      id: 3,
-      type: "sent",
-      title: t.dashboard.activities.meeting.title,
-      description: t.dashboard.activities.meeting.description,
-      time: t.dashboard.activities.meeting.time,
-      icon: MailIcon,
-      iconColor: "text-purple-500 bg-purple-50",
-    },
-    {
-      id: 4,
-      type: "mention",
-      title: t.dashboard.activities.mention.title,
-      description: t.dashboard.activities.mention.description,
-      time: t.dashboard.activities.mention.time,
-      icon: UserIcon,
-      iconColor: "text-yellow-500 bg-yellow-50",
-    },
-  ];
+  const { letters: inboxLetters } = useInbox();
+  const { letters: sentLetters } = useSent();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const userEmail = user.email || "";
+
+  // Merge and sort all letters by date (sent + received)
+  const allLetters = [...inboxLetters, ...sentLetters]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5);
 
   return (
     <div className="bg-white rounded-lg border border-gray-200">
@@ -59,28 +57,26 @@ export const ActivityTimeline = () => {
           {/* Timeline line */}
           <div
             className="absolute top-0 left-4 bottom-0 w-0.5 bg-gray-200"
-            style={{
-              left: "19px",
-            }}
+            style={{ left: "19px" }}
           ></div>
           {/* Activity items */}
           <div className="space-y-6">
-            {activities.map((activity) => (
-              <div key={activity.id} className="relative flex items-start ml-6">
-                <div
-                  className={`absolute -left-10 mt-1 rounded-full p-2 ${activity.iconColor}`}
-                >
-                  <activity.icon className="w-4 h-4" />
+            {allLetters.map((letter, idx) => (
+              <div key={letter._id} className="relative flex items-start ml-6">
+                <div className="absolute -left-10 mt-1">
+                  {getActivityIcon(letter, userEmail)}
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-800">
-                    {activity.title}
+                    {letter.subject}
                   </h4>
                   <p className="text-sm text-gray-600 mt-0.5">
-                    {activity.description}
+                    {letter.fromEmail === userEmail
+                      ? `Sent to ${letter.toEmail || letter.toName || letter.department}`
+                      : `Received from ${letter.fromName || letter.fromEmail}`}
                   </p>
                   <span className="text-xs text-gray-500 mt-1 block">
-                    {activity.time}
+                    {formatDate(letter.createdAt)}
                   </span>
                 </div>
               </div>
