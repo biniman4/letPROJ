@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   FileTextIcon,
   ArrowRightIcon,
@@ -6,8 +6,9 @@ import {
   ClockIcon,
   AlertCircleIcon,
 } from "lucide-react";
-import axios from "axios";
 import { useLanguage } from '../pages/LanguageContext';
+import { useInbox } from '../../context/InboxContext';
+import { useSent } from '../../context/SentContext';
 
 interface Letter {
   _id: string;
@@ -50,34 +51,16 @@ const formatDate = (dateString: string) => {
 };
 
 export const RecentLetters = () => {
-  const [letters, setLetters] = useState<Letter[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { t } = useLanguage();
+  const { letters: inboxLetters, loadingLetters: loadingInbox } = useInbox();
+  const { letters: sentLetters, loading: loadingSent } = useSent();
 
-  useEffect(() => {
-    const fetchLetters = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/letters");
-        // Sort by date and take only the 5 most recent letters
-        const recentLetters = response.data
-          .sort(
-            (a: Letter, b: Letter) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          )
-          .slice(0, 5);
-        setLetters(recentLetters);
-        setError(null);
-      } catch (err) {
-        setError("Failed to load recent letters");
-        console.error("Error fetching letters:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Merge and sort all letters by date (sent + received)
+  const allLetters = [...inboxLetters, ...sentLetters]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5);
 
-    fetchLetters();
-  }, []);
+  const loading = loadingInbox || loadingSent;
 
   if (loading) {
     return (
@@ -100,14 +83,6 @@ export const RecentLetters = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="text-red-500">{error}</div>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-white rounded-lg border border-gray-200 transition-transform duration-200 hover:shadow-lg hover:scale-[1.03]">
       <div className="p-6 border-b border-gray-200">
@@ -122,7 +97,7 @@ export const RecentLetters = () => {
         </div>
       </div>
       <div className="divide-y divide-gray-200">
-        {letters.map((letter) => (
+        {allLetters.map((letter) => (
           <div
             key={letter._id}
             className="p-4 hover:bg-gray-50 transition-colors duration-150 flex items-center"

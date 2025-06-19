@@ -22,9 +22,7 @@ const navItems = [
   { icon: MailPlusIcon, labelKey: "newLetter", path: "/new-letter" },
   { icon: InboxIcon, labelKey: "inbox", path: "/inbox" },
   { icon: SendIcon, labelKey: "sent", path: "/sent" },
-  { icon: ArchiveIcon, labelKey: "archive", path: "/archive" },
   { icon: BellIcon, labelKey: "notifications", path: "/notifications" },
-  { icon: UsersIcon, labelKey: "users", path: "/users" },
   { icon: SettingsIcon, labelKey: "settings", path: "/settings" },
 ];
 
