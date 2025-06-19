@@ -322,13 +322,7 @@ const Inbox = () => {
       }) => (
         <div
           key={letter._id}
-          className={`relative p-6 mb-4 rounded-xl shadow-md border transition-colors duration-200 cursor-pointer
-            ${
-              letter.unread
-                ? "bg-[#FFF7E6] border-[#C88B3D]"
-                : "bg-white border-[#BFBFBF]"
-            }
-            hover:shadow-lg hover:border-[#C88B3D]`}
+          className={`p-4 cursor-pointer hover:bg-gray-50 ${letter.unread ? "bg-blue-50/30" : ""} transition-transform duration-200 hover:shadow-lg hover:scale-[1.02]`}
           onClick={() => onOpen(letter)}
         >
           {letter.unread && (

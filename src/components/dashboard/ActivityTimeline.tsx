@@ -48,7 +48,7 @@ export const ActivityTimeline = () => {
     .slice(0, 5);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200">
+    <div className="bg-white rounded-lg border border-gray-200 transition-transform duration-200 hover:shadow-lg hover:scale-[1.03]">
       <div className="p-6 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-gray-800">{t.dashboard.recentActivity}</h3>
       </div>

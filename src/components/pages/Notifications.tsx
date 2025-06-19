@@ -148,7 +148,7 @@ const Notifications = () => {
           {notifications.map((notification) => (
             <div
               key={notification._id}
-              className={`p-4 rounded-lg border ${
+              className={`p-4 rounded-lg border transition-transform duration-200 hover:shadow-lg hover:scale-[1.02] ${
                 notification.read
                   ? "bg-white border-gray-200"
                   : "bg-blue-50 border-blue-200"

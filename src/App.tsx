@@ -59,22 +59,29 @@ const wordVariants = {
 export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [appLoading, setAppLoading] = useState<boolean>(true); // New state for overall app loading
+  const [hasLoadedBefore, setHasLoadedBefore] = useState<boolean>(
+    sessionStorage.getItem("hasLoadedBefore") === "true"
+  );
+  const [appLoading, setAppLoading] = useState<boolean>(hasLoadedBefore);
   const [isOpen, setIsOpen] = useState(true); // Move isOpen state here
 
   useEffect(() => {
-    // Simulate a brief loading time for the logo and then check authentication
-    const timer = setTimeout(() => {
-      const user = localStorage.getItem("user");
-      if (user) {
-        setIsAuthenticated(true);
-        setIsAdmin(JSON.parse(user).role === "admin");
-      }
-      setAppLoading(false); // Set appLoading to false after initial checks
-    }, 2000); // Display logo for 2 seconds (increased from 1s)
+    const user = localStorage.getItem("user");
+    if (user) {
+      setIsAuthenticated(true);
+      setIsAdmin(JSON.parse(user).role === "admin");
+    }
 
-    return () => clearTimeout(timer); // Clean up the timer
-  }, []);
+    if (!hasLoadedBefore) {
+      setAppLoading(false);
+      sessionStorage.setItem("hasLoadedBefore", "true");
+    } else {
+      const timer = setTimeout(() => {
+        setAppLoading(false);
+      }, 2000); // Display logo for 2 seconds
+      return () => clearTimeout(timer); // Clean up the timer
+    }
+  }, [hasLoadedBefore]);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
@@ -87,6 +94,7 @@ export function App() {
     setIsAdmin(false);
     localStorage.removeItem("user"); // Ensure user data is cleared from localStorage on logout
     localStorage.removeItem("userId"); // Ensure userId is cleared from localStorage on logout
+    sessionStorage.removeItem("hasLoadedBefore");
   };
 
   const PrivateRoute = ({
@@ -96,11 +104,8 @@ export function App() {
     children: React.ReactNode;
     adminRequired?: boolean;
   }) => {
-    // Remove isOpen state from here since it's now in the parent
-
-    // Wait for the main app to finish loading before checking auth status
     if (appLoading) {
-      return null; // Or a very simple loading spinner if needed within private routes
+      return null; // Don't show login or content until loading is done
     }
 
     if (!isAuthenticated) {
@@ -141,8 +146,6 @@ export function App() {
           backgroundSize: `20px 20px`,
         }}
       >
-        {/* Removed the larger blob-like water drops */}
-
         <motion.div
           key="letterflow-loading"
           initial="hidden"

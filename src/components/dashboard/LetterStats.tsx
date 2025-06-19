@@ -55,8 +55,8 @@ export const LetterStats = () => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {stats.map((stat) => (
-        <div key={stat.label} className="bg-white p-6 rounded-lg border border-gray-200">
+      {stats.map(stat => (
+        <div key={stat.label} className="bg-white p-6 rounded-lg border border-gray-200 transition-transform duration-200 hover:shadow-lg hover:scale-[1.03]">
           <div className="flex items-center space-x-3">
             <div className={`p-3 rounded-full ${stat.color}`}>
               <stat.icon className="w-6 h-6" />

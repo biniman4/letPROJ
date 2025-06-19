@@ -1,4 +1,4 @@
-interface LetterData {
+export interface LetterData {
   subject: string;
   to: string;
   department: string;
