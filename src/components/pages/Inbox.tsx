@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { SearchIcon, FilterIcon, FileTextIcon, StarIcon } from "lucide-react";
+import {
+  SearchIcon,
+  FilterIcon,
+  FileTextIcon,
+  StarIcon,
+  Download,
+  Eye,
+} from "lucide-react";
 import axios from "axios";
 import { Modal } from "react-responsive-modal";
 import "react-responsive-modal/styles.css";
@@ -10,6 +17,8 @@ import "react-toastify/dist/ReactToastify.css";
 import DepartmentSelector from "./DepartmentSelector";
 import { useInbox } from "../../context/InboxContext";
 import { useLanguage } from "./LanguageContext";
+import LoadingSpinner from "../common/LoadingSpinner";
+import { FaPaperclip } from "react-icons/fa";
 
 interface Letter {
   _id: string;
@@ -89,6 +98,22 @@ const Inbox = () => {
   const [toEmployee, setToEmployee] = useState("");
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [forwardComment, setForwardComment] = useState("");
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [previewType, setPreviewType] = useState<string>("");
+  const [isViewLoading, setIsViewLoading] = useState(false);
+  const [isForwardLoading, setIsForwardLoading] = useState(false);
+  const [isDownloadLoading, setIsDownloadLoading] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [isViewFileLoading, setIsViewFileLoading] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [lastCheckedTimestamp, setLastCheckedTimestamp] = useState<string>(
+    new Date().toISOString()
+  );
+  const [hasNewLetters, setHasNewLetters] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user.email || "";
@@ -114,9 +139,53 @@ const Inbox = () => {
     }
   }, [hasInitialLoad, fetchLetters]);
 
+  // Add polling effect for new letters
+  useEffect(() => {
+    const checkForNewLetters = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/api/letters/check-new`,
+          {
+            params: {
+              lastChecked: lastCheckedTimestamp,
+              userEmail: userEmail,
+            },
+          }
+        );
+
+        if (response.data.hasNewLetters) {
+          setHasNewLetters(true);
+          // Update the last checked timestamp
+          setLastCheckedTimestamp(new Date().toISOString());
+          // Fetch new letters
+          fetchLetters();
+        }
+      } catch (error) {
+        console.error("Error checking for new letters:", error);
+      }
+    };
+
+    // Check for new letters every 30 seconds
+    const intervalId = setInterval(checkForNewLetters, 30000);
+
+    return () => clearInterval(intervalId);
+  }, [lastCheckedTimestamp, userEmail, fetchLetters]);
+
+  // Reset new letters indicator when user clicks refresh
+  const handleRefresh = useCallback(() => {
+    setHasNewLetters(false);
+    fetchLetters(true);
+  }, [fetchLetters]);
+
   // Filter letters based on selected filter and search
   const filteredLetters = useMemo(() => {
     return letters.filter((letter) => {
+      // First check if the letter is meant for the current user
+      const isRecipient = letter.toEmail === userEmail;
+
+      // If not the recipient, don't show the letter
+      if (!isRecipient) return false;
+
       const matchesSearch = search
         ? letter.subject.toLowerCase().includes(search.toLowerCase()) ||
           letter.fromName.toLowerCase().includes(search.toLowerCase()) ||
@@ -140,7 +209,7 @@ const Inbox = () => {
 
       return matchesSearch && matchesFilter;
     });
-  }, [letters, search, selectedFilter]);
+  }, [letters, search, selectedFilter, userEmail]);
 
   // Calculate pagination
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -172,6 +241,7 @@ const Inbox = () => {
   const handleLetterOpen = useCallback(
     async (letter: Letter) => {
       try {
+        setIsViewLoading(true);
         await axios.post(`http://localhost:5000/api/letters/status`, {
           letterId: letter._id,
           unread: false,
@@ -188,9 +258,16 @@ const Inbox = () => {
       } catch (error) {
         console.error("Error updating letter status:", error);
         toast.error(t.inbox.errorUpdatingStatus);
+      } finally {
+        setIsViewLoading(false);
       }
     },
-    [letters, updateUnreadLetters, updateLetterStatus, t.inbox.errorUpdatingStatus]
+    [
+      letters,
+      updateUnreadLetters,
+      updateLetterStatus,
+      t.inbox.errorUpdatingStatus,
+    ]
   );
 
   const handleStarToggle = useCallback(
@@ -222,7 +299,13 @@ const Inbox = () => {
         toast.error(t.inbox.errorTogglingStar);
       }
     },
-    [openLetter, updateLetterStatus, t.inbox.letterStarred, t.inbox.letterUnstarred, t.inbox.errorTogglingStar]
+    [
+      openLetter,
+      updateLetterStatus,
+      t.inbox.letterStarred,
+      t.inbox.letterUnstarred,
+      t.inbox.errorTogglingStar,
+    ]
   );
 
   // Memoize the letter list item component
@@ -242,50 +325,64 @@ const Inbox = () => {
           className={`p-4 cursor-pointer hover:bg-gray-50 ${letter.unread ? "bg-blue-50/30" : ""} transition-transform duration-200 hover:shadow-lg hover:scale-[1.02]`}
           onClick={() => onOpen(letter)}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0">
-              <h4
-                className={`text-sm font-medium ${
-                  letter.unread
-                    ? "text-gray-900 font-semibold"
-                    : "text-gray-600"
-                }`}
-              >
-                {letter.subject}
-              </h4>
-              <div className="flex items-center space-x-2">
-                {letter.priority === "urgent" && (
-                  <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
-                    {t.inbox.filterOptions.urgent}
-                  </span>
-                )}
-                <span className="text-sm text-gray-500">
-                  {formatDate(letter.createdAt)}
-                </span>
-              </div>
-            </div>
-            <div className="ml-4 flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-500 truncate">
-                  {letter.fromName} ({letter.department})
-                </p>
-                <button
-                  onClick={(e) => onStarToggle(letter, e)}
-                  className="text-gray-400 hover:text-yellow-400"
-                >
-                  <StarIcon
-                    className={`h-5 w-5 transition-colors duration-200 ease-in-out ${
-                      letter.starred ? "text-yellow-400 fill-yellow-400" : ""
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
+          {letter.unread && (
+            <span className="absolute top-4 right-4 bg-[#D62E2E] text-white text-xs font-bold px-3 py-1 rounded-full shadow">
+              New
+            </span>
+          )}
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-lg font-bold text-[#C88B3D] truncate max-w-xs">
+              {letter.subject}
+            </h4>
+            <button
+              onClick={(e) => onStarToggle(letter, e)}
+              className={`ml-2 text-xl ${
+                letter.starred ? "text-[#C88B3D]" : "text-[#BFBFBF]"
+              } hover:text-[#C88B3D] transition-colors`}
+              title={letter.starred ? "Unstar" : "Star"}
+            >
+              <StarIcon
+                className="w-5 h-5"
+                fill={letter.starred ? "#C88B3D" : "none"}
+              />
+            </button>
           </div>
+          <div className="flex flex-wrap items-center gap-4 mb-2">
+            <span className="text-sm text-[#C88B3D] font-semibold">
+              {t.inbox.from}:{" "}
+              <span className="text-[#003F5D]">{letter.fromName}</span>
+            </span>
+            <span className="text-sm text-[#BFBFBF]">
+              {formatDate(letter.createdAt)}
+            </span>
+            {letter.priority === "urgent" && (
+              <span className="px-2 py-1 text-xs font-bold bg-[#D62E2E] text-white rounded-full">
+                {t.inbox.filterOptions.urgent}
+              </span>
+            )}
+          </div>
+          <p className="text-gray-700 mb-2 truncate max-w-2xl">
+            {letter.content.length > 120
+              ? letter.content.substring(0, 120) + "..."
+              : letter.content}
+          </p>
+          {letter.attachments && letter.attachments.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {letter.attachments.map((attachment) => (
+                <span
+                  key={attachment.filename}
+                  className="flex items-center gap-1 bg-[#BFBFBF] text-white px-2 py-1 rounded-full text-xs"
+                >
+                  <FaPaperclip className="text-[#C88B3D]" />
+                  {attachment.filename}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       )
     );
-  }, [t.inbox.filterOptions.urgent]);
+  }, [t.inbox.from, t.inbox.filterOptions.urgent]);
 
   // Memoize pagination handlers
   const handleNextPage = useCallback(() => {
@@ -349,6 +446,7 @@ const Inbox = () => {
     if (!openLetter || (!toEmployee && selectedUsers.length === 0)) return;
 
     try {
+      setIsForwardLoading(true);
       // Find the selected user from the toEmployee field
       const toUser = departmentUsers.find((u) => u.name === toEmployee);
       const recipients = toUser ? [toUser, ...selectedUsers] : selectedUsers;
@@ -411,31 +509,147 @@ const Inbox = () => {
       console.error("Error forwarding letter:", error);
       setForwardStatus(t.inbox.failedToForward);
       toast.error(t.inbox.failedToForward);
+    } finally {
+      setIsForwardLoading(false);
     }
   };
 
+  const handleDownload = async (letterId: string, filename: string) => {
+    try {
+      setIsDownloadLoading((prev) => ({ ...prev, [filename]: true }));
+      const response = await axios.get(
+        `http://localhost:5000/api/letters/download/${letterId}/${filename}`,
+        { responseType: "blob" }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success(t.inbox.downloadSuccess);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      toast.error(t.inbox.errorDownloadingFile);
+    } finally {
+      setIsDownloadLoading((prev) => ({ ...prev, [filename]: false }));
+    }
+  };
+
+  const handleView = async (
+    letterId: string,
+    filename: string,
+    contentType: string
+  ) => {
+    try {
+      setIsViewFileLoading((prev) => ({ ...prev, [filename]: true }));
+      const response = await axios.get(
+        `http://localhost:5000/api/letters/view/${letterId}/${filename}`,
+        { responseType: "blob" }
+      );
+
+      const url = window.URL.createObjectURL(
+        new Blob([response.data], { type: contentType })
+      );
+      setPreviewUrl(url);
+      setPreviewType(contentType);
+      setPreviewVisible(true);
+    } catch (error) {
+      console.error("Error viewing file:", error);
+      toast.error(t.inbox.errorViewingFile);
+    } finally {
+      setIsViewFileLoading((prev) => ({ ...prev, [filename]: false }));
+    }
+  };
+
+  const handlePreviewClose = () => {
+    setPreviewVisible(false);
+    if (previewUrl) {
+      window.URL.revokeObjectURL(previewUrl);
+      setPreviewUrl("");
+    }
+  };
+
+  // Effect: If previewVisible and unsupported type, stop loading
+  useEffect(() => {
+    if (
+      previewVisible &&
+      previewType &&
+      !previewType.startsWith("image/") &&
+      previewType !== "application/pdf"
+    ) {
+      setIsPreviewLoading(false);
+    }
+  }, [previewVisible, previewType]);
+
   return (
-    <div>
-      <div className="mb-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-800">{t.inbox.title}</h2>
-            <p className="text-gray-600">{t.inbox.manageLetters}</p>
+    <div className="min-h-screen bg-[#FFFFFF] py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 flex flex-col items-center">
+          <h2 className="text-4xl font-extrabold text-[#C88B3D] drop-shadow-lg">
+            {t.inbox.title}
+          </h2>
+          <p className="text-lg text-[#BFBFBF] font-medium">
+            {t.inbox.manageLetters}
+          </p>
+        </div>
+        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8 justify-between">
+          <div className="flex flex-wrap gap-2 w-full md:w-auto">
+            {[
+              t.inbox.filterOptions.all,
+              t.inbox.filterOptions.unread,
+              t.inbox.filterOptions.starred,
+              t.inbox.filterOptions.urgent,
+              t.inbox.filterOptions.seen,
+            ].map((filterKey) => {
+              const filterValue = Object.keys(t.inbox.filterOptions).find(
+                (key) =>
+                  t.inbox.filterOptions[
+                    key as keyof typeof t.inbox.filterOptions
+                  ] === filterKey
+              );
+              return (
+                <button
+                  key={filterValue}
+                  onClick={() => setSelectedFilter(filterValue || "all")}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-sm border border-blue-100 bg-white hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-400 ${
+                    selectedFilter === filterValue
+                      ? "bg-blue-100 text-blue-700 shadow-md border-blue-300"
+                      : "text-gray-600"
+                  }`}
+                >
+                  {filterKey}
+                </button>
+              );
+            })}
           </div>
-          <button
-            onClick={() => fetchLetters(true)}
-            disabled={isRefreshing}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isRefreshing ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                {t.inbox.refreshing}
-              </>
-            ) : (
-              <>
+          <div className="flex items-center space-x-3">
+            <div className="relative w-full sm:w-72">
+              <SearchIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder={t.inbox.searchPlaceholder}
+                onChange={(e) => debouncedSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm bg-white"
+              />
+            </div>
+            <button className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg shadow-md hover:from-blue-700 hover:to-blue-800 transform transition-all duration-200 hover:scale-105">
+              <FilterIcon className="h-5 w-5" />
+            </button>
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className={`flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg shadow-lg hover:from-blue-700 hover:to-blue-800 transform transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${
+                hasNewLetters ? "animate-pulse" : ""
+              }`}
+            >
+              {isRefreshing ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+              ) : (
                 <svg
-                  className="w-4 h-4 mr-2"
+                  className="w-5 h-5 mr-2"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -447,114 +661,85 @@ const Inbox = () => {
                     d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                   />
                 </svg>
-                {t.inbox.refresh}
-              </>
-            )}
-          </button>
+              )}
+              {isRefreshing ? t.inbox.refreshing : t.inbox.refresh}
+              {hasNewLetters && !isRefreshing && (
+                <span className="ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full">
+                  New
+                </span>
+              )}
+            </button>
+          </div>
         </div>
-      </div>
-      <div className="bg-white rounded-lg border border-gray-200">
-        {/* Filters and Search */}
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-            <div className="flex space-x-2">
-              {[t.inbox.filterOptions.all, t.inbox.filterOptions.unread, t.inbox.filterOptions.starred, t.inbox.filterOptions.urgent, t.inbox.filterOptions.seen].map((filterKey) => {
-                // Map filter keys to their display names for buttons
-                const filterValue = Object.keys(t.inbox.filterOptions).find(key => t.inbox.filterOptions[key as keyof typeof t.inbox.filterOptions] === filterKey);
-                return (
-                  <button
-                    key={filterValue}
-                    onClick={() => setSelectedFilter(filterValue || "all")}
-                    className={`px-3 py-1 rounded-md text-sm ${
-                      selectedFilter === filterValue
-                        ? "bg-blue-50 text-blue-600"
-                        : "text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    {filterKey}
-                  </button>
-                );
-              })}
+        <div className="bg-[#FFFFFF] rounded-2xl shadow-xl border border-[#BFBFBF] overflow-hidden">
+          {loadingLetters ? (
+            <div className="p-12 text-center">
+              <LoadingSpinner message="Loading your inbox..." />
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="relative w-full sm:w-64">
-                <SearchIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder={t.inbox.searchPlaceholder}
-                  onChange={(e) => debouncedSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-                />
+          ) : currentLetters.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="mx-auto w-24 h-24 text-gray-300">
+                <FileTextIcon className="w-full h-full" />
               </div>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700">
-                <FilterIcon className="h-5 w-5 mr-2 -ml-1" />
-                {t.inbox.filterButton}
+              <p className="mt-4 text-xl text-gray-500">
+                {t.inbox.noLettersFound}
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {currentLetters.map((letter) => (
+                <LetterListItem
+                  key={letter._id}
+                  letter={letter}
+                  onOpen={handleLetterOpen}
+                  onStarToggle={handleStarToggle}
+                />
+              ))}
+            </div>
+          )}
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+            <p className="text-sm text-gray-600">
+              {t.inbox.showing}{" "}
+              <span className="font-semibold text-gray-900">
+                {startIndex + 1}
+              </span>{" "}
+              {t.inbox.to}{" "}
+              <span className="font-semibold text-gray-900">
+                {Math.min(endIndex, filteredLetters.length)}
+              </span>{" "}
+              {t.inbox.of}{" "}
+              <span className="font-semibold text-gray-900">
+                {filteredLetters.length}
+              </span>{" "}
+              {t.inbox.letters}
+            </p>
+            <div className="flex space-x-2">
+              <button
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm border border-blue-100 bg-white hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-400 ${
+                  currentPage === 1
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-gray-700"
+                }`}
+              >
+                {t.inbox.previous}
+              </button>
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm border border-blue-100 bg-white hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-400 ${
+                  currentPage === totalPages
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-gray-700"
+                }`}
+              >
+                {t.inbox.next}
               </button>
             </div>
           </div>
         </div>
-
-        {/* Letter List */}
-        <div className="divide-y divide-gray-200">
-          {loadingLetters ? (
-            <div className="p-4 text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
-              <p className="mt-2 text-gray-600">{t.inbox.loadingLetters}</p>
-            </div>
-          ) : currentLetters.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">
-              {t.inbox.noLettersFound}
-            </div>
-          ) : (
-            currentLetters.map((letter) => (
-              <LetterListItem
-                key={letter._id}
-                letter={letter}
-                onOpen={handleLetterOpen}
-                onStarToggle={handleStarToggle}
-              />
-            ))
-          )}
-        </div>
-
-        {/* Pagination */}
-        <div className="p-4 border-t border-gray-200 flex items-center justify-between">
-          <p className="text-sm text-gray-700">
-            {t.inbox.showing} <span className="font-medium">{startIndex + 1}</span> {t.inbox.to}{" "}
-            <span className="font-medium">
-              {Math.min(endIndex, filteredLetters.length)}
-            </span>{" "}
-            {t.inbox.of} <span className="font-medium">{filteredLetters.length}</span>{" "}
-            {t.inbox.letters}
-          </p>
-          <div className="flex space-x-2">
-            <button
-              onClick={handlePreviousPage}
-              disabled={currentPage === 1}
-              className={`px-3 py-1 border rounded text-sm ${
-                currentPage === 1
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              {t.inbox.previous}
-            </button>
-            <button
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages}
-              className={`px-3 py-1 border rounded text-sm ${
-                currentPage === totalPages
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              {t.inbox.next}
-            </button>
-          </div>
-        </div>
       </div>
-
-      {/* Letter Details Modal */}
       {openLetter && (
         <Modal
           open={!!openLetter}
@@ -563,68 +748,167 @@ const Inbox = () => {
             setViewMode(false);
           }}
           center
+          classNames={{
+            modal: "rounded-2xl shadow-2xl max-w-4xl w-full",
+            overlay: "bg-black/50 backdrop-blur-sm",
+          }}
         >
-          <div className="p-4">
+          <div className="p-6">
             {!viewMode ? (
-              <div className="p-4">
-                <div className="mb-2 text-gray-700">
-                  <strong>{t.inbox.subject}</strong> {openLetter.subject}
+              <div className="bg-[#FFFFFF] rounded-2xl shadow-xl border border-[#BFBFBF] p-8 max-w-3xl mx-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-extrabold text-[#C88B3D] flex-1 truncate">
+                    {openLetter.subject}
+                  </h3>
+                  {openLetter.priority === "urgent" && (
+                    <span className="ml-4 px-4 py-1 rounded-full bg-[#D62E2E] text-white font-bold text-sm shadow">
+                      {t.inbox.filterOptions.urgent}
+                    </span>
+                  )}
                 </div>
-                <div className="mb-2 text-gray-700">
-                  <strong>{t.inbox.recipient}</strong> {getRecipientDisplayName(openLetter)}
+                <div className="flex flex-wrap gap-4 mb-6">
+                  <div className="flex-1 min-w-[180px] bg-[#BFBFBF] bg-opacity-20 rounded-lg p-4">
+                    <div className="text-xs text-[#BFBFBF] font-semibold mb-1">
+                      {t.inbox.from}
+                    </div>
+                    <div className="text-[#003F5D] font-bold">
+                      {getSenderDisplayName(openLetter)}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-[180px] bg-[#BFBFBF] bg-opacity-20 rounded-lg p-4">
+                    <div className="text-xs text-[#BFBFBF] font-semibold mb-1">
+                      {t.inbox.recipient}
+                    </div>
+                    <div className="text-[#003F5D] font-bold">
+                      {getRecipientDisplayName(openLetter)}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-[180px] bg-[#BFBFBF] bg-opacity-20 rounded-lg p-4">
+                    <div className="text-xs text-[#BFBFBF] font-semibold mb-1">
+                      {t.inbox.department}
+                    </div>
+                    <div className="text-[#003F5D] font-bold">
+                      {openLetter.department}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-[180px] bg-[#BFBFBF] bg-opacity-20 rounded-lg p-4">
+                    <div className="text-xs text-[#BFBFBF] font-semibold mb-1">
+                      {t.inbox.date}
+                    </div>
+                    <div className="text-[#C88B3D] font-bold">
+                      {formatDate(openLetter.createdAt)}
+                    </div>
+                  </div>
                 </div>
-                <div className="mb-2 text-gray-700">
-                  <strong>{t.inbox.from}</strong> {getSenderDisplayName(openLetter)}
-                </div>
-                <div className="mb-2 text-gray-700">
-                  <strong>{t.inbox.department}</strong> {openLetter.department}
-                </div>
-                <div className="mb-2 text-gray-700">
-                  <strong>{t.inbox.priority}</strong> {openLetter.priority}
-                </div>
-                <div className="mb-2 text-gray-700">
-                  <strong>{t.inbox.date}</strong> {formatDate(openLetter.createdAt)}
+                <div className="mb-6">
+                  <div className="text-xs text-[#BFBFBF] font-semibold mb-2">
+                    Content
+                  </div>
+                  <div className="bg-[#FFF7E6] border-l-4 border-[#C88B3D] rounded-lg p-6 text-gray-800 whitespace-pre-line text-lg shadow-inner">
+                    {openLetter.content}
+                  </div>
                 </div>
                 {openLetter.attachments &&
                   openLetter.attachments.length > 0 && (
-                    <div className="mb-2">
-                      <strong>{t.inbox.attachment}</strong>
-                      <ul>
+                    <div className="mt-6">
+                      <h4 className="text-lg font-semibold text-[#C88B3D] mb-4 flex items-center gap-2">
+                        <FaPaperclip className="text-[#C88B3D]" />{" "}
+                        {t.inbox.attachments}
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {openLetter.attachments.map((file, idx) => (
-                          <li key={idx} className="flex items-center space-x-2">
-                            <a
-                              href={`http://localhost:5000/api/letters/download/${
-                                openLetter._id
-                              }/${encodeURIComponent(file.filename)}`}
-                              className="text-blue-600 hover:text-blue-800 underline"
-                              download={file.filename}
-                            >
-                              {t.inbox.download}
-                            </a>
-                            <a
-                              href={`http://localhost:5000/api/letters/view/${
-                                openLetter._id
-                              }/${encodeURIComponent(file.filename)}`}
-                              className="text-green-600 hover:text-green-800 underline"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {t.inbox.view}
-                            </a>
-                            <span className="text-gray-700">
-                              {file.filename}
-                            </span>
-                          </li>
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between bg-[#BFBFBF] bg-opacity-20 p-4 rounded-lg border border-[#BFBFBF] hover:border-[#C88B3D] transition-colors duration-200"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <FileTextIcon className="h-8 w-8 text-[#C88B3D]" />
+                              <span className="text-sm text-[#003F5D] font-medium">
+                                {file.filename}
+                              </span>
+                            </div>
+                            <div className="flex space-x-2 items-center">
+                              <button
+                                className="text-green-600 hover:text-green-800 underline"
+                                onClick={() => {
+                                  // Guess file type from extension
+                                  const ext = file.filename
+                                    .split(".")
+                                    .pop()
+                                    ?.toLowerCase();
+                                  let type = "";
+                                  if (
+                                    [
+                                      "jpg",
+                                      "jpeg",
+                                      "png",
+                                      "gif",
+                                      "bmp",
+                                      "webp",
+                                    ].includes(ext || "")
+                                  ) {
+                                    type = `image/${
+                                      ext === "jpg" ? "jpeg" : ext
+                                    }`;
+                                  } else if (ext === "pdf") {
+                                    type = "application/pdf";
+                                  } else {
+                                    type = "";
+                                  }
+                                  setIsPreviewLoading(true);
+                                  setPreviewUrl(
+                                    `http://localhost:5000/api/letters/view/${
+                                      openLetter._id
+                                    }/${encodeURIComponent(file.filename)}`
+                                  );
+                                  setPreviewType(type);
+                                  setPreviewVisible(true);
+                                }}
+                              >
+                                preview
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleDownload(openLetter._id, file.filename)
+                                }
+                                disabled={isDownloadLoading[file.filename]}
+                                className={`p-2 text-[#C88B3D] hover:text-[#D62E2E] hover:bg-[#FFF7E6] rounded-lg transition-colors duration-200 ${
+                                  isDownloadLoading[file.filename]
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                                }`}
+                                title={t.inbox.download}
+                              >
+                                {isDownloadLoading[file.filename] ? (
+                                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#C88B3D] border-t-transparent"></div>
+                                ) : (
+                                  <Download className="h-5 w-5" />
+                                )}
+                              </button>
+                            </div>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </div>
                   )}
-                <button
-                  onClick={() => setViewMode(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 mt-4"
-                >
-                  {t.inbox.viewButton}
-                </button>
+                <div className="mt-8 flex space-x-3 justify-end">
+                  <button
+                    onClick={() => setViewMode(true)}
+                    disabled={isViewLoading}
+                    className={`px-6 py-3 bg-[#C88B3D] text-white rounded-lg shadow-md hover:bg-[#D62E2E] transition-all duration-200 font-bold text-lg ${
+                      isViewLoading ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    {isViewLoading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                        {t.inbox.loading}
+                      </div>
+                    ) : (
+                      t.inbox.viewButton
+                    )}
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="p-4">
@@ -650,14 +934,12 @@ const Inbox = () => {
                     {t.inbox.forwardButton}
                   </button>
                 </div>
-                {/* Forward Modal */}
                 {showForwardModal && (
                   <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
                       <h3 className="text-lg font-semibold mb-4">
                         {t.inbox.forwardLetter}
                       </h3>
-                      {/* Department Selector */}
                       <div className="mb-4">
                         <DepartmentSelector
                           onChange={(value) => {
@@ -667,7 +949,6 @@ const Inbox = () => {
                           }}
                         />
                       </div>
-                      {/* To Field */}
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           {t.inbox.recipient}
@@ -701,7 +982,6 @@ const Inbox = () => {
                           </datalist>
                         </div>
                       </div>
-                      {/* Comment Field */}
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           {t.inbox.addComment}
@@ -714,11 +994,12 @@ const Inbox = () => {
                           rows={3}
                         />
                       </div>
-                      {/* User Multi-Selector */}
                       {loadingUsers ? (
                         <div className="mb-4 p-4 text-center">
                           <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
-                          <p className="mt-2 text-gray-600">{t.inbox.loadingUsers}</p>
+                          <p className="mt-2 text-gray-600">
+                            {t.inbox.loadingUsers}
+                          </p>
                         </div>
                       ) : departmentUsers.length > 0 ? (
                         <div className="mb-4">
@@ -779,10 +1060,24 @@ const Inbox = () => {
                         </button>
                         <button
                           onClick={handleForwardLetter}
-                          disabled={!toEmployee && selectedUsers.length === 0}
-                          className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={
+                            isForwardLoading ||
+                            (!toEmployee && selectedUsers.length === 0)
+                          }
+                          className={`px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed ${
+                            isForwardLoading
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                          }`}
                         >
-                          {t.inbox.forwardButton}
+                          {isForwardLoading ? (
+                            <div className="flex items-center">
+                              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                              {t.inbox.forwarding}
+                            </div>
+                          ) : (
+                            t.inbox.forwardButton
+                          )}
                         </button>
                       </div>
                     </div>
@@ -793,6 +1088,75 @@ const Inbox = () => {
           </div>
         </Modal>
       )}
+      <Modal
+        open={previewVisible}
+        onClose={handlePreviewClose}
+        center
+        classNames={{
+          modal: "rounded-2xl shadow-2xl w-4/5 h-4/5",
+          overlay: "bg-black/50 backdrop-blur-sm",
+        }}
+      >
+        <div className="w-full h-full flex flex-col">
+          <div className="flex-1 flex items-center justify-center bg-gray-50 p-4">
+            {isPreviewLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-80 z-10">
+                <LoadingSpinner message="Loading preview..." />
+              </div>
+            )}
+            {previewType.startsWith("image/") ? (
+              <img
+                src={previewUrl}
+                alt="Preview"
+                className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                onLoad={() => setIsPreviewLoading(false)}
+                onError={() => setIsPreviewLoading(false)}
+              />
+            ) : previewType === "application/pdf" ? (
+              <iframe
+                src={previewUrl}
+                className="w-full h-full rounded-lg shadow-lg"
+                title="PDF Preview"
+                onLoad={() => setIsPreviewLoading(false)}
+                onError={() => setIsPreviewLoading(false)}
+              />
+            ) : (
+              <div className="text-center p-8">
+                <FileTextIcon className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+                <p className="text-xl text-gray-600 mb-2">
+                  {t.inbox.previewNotAvailable}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {t.inbox.downloadToView}
+                </p>
+              </div>
+            )}
+          </div>
+          <div className="p-4 bg-white border-t border-gray-200 flex justify-end space-x-3">
+            <button
+              onClick={handlePreviewClose}
+              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+            >
+              {t.inbox.closeButton}
+            </button>
+            <button
+              onClick={() => {
+                if (previewUrl) {
+                  const link = document.createElement("a");
+                  link.href = previewUrl;
+                  link.download = "file";
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }
+              }}
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg shadow-md hover:from-blue-700 hover:to-blue-800 transform transition-all duration-200 hover:scale-105"
+            >
+              {t.inbox.downloadButton}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

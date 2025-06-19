@@ -8,9 +8,12 @@ import DepartmentSelector from "./DepartmentSelector";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../../types/letter.d.ts"; // Corrected the import path for letter.d.ts
+import { useSent } from "../../context/SentContext";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 const NewLetter = () => {
   const { lang, setLang } = useLanguage();
+  const { refresh } = useSent?.() || { refresh: undefined };
 
   const [letterData, setLetterData] = useState<LetterData>({
     subject: "",
@@ -31,6 +34,7 @@ const NewLetter = () => {
 
   const [attachment, setAttachment] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const t = {
     title: {
@@ -134,6 +138,7 @@ const NewLetter = () => {
       return;
     }
 
+    setSending(true);
     try {
       let response;
 
@@ -179,9 +184,12 @@ const NewLetter = () => {
       setToEmployee("");
       setAttachment(null);
       toast.success("Letter sent successfully!");
+      if (refresh) refresh(); // Force Sent page to refresh
     } catch (error: any) {
       console.error("Error details:", error);
       toast.error("Failed to send the letter. Please try again.");
+    } finally {
+      setSending(false);
     }
   };
 
@@ -227,203 +235,251 @@ const NewLetter = () => {
   };
 
   return (
-    <div>
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-800">
-            {t.title[lang]}
-          </h2>
-          <p className="text-gray-600">{t.subtitle[lang]}</p>
+    <div className="min-h-screen bg-gradient-to-br from-[#003F5D] via-[#BFBFBF] to-[#C88B3D] flex items-center justify-center py-10 px-2">
+      <div className="w-full max-w-2xl mx-auto bg-white rounded-3xl shadow-2xl border border-[#BFBFBF] p-8 relative">
+        <div className="mb-8 flex flex-col items-center">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="inline-block p-3 rounded-full bg-gradient-to-tr from-[#003F5D] via-[#C88B3D] to-[#BFBFBF] shadow-lg">
+              <SendIcon className="text-white text-3xl" />
+            </span>
+            <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#003F5D] via-[#C88B3D] to-[#BFBFBF] drop-shadow-lg">
+              {t.title[lang]}
+            </h2>
+          </div>
+          <p className="text-lg text-[#003F5D] font-medium text-center">
+            {t.subtitle[lang]}
+          </p>
         </div>
-      </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <form onSubmit={handleSubmit}>
-          {/* Department */}
-          <div className="mb-4">
-            <label
-              htmlFor="department"
-              className="block text-sm font-medium text-gray-700"
-            >
-              {t.department[lang]}
-            </label>
-            <DepartmentSelector
-              onChange={(val) => setSelectedDepartment(val)}
-            />
-          </div>
-          {/* Recipient */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t.to[lang]}
-            </label>
-            <input
-              type="text"
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md"
-              placeholder={t.selectEmployee[lang]}
-              value={toEmployee}
-              onChange={(e) => setToEmployee(e.target.value)}
-              list="user-list"
-              autoComplete="off"
-              disabled={!selectedDepartment || loadingUsers}
-            />
-            <datalist id="user-list">
-              {filteredUsers.map((user) => (
-                <option key={user._id} value={user.name}>
-                  {user.name}
-                </option>
-              ))}
-            </datalist>
-          </div>
-
-          {/* Subject */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t.subject[lang]}
-            </label>
-            <input
-              type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder={lang === "am" ? "ርዕሱን ያስገቡ" : "Enter letter subject"}
-              value={letterData.subject}
-              onChange={(e) =>
-                setLetterData({ ...letterData, subject: e.target.value })
-              }
-            />
-          </div>
-
-          {/* Priority */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t.priority[lang]}
-            </label>
-            <div className="flex space-x-4">
-              {["normal", "high", "urgent"].map((priority) => (
-                <label key={priority} className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    className="form-radio text-blue-600"
-                    name="priority"
-                    value={priority}
-                    checked={letterData.priority === priority}
-                    onChange={(e) =>
-                      setLetterData({ ...letterData, priority: e.target.value })
-                    }
-                  />
-                  <span className="ml-2 text-sm text-gray-700 capitalize">
-                    {lang === "am"
-                      ? priority === "normal"
-                        ? "መደበኛ"
-                        : priority === "high"
-                        ? "ከፍተኛ"
-                        : "አስቸኳይ"
-                      : priority}
-                  </span>
-                </label>
-              ))}
+        <div className="divide-y divide-[#BFBFBF]">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Department */}
+            <div className="pt-2">
+              <label
+                htmlFor="department"
+                className="block text-sm font-bold text-[#003F5D] mb-1"
+              >
+                {t.department[lang]}
+              </label>
+              <DepartmentSelector
+                onChange={(val) => setSelectedDepartment(val)}
+              />
             </div>
-          </div>
+            {/* Recipient */}
+            <div className="pt-6">
+              <label className="block text-sm font-bold text-[#003F5D] mb-1">
+                {t.to[lang]}
+              </label>
+              <input
+                type="text"
+                className="block w-full px-3 py-2 border border-[#BFBFBF] rounded-lg focus:ring-2 focus:ring-[#C88B3D] focus:border-[#C88B3D] transition-all placeholder-[#BFBFBF] hover:border-[#C88B3D] bg-[#F8F8F8]"
+                placeholder={t.selectEmployee[lang]}
+                value={toEmployee}
+                onChange={(e) => setToEmployee(e.target.value)}
+                list="user-list"
+                autoComplete="off"
+                disabled={!selectedDepartment || loadingUsers}
+              />
+              <datalist id="user-list">
+                {filteredUsers.map((user) => (
+                  <option key={user._id} value={user.name}>
+                    {user.name}
+                  </option>
+                ))}
+              </datalist>
+              {loadingUsers && (
+                <LoadingSpinner message="Loading employees..." />
+              )}
+            </div>
 
-          {/* Content */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t.content[lang]}
-            </label>
-            <TemplateMemoLetter
-              subject={letterData.subject}
-              recipient={letterData.to}
-              reference={""}
-              body={
-                <textarea
-                  value={letterData.content}
-                  onChange={(e) =>
-                    setLetterData({ ...letterData, content: e.target.value })
-                  }
-                  placeholder={
-                    lang === "am" ? "የደብዳቤውን ይዘት ያስገቡ" : "Enter letter content"
-                  }
-                  className="w-full min-h-[180px] text-base outline-none border-none bg-transparent resize-vertical"
-                  style={{
-                    fontFamily: "'Noto Sans Ethiopic', Arial, sans-serif",
-                    lineHeight: 1.8,
-                    color: "#222",
-                  }}
-                />
-              }
-            />
-          </div>
+            {/* Subject */}
+            <div className="pt-6">
+              <label className="block text-sm font-bold text-[#003F5D] mb-1">
+                {t.subject[lang]}
+              </label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border border-[#BFBFBF] rounded-lg focus:ring-2 focus:ring-[#C88B3D] focus:border-[#C88B3D] transition-all placeholder-[#BFBFBF] hover:border-[#C88B3D] bg-[#F8F8F8]"
+                placeholder={
+                  lang === "am" ? "ርዕሱን ያስገቡ" : "Enter letter subject"
+                }
+                value={letterData.subject}
+                onChange={(e) =>
+                  setLetterData({ ...letterData, subject: e.target.value })
+                }
+              />
+            </div>
 
-          {/* Attachments */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t.attachments[lang]}
-            </label>
-            <div
-              className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md transition-colors ${
-                dragActive ? "border-blue-500 bg-blue-50" : ""
-              }`}
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-            >
-              <div className="space-y-1 text-center">
-                <PaperclipIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <div className="flex text-sm text-gray-600 justify-center">
+            {/* Priority */}
+            <div className="pt-6">
+              <label className="block text-sm font-bold text-[#003F5D] mb-1">
+                {t.priority[lang]}
+              </label>
+              <div className="flex space-x-4">
+                {["normal", "high", "urgent"].map((priority) => (
                   <label
-                    htmlFor="file-upload"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500"
+                    key={priority}
+                    className={`inline-flex items-center cursor-pointer transition-all px-3 py-1 rounded-lg border-2 ${
+                      letterData.priority === priority
+                        ? "border-[#C88B3D] bg-[#FFF7E6] text-[#C88B3D] font-bold"
+                        : "border-[#BFBFBF] text-[#003F5D] bg-white"
+                    }`}
                   >
-                    <span>{t.upload[lang]}</span>
                     <input
-                      id="file-upload"
-                      name="file-upload"
-                      type="file"
-                      className="sr-only"
-                      onChange={handleFileChange}
-                      accept=".pdf,.doc,.docx"
+                      type="radio"
+                      className="form-radio text-[#C88B3D] focus:ring-2 focus:ring-[#C88B3D]"
+                      name="priority"
+                      value={priority}
+                      checked={letterData.priority === priority}
+                      onChange={(e) =>
+                        setLetterData({
+                          ...letterData,
+                          priority: e.target.value,
+                        })
+                      }
                     />
-                  </label>
-                  <p className="pl-1">{t.orDrag[lang]}</p>
-                </div>
-                <p className="text-xs text-gray-500">{t.uploadHint[lang]}</p>
-                {attachment && (
-                  <div className="mt-2 flex items-center justify-center space-x-2">
-                    <span className="text-green-600 font-medium">
-                      {attachment.name}
+                    <span className="ml-2 text-sm capitalize">
+                      {lang === "am"
+                        ? priority === "normal"
+                          ? "መደበኛ"
+                          : priority === "high"
+                          ? "ከፍተኛ"
+                          : "አስቸኳይ"
+                        : priority}
                     </span>
-                    <button
-                      type="button"
-                      onClick={removeAttachment}
-                      className="text-red-500 hover:underline text-xs"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                )}
+                  </label>
+                ))}
               </div>
             </div>
-          </div>
 
-          {/* CC Section */}
-          <CCSection letterData={letterData} setLetterData={setLetterData} />
+            {/* Content */}
+            <div className="pt-6">
+              <label className="block text-sm font-bold text-[#003F5D] mb-1">
+                {t.content[lang]}
+              </label>
+              <TemplateMemoLetter
+                subject={letterData.subject}
+                recipient={letterData.to}
+                reference={""}
+                body={
+                  <textarea
+                    value={letterData.content}
+                    onChange={(e) =>
+                      setLetterData({ ...letterData, content: e.target.value })
+                    }
+                    placeholder={
+                      lang === "am"
+                        ? "የደብዳቤውን ይዘት ያስገቡ"
+                        : "Enter letter content"
+                    }
+                    className="w-full min-h-[180px] text-base outline-none border-none bg-transparent resize-vertical focus:ring-2 focus:ring-[#C88B3D] transition-all"
+                    style={{
+                      fontFamily: "'Noto Sans Ethiopic', Arial, sans-serif",
+                      lineHeight: 1.8,
+                      color: "#003F5D",
+                    }}
+                  />
+                }
+              />
+            </div>
 
-          {/* Submit and Save */}
-          <div className="flex justify-between mt-6">
-            <button
-              type="submit"
-              className="bg-blue-600 text-white rounded-md px-4 py-2 flex items-center space-x-2"
-            >
-              <SendIcon className="w-4 h-4" />
-              <span>{t.send[lang]}</span>
-            </button>
-            <button
-              type="button"
-              className="bg-gray-200 text-gray-800 rounded-md px-4 py-2 flex items-center space-x-2"
-            >
-              <SaveIcon className="w-4 h-4" />
-              <span>{t.saveDraft[lang]}</span>
-            </button>
-          </div>
-        </form>
+            {/* Attachments */}
+            <div className="pt-6">
+              <label className="block text-sm font-bold text-[#003F5D] mb-1">
+                {t.attachments[lang]}
+              </label>
+              <div
+                className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-[#BFBFBF] border-dashed rounded-lg transition-colors ${
+                  dragActive ? "border-[#C88B3D] bg-[#FFF7E6]" : ""
+                }`}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+              >
+                <div className="space-y-1 text-center">
+                  <PaperclipIcon className="mx-auto h-10 w-10 text-[#003F5D]" />
+                  <div className="flex text-sm text-[#003F5D] justify-center">
+                    <label
+                      htmlFor="file-upload"
+                      className="relative cursor-pointer bg-white rounded-md font-medium text-[#C88B3D] hover:text-[#003F5D] focus:ring-2 focus:ring-[#C88B3D] transition-all"
+                    >
+                      <span>{t.upload[lang]}</span>
+                      <input
+                        id="file-upload"
+                        name="file-upload"
+                        type="file"
+                        className="sr-only"
+                        onChange={handleFileChange}
+                        accept=".pdf,.doc,.docx"
+                      />
+                    </label>
+                    <p className="pl-1">{t.orDrag[lang]}</p>
+                  </div>
+                  <p className="text-xs text-[#BFBFBF]">{t.uploadHint[lang]}</p>
+                  {attachment && (
+                    <div className="mt-2 flex items-center justify-center space-x-2">
+                      <span className="text-green-600 font-medium">
+                        {attachment.name}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={removeAttachment}
+                        className="text-red-500 hover:underline text-xs focus:ring-2 focus:ring-red-400 transition-all"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* CC Section */}
+            <div className="pt-6">
+              <CCSection
+                letterData={letterData}
+                setLetterData={setLetterData}
+              />
+            </div>
+
+            {/* Submit and Save */}
+            <div className="flex justify-between mt-8">
+              <button
+                type="submit"
+                className={`bg-[#003F5D] text-white rounded-lg px-6 py-3 flex items-center space-x-2 focus:ring-2 focus:ring-[#C88B3D] transition-all text-lg font-bold shadow-lg ${
+                  sending
+                    ? "opacity-60 cursor-not-allowed"
+                    : "hover:bg-[#C88B3D] hover:text-[#003F5D]"
+                }`}
+                disabled={sending}
+              >
+                {sending ? (
+                  <span className="flex items-center gap-2">
+                    <span className="inline-block align-middle">
+                      <LoadingSpinner
+                        message=""
+                        iconClassName="!text-xl !w-5 !h-5"
+                      />
+                    </span>
+                    <span className="text-base font-semibold">Sending...</span>
+                  </span>
+                ) : (
+                  <>
+                    <SendIcon className="w-5 h-5" />
+                    <span>{t.send[lang]}</span>
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                className="bg-[#BFBFBF] text-[#003F5D] rounded-lg px-6 py-3 flex items-center space-x-2 hover:bg-[#C88B3D] hover:text-white focus:ring-2 focus:ring-[#C88B3D] transition-all text-lg font-bold shadow-lg"
+              >
+                <SaveIcon className="w-5 h-5" />
+                <span>{t.saveDraft[lang]}</span>
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

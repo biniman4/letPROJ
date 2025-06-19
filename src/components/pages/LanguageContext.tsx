@@ -1,9 +1,15 @@
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from "react";
 
 // Define an enum for supported languages
 export enum SupportedLang {
-  Am = 'am',
-  En = 'en',
+  Am = "am",
+  En = "en",
 }
 
 // Define the translations object
@@ -13,7 +19,8 @@ const translations = {
     home: {
       title: "የደብዳቤ አስተዳደር ስርዓት",
       subtitle: "የክፍል ሳይንስ እና ጀኦስፓሺያል ኢንስቲትዩት (SSGI)",
-      description: "ለSSGI የተዘጋጀ መደበኛ መዝገብን በትክክል፣ በደህናነት እና በቀና ማድረግ የሚችል መድረክ።",
+      description:
+        "ለSSGI የተዘጋጀ መደበኛ መዝገብን በትክክል፣ በደህናነት እና በቀና ማድረግ የሚችል መድረክ።",
       getStarted: "መጀመሪያ ጀምር",
       login: "ግባ",
       featuresHeading: "የSSGI ኮሚያንኬሽን ፍሎውን በኃይል መሞላ",
@@ -249,6 +256,30 @@ const translations = {
       loadingUsers: "ተጠቃሚዎች በመጫን ላይ...",
       additionalRecipients: "ተጨማሪ ተቀባዮች",
       errorFetchingUsers: "ተጠቃሚዎችን ማምጣት ላይ ስህተት ተፈጥሯል",
+      errorUpdatingStatus: "Error updating letter status",
+      letterStarred: (subject: string) => `Letter "${subject}" starred`,
+      letterUnstarred: (subject: string) => `Letter "${subject}" unstarred`,
+      errorTogglingStar: "Error toggling star status",
+      forwardedMessage: "Forwarded Message",
+      messageForwarded: "Message forwarded to",
+      failedToForward: "Failed to forward message",
+      attachments: "Attachments",
+      download: "Download",
+      view: "View",
+      viewButton: "View Letter",
+      forwardLetter: "Forward Letter",
+      selectEmployee: "Select Employee",
+      cancel: "Cancel",
+      closeButton: "Close",
+      downloadButton: "Download",
+      previewNotAvailable: "Preview not available",
+      downloadToView: "Please download to view this file",
+      errorDownloadingFile: "Error downloading file",
+      errorViewingFile: "Error viewing file",
+      downloadSuccess: "ፋይሉ በተሳካ ሁኔታ ወርዷል",
+      loading: "በመጫን ላይ...",
+      forwarding: "በመላክ ላይ...",
+      contentType: "የፋይሉ አይነት",
     },
     // Sent translations
     sent: {
@@ -368,23 +399,28 @@ const translations = {
     features: [
       {
         name: "Smart Document Management",
-        description: "Efficiently organize and manage all your business correspondence in one place.",
+        description:
+          "Efficiently organize and manage all your business correspondence in one place.",
       },
       {
         name: "Real-time Tracking",
-        description: "Track the status of your letters and documents in real-time.",
+        description:
+          "Track the status of your letters and documents in real-time.",
       },
       {
         name: "Advanced Security",
-        description: "Enterprise-grade security to keep your sensitive documents safe.",
+        description:
+          "Enterprise-grade security to keep your sensitive documents safe.",
       },
       {
         name: "Powerful Search",
-        description: "Find any document instantly with our advanced search capabilities.",
+        description:
+          "Find any document instantly with our advanced search capabilities.",
       },
       {
         name: "Automated Workflows",
-        description: "Streamline your approval processes with automated workflows.",
+        description:
+          "Streamline your approval processes with automated workflows.",
       },
       {
         name: "Analytics & Insights",
@@ -395,11 +431,13 @@ const translations = {
     services: [
       {
         name: "Letter Processing",
-        description: "Efficient handling of incoming and outgoing official correspondence.",
+        description:
+          "Efficient handling of incoming and outgoing official correspondence.",
       },
       {
         name: "Document Archiving",
-        description: "Secure long-term storage and retrieval of institutional documents.",
+        description:
+          "Secure long-term storage and retrieval of institutional documents.",
       },
       {
         name: "Approval Workflows",
@@ -482,7 +520,9 @@ const translations = {
                 { label: "Legal Services Executive" },
                 { label: "Audit Executive" },
                 { label: "Ethics and Anti-Corruption Executive" },
-                { label: "Women and Social Inclusion Implementation Executive" },
+                {
+                  label: "Women and Social Inclusion Implementation Executive",
+                },
               ],
             },
             {
@@ -504,28 +544,46 @@ const translations = {
                 { label: "Geodesy and Geodynamics Lead Executive" },
                 { label: "Aerospace Engineering Lead Executive" },
                 { label: "Satellite Operation Lead Executive" },
-                { label: "Postgraduate; Registrar and Research Administration Lead Executive" },
+                {
+                  label:
+                    "Postgraduate; Registrar and Research Administration Lead Executive",
+                },
               ],
             },
             {
               label: "Geospatial Sector",
               subDepartments: [
                 { label: "Aerial Survey Lead Executive" },
-                { label: "Photogrammetry and LiDAR Data Processing Lead Executive" },
+                {
+                  label:
+                    "Photogrammetry and LiDAR Data Processing Lead Executive",
+                },
                 { label: "Cartography Lead Executive" },
-                { label: "Geodetic Infrastructure and Services Lead Executive" },
+                {
+                  label: "Geodetic Infrastructure and Services Lead Executive",
+                },
                 { label: "Digital Image Processing Lead Executive" },
-                { label: "Spatial Planning and Decision Support Lead Executive" },
+                {
+                  label: "Spatial Planning and Decision Support Lead Executive",
+                },
               ],
             },
             {
               label: "Space and Geospatial Enabling Sector",
               subDepartments: [
-                { label: "Space and Geospatial Information Standardization Lead Executive" },
-                { label: "Platform and Application Development Lead Executive" },
+                {
+                  label:
+                    "Space and Geospatial Information Standardization Lead Executive",
+                },
+                {
+                  label: "Platform and Application Development Lead Executive",
+                },
                 { label: "Data and System Administration Lead Executive" },
                 { label: "Technology Transfer Lead Executive" },
-                { label: "Space Science and Geospatial Regional Connectivity Lead Executive" },
+                {
+                  label:
+                    "Space Science and Geospatial Regional Connectivity Lead Executive",
+                },
                 { label: "Policy and Legal Framework Lead Executive" },
               ],
             },
@@ -537,7 +595,8 @@ const translations = {
       title: "Notifications",
       markAllAsRead: "Mark all as read",
       noNotifications: "No notifications",
-      allCaughtUp: "You're all caught up! We'll notify you when something new arrives.",
+      allCaughtUp:
+        "You're all caught up! We'll notify you when something new arrives.",
       relatedTo: "Related to:",
       markAsRead: "Mark as read",
       deleteNotification: "Delete notification",
@@ -592,6 +651,30 @@ const translations = {
       loadingUsers: "Loading users...",
       additionalRecipients: "Additional Recipients",
       errorFetchingUsers: "Error fetching users",
+      errorUpdatingStatus: "Error updating letter status",
+      letterStarred: (subject: string) => `Letter "${subject}" starred`,
+      letterUnstarred: (subject: string) => `Letter "${subject}" unstarred`,
+      errorTogglingStar: "Error toggling star status",
+      forwardedMessage: "Forwarded Message",
+      messageForwarded: "Message forwarded to",
+      failedToForward: "Failed to forward message",
+      attachments: "Attachments",
+      download: "Download",
+      view: "View",
+      viewButton: "View Letter",
+      forwardLetter: "Forward Letter",
+      selectEmployee: "Select Employee",
+      cancel: "Cancel",
+      closeButton: "Close",
+      downloadButton: "Download",
+      previewNotAvailable: "Preview not available",
+      downloadToView: "Please download to view this file",
+      errorDownloadingFile: "Error downloading file",
+      errorViewingFile: "Error viewing file",
+      downloadSuccess: "File downloaded successfully",
+      loading: "Loading...",
+      forwarding: "Forwarding...",
+      contentType: "File type",
     },
     // Sent translations
     sent: {
@@ -706,7 +789,9 @@ type LanguageContextType = {
 };
 
 // Create the context
-export const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+export const LanguageContext = createContext<LanguageContextType | undefined>(
+  undefined
+);
 
 // Provider component
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
@@ -714,7 +799,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
   // Load language from localStorage if available
   useEffect(() => {
-    const storedLang = localStorage.getItem('appLang') as SupportedLang;
+    const storedLang = localStorage.getItem("appLang") as SupportedLang;
     if (storedLang === SupportedLang.Am || storedLang === SupportedLang.En) {
       setLang(storedLang);
     }
@@ -722,7 +807,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
   // Change the language and save it to localStorage
   const changeLang = (newLang: SupportedLang) => {
-    localStorage.setItem('appLang', newLang);
+    localStorage.setItem("appLang", newLang);
     setLang(newLang);
   };
 
@@ -740,7 +825,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 export const useLanguage = (): LanguageContextType => {
   const context = useContext(LanguageContext);
   if (!context) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
+    throw new Error("useLanguage must be used within a LanguageProvider");
   }
   return context;
 };

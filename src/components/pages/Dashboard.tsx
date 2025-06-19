@@ -1,12 +1,12 @@
-import React from 'react';
-import { LetterStats } from '../dashboard/LetterStats';
-import { RecentLetters } from '../dashboard/RecentLetters';
-import { ActivityTimeline } from '../dashboard/ActivityTimeline';
-import { useLanguage } from './LanguageContext';
+import React from "react";
+import { LetterStats } from "../dashboard/LetterStats";
+import { RecentLetters } from "../dashboard/RecentLetters";
+import { ActivityTimeline } from "../dashboard/ActivityTimeline";
+import { useLanguage } from "./LanguageContext";
 
 const Dashboard = () => {
   const { t } = useLanguage();
-  
+
   return (
     <div>
       <div className="mb-6">
@@ -15,8 +15,8 @@ const Dashboard = () => {
       </div>
       <LetterStats />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <RecentLetters />
-        <ActivityTimeline />
+        {/* <RecentLetters /> */}
+        {/* <ActivityTimeline /> */}
       </div>
     </div>
   );

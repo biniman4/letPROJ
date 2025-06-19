@@ -7,7 +7,11 @@ const letterSchema = new mongoose.Schema(
     // reference: { type: String, required: true }, // REMOVE this line
     from: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     fromName: { type: String, required: true },
-    fromEmail: { type: String, required: true },
+    fromEmail: {
+      type: String,
+      required: true,
+      index: true, // Add index for better query performance
+    },
     to: { type: String, required: true },
     department: { type: String, required: true },
     priority: { type: String, default: "normal" },
@@ -30,12 +34,17 @@ const letterSchema = new mongoose.Schema(
     toEmail: { type: String, required: true },
     status: {
       type: String,
-      enum: ["draft", "sent", "delivered", "read"],
+      enum: ["draft", "pending", "approved", "sent", "delivered", "read", "rejected"],
       default: "draft",
     },
+    rejectionReason: { type: String },
+    rejectedAt: { type: Date },
   },
   { timestamps: true }
 );
+
+// Add a compound index for status and fromEmail
+letterSchema.index({ status: 1, fromEmail: 1 });
 
 const Letter = mongoose.model("Letter", letterSchema);
 export default Letter;

@@ -8,4 +8,6 @@ export interface LetterData {
   cc: string[];
   ccEmployees: Record<string, string[]>;
   from: string;
+  rejectionReason?: string;
+  rejectedAt?: string;
 } 

@@ -9,6 +9,7 @@ import {
   EyeOutlined,
   FileTextOutlined,
   PrinterOutlined,
+  MailOutlined,
 } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -16,6 +17,10 @@ import "react-toastify/dist/ReactToastify.css";
 import TemplateMemoLetter from "./TemplateMemoLetter";
 import { useLanguage } from "./LanguageContext";
 import "./SentTableHover.css";
+import { useNavigate } from "react-router-dom";
+import LoadingSpinner from "../common/LoadingSpinner";
+import { useSent } from "../../context/SentContext";
+import ErrorBoundary from "../common/ErrorBoundary";
 
 interface Attachment {
   filename: string;
@@ -28,6 +33,7 @@ interface Letter {
   subject: string;
   to: string;
   toEmail: string;
+  fromEmail: string;
   createdAt: string;
   status: string;
   department: string;
@@ -38,8 +44,7 @@ interface Letter {
 }
 
 const Sent: React.FC = () => {
-  const [letters, setLetters] = useState<Letter[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { letters, loading, fetchLetters, refresh } = useSent();
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [composeVisible, setComposeVisible] = useState(false);
@@ -52,24 +57,11 @@ const Sent: React.FC = () => {
   const [attachment, setAttachment] = useState<File | null>(null);
   const memoPrintRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchSentLetters();
-  }, []);
-
-  const fetchSentLetters = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:5000/api/letters/sent"
-      );
-      setLetters(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching sent letters:", error);
-      setLoading(false);
-      toast.error(t.sent.errorFetchingSentLetters);
-    }
-  };
+  // Get current user from localStorage
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const userEmail = user.email || "";
 
   const handleDownload = async (letterId: string, filename: string) => {
     try {
@@ -276,6 +268,7 @@ const Sent: React.FC = () => {
       formData.append("content", values.content);
       formData.append("department", values.department);
       formData.append("priority", "normal");
+      formData.append("fromEmail", userEmail); // Add sender's email
 
       if (attachment) {
         formData.append("attachment", attachment);
@@ -291,7 +284,10 @@ const Sent: React.FC = () => {
         }
       );
 
-      setLetters((prev) => [response.data.letter, ...prev]);
+      // Only add the letter if it was sent by the current user
+      if (response.data.letter.fromEmail === userEmail) {
+        fetchLetters([response.data.letter, ...letters]);
+      }
       toast.success(t.sent.letterSentSuccess);
       setComposeVisible(false);
       form.resetFields();
@@ -313,15 +309,51 @@ const Sent: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">{t.sent.title}</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6">
+      <div className="flex flex-col items-center mb-10">
+        <div className="flex items-center gap-3 mb-2">
+          <MailOutlined className="text-4xl text-blue-500 animate-bounce" />
+          <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 drop-shadow-lg">
+            {t.sent.title || "Sent Letters"}
+          </h1>
+        </div>
+        <p className="text-lg text-gray-500 font-medium">
+          Easily track and manage all your sent correspondence
+        </p>
+      </div>
+
+      <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8 justify-between">
+        <div className="flex gap-4 w-full md:w-auto">
+          <Input
+            placeholder={t.sent.searchPlaceholder || "Search letters..."}
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="max-w-xs rounded-lg shadow-sm border-blue-200 focus:border-blue-400"
+          />
+          <Select
+            value={statusFilter}
+            onChange={setStatusFilter}
+            className="w-40 rounded-lg shadow-sm border-blue-200"
+          >
+            <Select.Option value="all">
+              {t.sent.allStatus || "All Status"}
+            </Select.Option>
+            <Select.Option value="sent">
+              {t.sent.statusSent || "Sent"}
+            </Select.Option>
+            <Select.Option value="delivered">
+              {t.sent.statusDelivered || "Delivered"}
+            </Select.Option>
+          </Select>
+        </div>
         <Button
           type="primary"
           icon={<SendOutlined />}
-          onClick={() => setComposeVisible(true)}
+          className="bg-gradient-to-r from-blue-500 to-pink-500 border-0 shadow-lg hover:from-pink-500 hover:to-blue-500 transition-all duration-300"
+          onClick={() => navigate("/new-letter")}
         >
-          {t.sent.newLetterButton}
+          {t.sent.newLetterButton || "New Letter"}
         </Button>
       </div>
 
@@ -473,12 +505,8 @@ const Sent: React.FC = () => {
             />
           ) : (
             <div className="text-center">
-              <p className="text-gray-500">
-                {t.sent.previewNotAvailable}
-              </p>
-              <p className="text-sm text-gray-400">
-                {t.sent.downloadToView}
-              </p>
+              <p className="text-gray-500">{t.sent.previewNotAvailable}</p>
+              <p className="text-sm text-gray-400">{t.sent.downloadToView}</p>
             </div>
           )}
         </div>
@@ -530,4 +558,8 @@ const Sent: React.FC = () => {
   );
 };
 
-export default Sent;
+export default (props: any) => (
+  <ErrorBoundary>
+    <Sent {...props} />
+  </ErrorBoundary>
+);
