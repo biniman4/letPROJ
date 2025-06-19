@@ -34,9 +34,11 @@ const letterSchema = new mongoose.Schema(
     toEmail: { type: String, required: true },
     status: {
       type: String,
-      enum: ["draft", "sent", "delivered", "read"],
+      enum: ["draft", "pending", "approved", "sent", "delivered", "read", "rejected"],
       default: "draft",
     },
+    rejectionReason: { type: String },
+    rejectedAt: { type: Date },
   },
   { timestamps: true }
 );

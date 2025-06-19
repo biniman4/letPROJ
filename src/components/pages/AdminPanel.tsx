@@ -12,58 +12,66 @@ const AdminPanel = () => {
     "flex items-center gap-2 px-5 py-2 rounded-lg font-semibold shadow bg-blue-600 text-white hover:bg-blue-700 transition-all duration-150";
 
   return (
-    <div className="fixed top-0 left-0 right-0 bottom-0 max-w-3xl mx-auto bg-gray-50 px-2 pb-6 overflow-hidden z-10">
-      {/* Small top margin for heading and actions */}
-      <div className="flex flex-col md:flex-row justify-between items-center mt-4 mb-3 gap-2">
-        <h2 className="text-2xl font-extrabold text-gray-800 tracking-tight drop-shadow">
-          Admin Panel
-        </h2>
-        <div className="flex gap-2">
-          <button className={buttonStyle} onClick={() => navigate("/signup")}>
-            <UserPlus className="w-5 h-5" /> Register User
-          </button>
-          <button
-            className="flex items-center gap-2 px-5 py-2 rounded-lg font-semibold shadow bg-gray-600 text-white hover:bg-gray-700 transition-all duration-150"
-            onClick={() => navigate("/")}
-          >
-            <Home className="w-5 h-5" /> Home
-          </button>
+    <div className="min-h-screen bg-gray-50 px-4 py-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+          <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight">
+            Admin Panel
+          </h2>
+          <div className="flex gap-3">
+            <button className={buttonStyle} onClick={() => navigate("/signup")}>
+              <UserPlus className="w-5 h-5" /> Register User
+            </button>
+            <button
+              className="flex items-center gap-2 px-5 py-2 rounded-lg font-semibold shadow bg-gray-600 text-white hover:bg-gray-700 transition-all duration-150"
+              onClick={() => navigate("/")}
+            >
+              <Home className="w-5 h-5" /> Home
+            </button>
+          </div>
         </div>
-      </div>
-      {successMsg && (
-        <div className="mb-3 p-3 bg-green-100 text-green-800 rounded shadow text-base font-medium">
-          {successMsg}
+
+        {/* Success Message */}
+        {successMsg && (
+          <div className="mb-6 p-4 bg-green-100 text-green-800 rounded-lg shadow text-base font-medium">
+            {successMsg}
+          </div>
+        )}
+
+        {/* Tab Navigation */}
+        <div className="flex justify-center mb-6">
+          <div className="flex bg-gray-200 rounded-lg p-1 shadow-inner">
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`flex items-center gap-2 px-8 py-3 rounded-md font-semibold text-base transition-all duration-200
+                ${activeTab === 'users'
+                  ? 'bg-white shadow text-blue-700'
+                  : 'text-gray-600 hover:bg-gray-300 hover:text-gray-800'}`}
+            >
+              <Users className="w-5 h-5" /> Users
+            </button>
+            <button
+              onClick={() => setActiveTab('letters')}
+              className={`flex items-center gap-2 px-8 py-3 rounded-md font-semibold text-base transition-all duration-200
+                ${activeTab === 'letters'
+                  ? 'bg-white shadow text-blue-700'
+                  : 'text-gray-600 hover:bg-gray-300 hover:text-gray-800'}`}
+            >
+              <Mail className="w-5 h-5" /> Letters
+            </button>
+          </div>
         </div>
-      )}
-      {/* Tabs with minimal vertical space */}
-      <div className="flex justify-center mb-2 gap-2">
-        <button
-          onClick={() => setActiveTab('users')}
-          className={`flex items-center gap-2 px-6 py-2 rounded-t-lg font-semibold text-base transition-all duration-150
-            ${activeTab === 'users'
-              ? 'bg-white shadow text-blue-700 border-b-2 border-blue-600'
-              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
-        >
-          <Users className="w-5 h-5" /> Users
-        </button>
-        <button
-          onClick={() => setActiveTab('letters')}
-          className={`flex items-center gap-2 px-6 py-2 rounded-t-lg font-semibold text-base transition-all duration-150
-            ${activeTab === 'letters'
-              ? 'bg-white shadow text-blue-700 border-b-2 border-blue-600'
-              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
-        >
-          <Mail className="w-5 h-5" /> Letters
-        </button>
-      </div>
-      {/* Panel content with proper height calculation */}
-      <div className="bg-white rounded-b-xl shadow-lg h-[calc(100vh-180px)] overflow-hidden">
-        <div className="h-full">
-          {activeTab === 'users' ? (
-            <UserManagement setSuccessMsg={setSuccessMsg} />
-          ) : (
-            <LetterManagement setSuccessMsg={setSuccessMsg} />
-          )}
+
+        {/* Content Panel */}
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="h-[calc(100vh-280px)] min-h-[600px]">
+            {activeTab === 'users' ? (
+              <UserManagement setSuccessMsg={setSuccessMsg} />
+            ) : (
+              <LetterManagement setSuccessMsg={setSuccessMsg} />
+            )}
+          </div>
         </div>
       </div>
     </div>

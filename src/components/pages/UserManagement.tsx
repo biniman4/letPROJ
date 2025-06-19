@@ -31,6 +31,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
   const [editForm, setEditForm] = useState<Partial<User>>({});
   const [userSearch, setUserSearch] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
 
   // Debounced search value for responsive filtering
   const debouncedSearch = useDebounce(userSearch, 200);
@@ -47,15 +48,20 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
     fetchUsers();
   }, []);
 
-  const handleDeleteUser = async (id: string) => {
+  const handleDeleteUser = (id: string) => {
+    setShowDeleteDialog(id);
+  };
+
+  const handleConfirmDelete = async (id: string) => {
     try {
       await axios.delete(`http://localhost:5000/api/users/${id}`);
       setUsers((prev) => prev.filter((u) => u._id !== id));
-      setSuccessMsg("User deleted!");
+      setSuccessMsg("User deleted successfully!");
     } catch (err) {
-      setSuccessMsg("Failed to delete user!");
+      setSuccessMsg("Failed to delete user. Please try again.");
     }
     setTimeout(() => setSuccessMsg(""), 2000);
+    setShowDeleteDialog(null);
   };
 
   const handleEditClick = (user: any) => {
@@ -254,6 +260,38 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="flex items-center mb-4">
+              <div className="bg-red-100 rounded-full p-2 mr-3">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Delete User</h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this user? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteDialog(null)}
+                className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleConfirmDelete(showDeleteDialog)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
