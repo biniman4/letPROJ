@@ -276,6 +276,10 @@ const translations = {
       downloadToView: "Please download to view this file",
       errorDownloadingFile: "Error downloading file",
       errorViewingFile: "Error viewing file",
+      downloadSuccess: "ፋይሉ በተሳካ ሁኔታ ወርዷል",
+      loading: "በመጫን ላይ...",
+      forwarding: "በመላክ ላይ...",
+      contentType: "የፋይሉ አይነት",
     },
     // Sent translations
     sent: {
@@ -667,6 +671,10 @@ const translations = {
       downloadToView: "Please download to view this file",
       errorDownloadingFile: "Error downloading file",
       errorViewingFile: "Error viewing file",
+      downloadSuccess: "File downloaded successfully",
+      loading: "Loading...",
+      forwarding: "Forwarding...",
+      contentType: "File type",
     },
     // Sent translations
     sent: {

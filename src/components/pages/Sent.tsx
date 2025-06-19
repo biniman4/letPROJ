@@ -18,6 +18,8 @@ import TemplateMemoLetter from "./TemplateMemoLetter";
 import { useLanguage } from "./LanguageContext";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../common/LoadingSpinner";
+import { useSent } from "../../context/SentContext";
+import ErrorBoundary from "../common/ErrorBoundary";
 
 interface Attachment {
   filename: string;
@@ -41,8 +43,7 @@ interface Letter {
 }
 
 const Sent: React.FC = () => {
-  const [letters, setLetters] = useState<Letter[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { letters, loading, fetchLetters, refresh } = useSent();
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [composeVisible, setComposeVisible] = useState(false);
@@ -60,30 +61,6 @@ const Sent: React.FC = () => {
   // Get current user from localStorage
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user.email || "";
-
-  useEffect(() => {
-    fetchSentLetters();
-  }, []);
-
-  const fetchSentLetters = async () => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-      const userEmail = user.email || "";
-      const response = await axios.get(
-        "http://localhost:5000/api/letters/sent"
-      );
-      // Filter letters to only those sent by the current user
-      const filtered = response.data.filter(
-        (letter: Letter) => letter.fromEmail === userEmail
-      );
-      setLetters(filtered);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching sent letters:", error);
-      setLoading(false);
-      toast.error("Failed to fetch sent letters.");
-    }
-  };
 
   const handleDownload = async (letterId: string, filename: string) => {
     try {
@@ -308,7 +285,7 @@ const Sent: React.FC = () => {
 
       // Only add the letter if it was sent by the current user
       if (response.data.letter.fromEmail === userEmail) {
-        setLetters((prev) => [response.data.letter, ...prev]);
+        fetchLetters([response.data.letter, ...letters]);
       }
       toast.success(t.sent.letterSentSuccess);
       setComposeVisible(false);
@@ -659,4 +636,8 @@ const Sent: React.FC = () => {
   );
 };
 
-export default Sent;
+export default (props: any) => (
+  <ErrorBoundary>
+    <Sent {...props} />
+  </ErrorBoundary>
+);
