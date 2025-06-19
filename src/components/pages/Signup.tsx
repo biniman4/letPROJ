@@ -126,12 +126,12 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-indigo-400 via-blue-400 to-teal-300">
-      <div className="w-full max-w-4xl bg-gradient-to-br from-teal-50 via-blue-100 to-indigo-100/90 rounded-2xl shadow-2xl border border-blue-200 p-10">
-        <h2 className="text-3xl font-extrabold text-center text-indigo-900 mb-2 tracking-tight">
+    <div className="min-h-screen w-full flex items-center justify-center bg-blue-100">
+      <div className="w-full max-w-4xl bg-gradient-to-br from-white via-blue-50 to-cyan-100 rounded-2xl shadow-2xl border border-blue-100 p-10">
+        <h2 className="text-4xl font-extrabold text-center text-indigo-900 mb-2 tracking-tight">
           {t.signup.title}
         </h2>
-        <p className="text-center text-base text-indigo-800 mb-6">
+        <p className="text-center text-lg text-indigo-800 mb-6">
           {t.signup.subtitle}
         </p>
         {(error || success) && (
@@ -213,7 +213,7 @@ const Signup = () => {
               className="accent-indigo-600"
             />
             <label htmlFor="terms" className="select-none">
-              {t.signup.termsAgreement}{" "}
+              {t.signup.termsAgreement} {" "}
               <a
                 href="#"
                 className="underline text-indigo-600 hover:text-teal-700 transition"
@@ -222,17 +222,17 @@ const Signup = () => {
               </a>
             </label>
           </div>
-          <div className="md:col-span-2 flex flex-col md:flex-row gap-4 mt-2">
+          <div className="md:col-span-2 flex flex-col md:flex-row gap-6 mt-8">
             <button
               type="submit"
-              className="w-full py-3 bg-gradient-to-r from-indigo-600 via-blue-500 to-teal-500 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-teal-600 transition-all shadow-md"
+              className="w-full md:w-1/2 py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-teal-400 text-white font-semibold text-xl shadow-lg hover:from-indigo-600 hover:to-teal-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition"
             >
               {t.signup.signUpButton}
             </button>
             <button
               type="button"
               onClick={() => navigate("/admin")}
-              className="w-full py-3 bg-white text-indigo-900 font-semibold rounded-xl hover:bg-indigo-100 shadow transition border border-indigo-200"
+              className="w-full md:w-1/2 py-4 rounded-xl bg-white text-indigo-900 font-semibold text-xl border border-indigo-200 shadow-lg hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 transition"
             >
               {t.signup.backToAdmin}
             </button>

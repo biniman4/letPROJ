@@ -104,7 +104,7 @@ export const Sidebar = ({
                       isActive
                         ? "bg-active-bg-dark font-medium text-hover-gold"
                         : "text-main-text hover:bg-gray-50 hover:text-hover-gold"
-                    }`;
+                    } transition-transform duration-200 hover:scale-[1.04]`;
                   }}
                 >
                   {({ isActive }) => (

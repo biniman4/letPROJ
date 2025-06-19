@@ -15,6 +15,7 @@ import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import TemplateMemoLetter from "./TemplateMemoLetter";
 import { useLanguage } from "./LanguageContext";
+import "./SentTableHover.css";
 
 interface Attachment {
   filename: string;
@@ -350,6 +351,7 @@ const Sent: React.FC = () => {
         loading={loading}
         rowKey="_id"
         pagination={{ pageSize: 10 }}
+        rowClassName={() => "sent-table-row-hover"}
       />
 
       <Modal

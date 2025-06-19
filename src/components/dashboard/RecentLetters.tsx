@@ -109,7 +109,7 @@ export const RecentLetters = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200">
+    <div className="bg-white rounded-lg border border-gray-200 transition-transform duration-200 hover:shadow-lg hover:scale-[1.03]">
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-800">

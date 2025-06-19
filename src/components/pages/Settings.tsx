@@ -102,7 +102,7 @@ const Settings = () => {
       <div className="space-y-6">
         {/* Profile Settings */}
         <div
-          className={`rounded-lg border p-6 transition-colors duration-300 ${
+          className={`rounded-lg border p-6 transition-colors duration-300 transition-transform duration-200 hover:shadow-lg hover:scale-[1.02] ${
             theme === "dark"
               ? "bg-gray-800 border-gray-700"
               : "bg-white border-gray-200"
@@ -234,7 +234,7 @@ const Settings = () => {
 
         {/* Notification Settings */}
         <div
-          className={`rounded-lg border p-6 transition-colors duration-300 ${
+          className={`rounded-lg border p-6 transition-colors duration-300 transition-transform duration-200 hover:shadow-lg hover:scale-[1.02] ${
             theme === "dark"
               ? "bg-gray-800 border-gray-700"
               : "bg-white border-gray-200"
@@ -332,7 +332,7 @@ const Settings = () => {
 
         {/* Theme Settings */}
         <div
-          className={`rounded-lg border p-6 transition-colors duration-300 ${
+          className={`rounded-lg border p-6 transition-colors duration-300 transition-transform duration-200 hover:shadow-lg hover:scale-[1.02] ${
             theme === "dark"
               ? "bg-gray-800 border-gray-700"
               : "bg-white border-gray-200"

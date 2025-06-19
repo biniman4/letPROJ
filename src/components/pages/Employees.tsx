@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import DepartmentSelector from "./DepartmentSelector";
-
-interface CCLetterData {
-  cc: string[];
-  ccEmployees: Record<string, string[]>;
-}
+import { LetterData } from "../../types/letter.d";
 
 interface EmployeesProps {
-  letterData: CCLetterData;
-  setLetterData: React.Dispatch<React.SetStateAction<CCLetterData>>;
+  letterData: LetterData;
+  setLetterData: React.Dispatch<React.SetStateAction<LetterData>>;
 }
 
 const Employees: React.FC<EmployeesProps> = ({ letterData, setLetterData }) => {
@@ -112,7 +108,7 @@ const Employees: React.FC<EmployeesProps> = ({ letterData, setLetterData }) => {
                                 emp,
                               ]
                             : letterData.ccEmployees[departmentVal].filter(
-                                (x) => x !== emp
+                                (x: string) => x !== emp
                               );
                           setLetterData({
                             ...letterData,
@@ -134,7 +130,7 @@ const Employees: React.FC<EmployeesProps> = ({ letterData, setLetterData }) => {
             <div className="mt-2">
               <span className="text-sm text-gray-600">Selected Employees:</span>
               <div className="mt-1 flex flex-wrap gap-2">
-                {letterData.ccEmployees[departmentVal].map((emp) => (
+                {letterData.ccEmployees[departmentVal].map((emp: string) => (
                   <span
                     key={emp}
                     className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm"

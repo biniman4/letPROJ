@@ -239,9 +239,7 @@ const Inbox = () => {
       }) => (
         <div
           key={letter._id}
-          className={`p-4 cursor-pointer hover:bg-gray-50 ${
-            letter.unread ? "bg-blue-50/30" : ""
-          }`}
+          className={`p-4 cursor-pointer hover:bg-gray-50 ${letter.unread ? "bg-blue-50/30" : ""} transition-transform duration-200 hover:shadow-lg hover:scale-[1.02]`}
           onClick={() => onOpen(letter)}
         >
           <div className="flex items-center justify-between">
