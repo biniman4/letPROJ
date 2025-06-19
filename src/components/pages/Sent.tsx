@@ -59,6 +59,14 @@ const Sent: React.FC = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
 
+  // Authentication check (fixes refresh issue)
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (!user) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
   // Get current user from localStorage
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user.email || "";

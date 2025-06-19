@@ -43,7 +43,7 @@ const Navigation = () => {
   return (
     <nav className="bg-white border-r border-gray-200 w-64 min-h-screen">
       <div className="p-4">
-        <h1 className="text-xl font-bold text-gray-800">Letter Management</h1>
+        <h1 className="text-xl font-bold bg-gradient-to-r from-[#b97b2a] via-[#cfae7b] to-[#cfc7b7] text-transparent bg-clip-text drop-shadow-md">Letter Management</h1>
       </div>
       <div className="mt-4">
         {navItems.map((item) => (

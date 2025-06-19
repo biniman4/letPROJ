@@ -79,308 +79,298 @@ const Settings = () => {
   };
 
   return (
-    <div
-      className={`max-w-4xl mx-auto p-6 transition-colors duration-300 ${
-        theme === "dark"
-          ? "bg-gray-900 text-gray-100"
-          : "bg-gray-50 text-gray-900"
-      }`}
-    >
-      <div className="mb-6">
-        <h2
-          className={`text-2xl font-semibold ${
-            theme === "dark" ? "text-gray-100" : "text-gray-800"
-          }`}
-        >
-          {t.settings.title}
-        </h2>
-        <p className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
-          {t.settings.profile.title}
-        </p>
-      </div>
-
-      <div className="space-y-6">
-        {/* Profile Settings */}
-        <div
-          className={`rounded-lg border p-6 transition-colors duration-300 transition-transform duration-200 hover:shadow-lg hover:scale-[1.02] ${
-            theme === "dark"
-              ? "bg-gray-800 border-gray-700"
-              : "bg-white border-gray-200"
-          }`}
-        >
-          <div className="flex items-center space-x-3 mb-4">
-            <User
-              className={`h-6 w-6 ${
-                theme === "dark" ? "text-blue-400" : "text-gray-600"
-              }`}
-            />
-            <h3
-              className={`text-lg font-medium ${
-                theme === "dark" ? "text-gray-100" : "text-gray-900"
-              }`}
-            >
-              {t.settings.profile.title}
-            </h3>
-          </div>
-
-          {message.text && (
-            <div
-              className={`mb-4 p-3 rounded-md ${
-                message.type === "success"
-                  ? theme === "dark"
-                    ? "bg-green-900 text-green-200"
-                    : "bg-green-50 text-green-700"
-                  : theme === "dark"
-                  ? "bg-red-900 text-red-200"
-                  : "bg-red-50 text-red-700"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
-
-          <form onSubmit={handleProfileUpdate} className="space-y-4">
-            <div>
-              <label
-                className={`block text-sm font-medium ${
-                  theme === "dark" ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                {t.settings.profile.name}
-              </label>
-              <input
-                type="text"
-                value={profileName}
-                onChange={(e) => setProfileName(e.target.value)}
-                className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
-                  theme === "dark"
-                    ? "bg-gray-700 border-gray-600 text-gray-100"
-                    : "border-gray-300"
-                }`}
-                required
-              />
-            </div>
-            <div>
-              <label
-                className={`block text-sm font-medium ${
-                  theme === "dark" ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                {t.settings.profile.email}
-              </label>
-              <input
-                type="email"
-                value={profileEmail}
-                onChange={(e) => setProfileEmail(e.target.value)}
-                className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
-                  theme === "dark"
-                    ? "bg-gray-700 border-gray-600 text-gray-100"
-                    : "border-gray-300"
-                }`}
-                required
-              />
-            </div>
-            <div>
-              <label
-                className={`block text-sm font-medium ${
-                  theme === "dark" ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                {t.settings.profile.phone}
-              </label>
-              <input
-                type="tel"
-                value={profilePhone}
-                onChange={(e) => setProfilePhone(e.target.value)}
-                className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
-                  theme === "dark"
-                    ? "bg-gray-700 border-gray-600 text-gray-100"
-                    : "border-gray-300"
-                }`}
-              />
-            </div>
-            <div>
-              <label
-                className={`block text-sm font-medium ${
-                  theme === "dark" ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                {t.settings.profile.department}
-              </label>
-              <input
-                type="text"
-                value={profileDepartment}
-                onChange={(e) => setProfileDepartment(e.target.value)}
-                className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
-                  theme === "dark"
-                    ? "bg-gray-700 border-gray-600 text-gray-100"
-                    : "border-gray-300"
-                }`}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`px-4 py-2 rounded-md transition-colors duration-300 ${
-                theme === "dark"
-                  ? "bg-blue-600 hover:bg-blue-700 text-white"
-                  : "bg-blue-600 hover:bg-blue-700 text-white"
-              } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-              {isLoading ? t.settings.profile.saving : t.settings.profile.saveChanges}
-            </button>
-          </form>
+    <div className={`min-h-screen py-8 transition-colors duration-300 ${
+      theme === "dark" ? "bg-gray-900 text-gray-100" : "bg-[#FFFFFF] text-gray-900"
+    }`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 flex flex-col items-center">
+          <h2 className="text-4xl font-extrabold bg-gradient-to-r from-[#b97b2a] via-[#cfae7b] to-[#cfc7b7] text-transparent bg-clip-text drop-shadow-md">{t.settings.title}</h2>
+          <p className={`text-lg font-medium ${theme === "dark" ? "text-gray-400" : "text-[#BFBFBF]"}`}>{t.settings.profile.title}</p>
         </div>
 
-        {/* Notification Settings */}
-        <div
-          className={`rounded-lg border p-6 transition-colors duration-300 transition-transform duration-200 hover:shadow-lg hover:scale-[1.02] ${
-            theme === "dark"
-              ? "bg-gray-800 border-gray-700"
-              : "bg-white border-gray-200"
-          }`}
-        >
-          <div className="flex items-center space-x-3 mb-4">
-            <Bell
-              className={`h-6 w-6 ${
-                theme === "dark" ? "text-blue-400" : "text-gray-600"
-              }`}
-            />
-            <h3
-              className={`text-lg font-medium ${
-                theme === "dark" ? "text-gray-100" : "text-gray-900"
-              }`}
-            >
-              {t.settings.notifications.title}
-            </h3>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4
-                  className={`text-sm font-medium ${
-                    theme === "dark" ? "text-gray-100" : "text-gray-900"
-                  }`}
-                >
-                  {t.settings.notifications.emailNotifications}
-                </h4>
-                <p
-                  className={`text-sm ${
-                    theme === "dark" ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  {t.settings.notifications.emailNotificationsDesc}
-                </p>
-              </div>
-              <button
-                onClick={handleEmailNotificationsToggle}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
-                  emailNotifications
-                    ? theme === "dark"
-                      ? "bg-blue-500"
-                      : "bg-blue-600"
-                    : theme === "dark"
-                    ? "bg-gray-600"
-                    : "bg-gray-200"
+        <div className="space-y-6">
+          {/* Profile Settings */}
+          <div
+            className={`rounded-lg border p-6 transition-colors duration-300 transition-transform duration-200 hover:shadow-lg hover:scale-[1.02] ${
+              theme === "dark"
+                ? "bg-gray-800 border-gray-700"
+                : "bg-white border-gray-200"
+            }`}
+          >
+            <div className="flex items-center space-x-3 mb-4">
+              <User
+                className={`h-6 w-6 ${
+                  theme === "dark" ? "text-blue-400" : "text-gray-600"
                 }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
-                    emailNotifications ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <h4
-                  className={`text-sm font-medium ${
-                    theme === "dark" ? "text-gray-100" : "text-gray-900"
-                  }`}
-                >
-                  {t.settings.notifications.notificationSound}
-                </h4>
-                <p
-                  className={`text-sm ${
-                    theme === "dark" ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  {t.settings.notifications.notificationSoundDesc}
-                </p>
-              </div>
-              <button
-                onClick={handleNotificationSoundToggle}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
-                  notificationSound
-                    ? theme === "dark"
-                      ? "bg-blue-500"
-                      : "bg-blue-600"
-                    : theme === "dark"
-                    ? "bg-gray-600"
-                    : "bg-gray-200"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
-                    notificationSound ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Theme Settings */}
-        <div
-          className={`rounded-lg border p-6 transition-colors duration-300 transition-transform duration-200 hover:shadow-lg hover:scale-[1.02] ${
-            theme === "dark"
-              ? "bg-gray-800 border-gray-700"
-              : "bg-white border-gray-200"
-          }`}
-        >
-          <div className="flex items-center space-x-3 mb-4">
-            {theme === "dark" ? (
-              <Moon className="h-6 w-6 text-blue-400" />
-            ) : (
-              <Sun className="h-6 w-6 text-yellow-500" />
-            )}
-            <h3
-              className={`text-lg font-medium ${
-                theme === "dark" ? "text-gray-100" : "text-gray-900"
-              }`}
-            >
-              {t.settings.appearance.title}
-            </h3>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <h4
-                className={`text-sm font-medium ${
+              />
+              <h3
+                className={`text-lg font-medium ${
                   theme === "dark" ? "text-gray-100" : "text-gray-900"
                 }`}
               >
-                {t.settings.appearance.theme}
-              </h4>
-              <p
-                className={`text-sm ${
-                  theme === "dark" ? "text-gray-400" : "text-gray-500"
+                {t.settings.profile.title}
+              </h3>
+            </div>
+
+            {message.text && (
+              <div
+                className={`mb-4 p-3 rounded-md ${
+                  message.type === "success"
+                    ? theme === "dark"
+                      ? "bg-green-900 text-green-200"
+                      : "bg-green-50 text-green-700"
+                    : theme === "dark"
+                    ? "bg-red-900 text-red-200"
+                    : "bg-red-50 text-red-700"
                 }`}
               >
-                {theme === "dark" ? t.settings.appearance.dark : t.settings.appearance.light}
-              </p>
-            </div>
-            <button
-              onClick={toggleTheme}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
-                theme === "dark" ? "bg-blue-500" : "bg-gray-200"
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
-                  theme === "dark" ? "translate-x-6" : "translate-x-1"
+                {message.text}
+              </div>
+            )}
+
+            <form onSubmit={handleProfileUpdate} className="space-y-4">
+              <div>
+                <label
+                  className={`block text-sm font-medium ${
+                    theme === "dark" ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
+                  {t.settings.profile.name}
+                </label>
+                <input
+                  type="text"
+                  value={profileName}
+                  onChange={(e) => setProfileName(e.target.value)}
+                  className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
+                    theme === "dark"
+                      ? "bg-gray-700 border-gray-600 text-gray-100"
+                      : "border-gray-300"
+                  }`}
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  className={`block text-sm font-medium ${
+                    theme === "dark" ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
+                  {t.settings.profile.email}
+                </label>
+                <input
+                  type="email"
+                  value={profileEmail}
+                  onChange={(e) => setProfileEmail(e.target.value)}
+                  className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
+                    theme === "dark"
+                      ? "bg-gray-700 border-gray-600 text-gray-100"
+                      : "border-gray-300"
+                  }`}
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  className={`block text-sm font-medium ${
+                    theme === "dark" ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
+                  {t.settings.profile.phone}
+                </label>
+                <input
+                  type="tel"
+                  value={profilePhone}
+                  onChange={(e) => setProfilePhone(e.target.value)}
+                  className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
+                    theme === "dark"
+                      ? "bg-gray-700 border-gray-600 text-gray-100"
+                      : "border-gray-300"
+                  }`}
+                />
+              </div>
+              <div>
+                <label
+                  className={`block text-sm font-medium ${
+                    theme === "dark" ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
+                  {t.settings.profile.department}
+                </label>
+                <input
+                  type="text"
+                  value={profileDepartment}
+                  onChange={(e) => setProfileDepartment(e.target.value)}
+                  className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
+                    theme === "dark"
+                      ? "bg-gray-700 border-gray-600 text-gray-100"
+                      : "border-gray-300"
+                  }`}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`px-4 py-2 rounded-md transition-colors duration-300 ${
+                  theme === "dark"
+                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                {isLoading ? t.settings.profile.saving : t.settings.profile.saveChanges}
+              </button>
+            </form>
+          </div>
+
+          {/* Notification Settings */}
+          <div
+            className={`rounded-lg border p-6 transition-colors duration-300 transition-transform duration-200 hover:shadow-lg hover:scale-[1.02] ${
+              theme === "dark"
+                ? "bg-gray-800 border-gray-700"
+                : "bg-white border-gray-200"
+            }`}
+          >
+            <div className="flex items-center space-x-3 mb-4">
+              <Bell
+                className={`h-6 w-6 ${
+                  theme === "dark" ? "text-blue-400" : "text-gray-600"
                 }`}
               />
-            </button>
+              <h3
+                className={`text-lg font-medium ${
+                  theme === "dark" ? "text-gray-100" : "text-gray-900"
+                }`}
+              >
+                {t.settings.notifications.title}
+              </h3>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4
+                    className={`text-sm font-medium ${
+                      theme === "dark" ? "text-gray-100" : "text-gray-900"
+                    }`}
+                  >
+                    {t.settings.notifications.emailNotifications}
+                  </h4>
+                  <p
+                    className={`text-sm ${
+                      theme === "dark" ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    {t.settings.notifications.emailNotificationsDesc}
+                  </p>
+                </div>
+                <button
+                  onClick={handleEmailNotificationsToggle}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
+                    emailNotifications
+                      ? theme === "dark"
+                        ? "bg-blue-500"
+                        : "bg-blue-600"
+                      : theme === "dark"
+                      ? "bg-gray-600"
+                      : "bg-gray-200"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
+                      emailNotifications ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4
+                    className={`text-sm font-medium ${
+                      theme === "dark" ? "text-gray-100" : "text-gray-900"
+                    }`}
+                  >
+                    {t.settings.notifications.notificationSound}
+                  </h4>
+                  <p
+                    className={`text-sm ${
+                      theme === "dark" ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    {t.settings.notifications.notificationSoundDesc}
+                  </p>
+                </div>
+                <button
+                  onClick={handleNotificationSoundToggle}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
+                    notificationSound
+                      ? theme === "dark"
+                        ? "bg-blue-500"
+                        : "bg-blue-600"
+                      : theme === "dark"
+                      ? "bg-gray-600"
+                      : "bg-gray-200"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
+                      notificationSound ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Theme Settings */}
+          <div
+            className={`rounded-lg border p-6 transition-colors duration-300 transition-transform duration-200 hover:shadow-lg hover:scale-[1.02] ${
+              theme === "dark"
+                ? "bg-gray-800 border-gray-700"
+                : "bg-white border-gray-200"
+            }`}
+          >
+            <div className="flex items-center space-x-3 mb-4">
+              {theme === "dark" ? (
+                <Moon className="h-6 w-6 text-blue-400" />
+              ) : (
+                <Sun className="h-6 w-6 text-yellow-500" />
+              )}
+              <h3
+                className={`text-lg font-medium ${
+                  theme === "dark" ? "text-gray-100" : "text-gray-900"
+                }`}
+              >
+                {t.settings.appearance.title}
+              </h3>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <h4
+                  className={`text-sm font-medium ${
+                    theme === "dark" ? "text-gray-100" : "text-gray-900"
+                  }`}
+                >
+                  {t.settings.appearance.theme}
+                </h4>
+                <p
+                  className={`text-sm ${
+                    theme === "dark" ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
+                  {theme === "dark" ? t.settings.appearance.dark : t.settings.appearance.light}
+                </p>
+              </div>
+              <button
+                onClick={toggleTheme}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
+                  theme === "dark" ? "bg-blue-500" : "bg-gray-200"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
+                    theme === "dark" ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
           </div>
         </div>
       </div>

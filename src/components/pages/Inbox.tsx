@@ -588,7 +588,7 @@ const Inbox = () => {
     <div className="min-h-screen bg-[#FFFFFF] py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-col items-center">
-          <h2 className="text-4xl font-extrabold text-[#C88B3D] drop-shadow-lg">
+          <h2 className="text-4xl font-extrabold bg-gradient-to-r from-[#b97b2a] via-[#cfae7b] to-[#cfc7b7] text-transparent bg-clip-text drop-shadow-md">
             {t.inbox.title}
           </h2>
           <p className="text-lg text-[#BFBFBF] font-medium">

@@ -57,7 +57,7 @@ export const Header = ({ onLogout }: HeaderProps) => {
   };
 
   return (
-    <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0">
+    <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-50">
       {/* Left: Search */}
       <div className="flex-1 max-w-2xl">
        
@@ -105,7 +105,8 @@ export const Header = ({ onLogout }: HeaderProps) => {
 
           {/* Dropdown Menu */}
           <div
-            className={`absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 transition-all duration-200 ${
+            ref={dropdownRef}
+            className={`absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 transition-all duration-200 z-[1001] ${
               open
                 ? "opacity-100 translate-y-0 visible"
                 : "opacity-0 -translate-y-2 invisible"

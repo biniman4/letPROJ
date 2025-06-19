@@ -70,6 +70,9 @@ export function App() {
     if (user) {
       setIsAuthenticated(true);
       setIsAdmin(JSON.parse(user).role === "admin");
+    } else {
+      setIsAuthenticated(false);
+      setIsAdmin(false);
     }
 
     if (!hasLoadedBefore) {

@@ -26,7 +26,7 @@ const Notifications = () => {
   const { updateUnreadNotifications } = useNotifications();
   const [loading, setLoading] = useState(true);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -79,6 +79,7 @@ const Notifications = () => {
         `http://localhost:5000/api/notifications/user/${user._id}/read-all`
       );
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      updateUnreadNotifications(0);
     } catch (error) {
       console.error(t.notifications.errorMarkingAllRead, error);
     }
@@ -113,103 +114,113 @@ const Notifications = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner message="Loading your notifications..." />;
+    return <LoadingSpinner message={t.notifications.loading} />;
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800">
-          {t.notifications.title}
-        </h2>
-        {notifications.some((n) => !n.read) && (
-          <button
-            onClick={handleMarkAllAsRead}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-          >
-            <CheckCircle className="w-4 h-4" />
-            {t.notifications.markAllAsRead}
-          </button>
-        )}
-      </div>
-
-      {notifications.length === 0 ? (
-        <div className="text-center py-12">
-          <Bell className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">
-            {t.notifications.noNotifications}
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
+    <div className="min-h-screen bg-[#FFFFFF] py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 flex flex-col items-center">
+          <h2 className="text-4xl font-extrabold bg-gradient-to-r from-[#b97b2a] via-[#cfae7b] to-[#cfc7b7] text-transparent bg-clip-text drop-shadow-md">
+            {t.notifications.title}
+          </h2>
+          <p className="text-lg text-[#BFBFBF] font-medium">
             {t.notifications.allCaughtUp}
           </p>
         </div>
-      ) : (
-        <div className="space-y-4">
-          {notifications.map((notification) => (
-            <div
-              key={notification._id}
-              className={`p-4 rounded-lg border transition-transform duration-200 hover:shadow-lg hover:scale-[1.02] ${
-                notification.read
-                  ? "bg-white border-gray-200"
-                  : "bg-blue-50 border-blue-200"
-              }`}
+        {notifications.some((n) => !n.read) && (
+          <div className="flex justify-center mb-6">
+            <button
+              onClick={handleMarkAllAsRead}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-medium text-gray-900">
-                      {notification.title}
-                    </h3>
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(
-                        notification.priority
-                      )}`}
-                    >
-                      {notification.priority === "high"
-                        ? t.notifications.priorityHigh
-                        : notification.priority === "medium"
-                        ? t.notifications.priorityMedium
-                        : t.notifications.priorityLow}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm text-gray-600">
-                    {notification.message}
-                  </p>
-                  {notification.relatedLetter && (
-                    <p className="mt-2 text-sm text-gray-500">
-                      {t.notifications.relatedTo}{" "}
-                      {notification.relatedLetter.subject}
+              <CheckCircle className="w-4 h-4" />
+              {t.notifications.markAllAsRead}
+            </button>
+          </div>
+        )}
+
+        {notifications.length === 0 ? (
+          <div className="text-center py-12">
+            <Bell className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
+              {t.notifications.noNotifications}
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {t.notifications.allCaughtUp}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {notifications.map((notification) => (
+              <div
+                key={notification._id}
+                className={`p-4 rounded-lg border transition-transform duration-200 hover:shadow-lg hover:scale-[1.02] ${
+                  notification.read
+                    ? "bg-white border-gray-200"
+                    : "bg-blue-50 border-blue-200"
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-medium text-gray-900">
+                        {t.notifications.letterRead}
+                      </h3>
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(
+                          notification.priority
+                        )}`}
+                      >
+                        {notification.priority === "high"
+                          ? t.notifications.priorityHigh
+                          : notification.priority === "medium"
+                          ? t.notifications.priorityMedium
+                          : t.notifications.priorityLow}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-600">
+                      {t.notifications.letterReadDesc(
+                        notification.relatedLetter?.fromName || "",
+                        notification.relatedLetter?.subject || ""
+                      )}
                     </p>
-                  )}
-                  <p className="mt-1 text-xs text-gray-400">
-                    {formatDistanceToNow(new Date(notification.createdAt), {
-                      addSuffix: true,
-                    })}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {!notification.read && (
+                    {notification.relatedLetter && (
+                      <p className="mt-2 text-sm text-gray-500">
+                        {t.notifications.regarding}{" "}
+                        {notification.relatedLetter.subject}
+                      </p>
+                    )}
+                    <p className="mt-1 text-xs text-gray-400">
+                      {formatDistanceToNow(new Date(notification.createdAt), {
+                        addSuffix: true,
+                      })}
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {!notification.read && (
+                      <button
+                        onClick={() => handleMarkAsRead(notification._id)}
+                        className="p-1 text-gray-400 hover:text-gray-600"
+                        title={t.notifications.markAsRead}
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
-                      onClick={() => handleMarkAsRead(notification._id)}
-                      className="p-1 text-gray-400 hover:text-gray-600"
-                      title={t.notifications.markAsRead}
+                      onClick={() => handleDelete(notification._id)}
+                      className="p-1 text-gray-400 hover:text-red-600"
+                      title={t.notifications.deleteNotification}
                     >
-                      <Check className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
-                  )}
-                  <button
-                    onClick={() => handleDelete(notification._id)}
-                    className="p-1 text-gray-400 hover:text-red-600"
-                    title={t.notifications.deleteNotification}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
