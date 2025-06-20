@@ -10,7 +10,11 @@ import {
   GlobeIcon,
 } from "lucide-react";
 import { useNotifications } from "../../context/NotificationContext";
-import { useLanguage, SupportedLang } from "../../components/pages/LanguageContext";
+import {
+  useLanguage,
+  SupportedLang,
+} from "../../components/pages/LanguageContext";
+import logo from "../../img icon/logo.png";
 
 interface HeaderProps {
   onLogout: () => void;
@@ -58,9 +62,9 @@ export const Header = ({ onLogout }: HeaderProps) => {
 
   return (
     <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-50">
-      {/* Left: Search */}
-      <div className="flex-1 max-w-2xl">
-       
+      {/* Left: Logo */}
+      <div className="flex items-center">
+        <img src={logo} alt="SSGI Logo" className="h-10" />
       </div>
 
       {/* Right: Notification + Profile */}
@@ -71,7 +75,9 @@ export const Header = ({ onLogout }: HeaderProps) => {
           className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors text-sm font-medium flex items-center space-x-2"
         >
           <GlobeIcon className="w-5 h-5" />
-          <span>{lang === SupportedLang.Am ? "Switch to English" : "ወደ አማርኛ ቀይር"}</span>
+          <span>
+            {lang === SupportedLang.Am ? "Switch to English" : "ወደ አማርኛ ቀይር"}
+          </span>
         </button>
 
         <button

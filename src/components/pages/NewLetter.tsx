@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { PaperclipIcon, SendIcon, SaveIcon } from "lucide-react";
 import CCSection from "./Employees";
 import { useLanguage } from "./LanguageContext";
@@ -10,10 +10,23 @@ import "react-toastify/dist/ReactToastify.css";
 import "../../types/letter.d.ts"; // Corrected the import path for letter.d.ts
 import { useSent } from "../../context/SentContext";
 import LoadingSpinner from "../common/LoadingSpinner";
+import { useLetterForm } from "../../context/LetterFormContext";
+import type { LetterData } from "../../types/letter.d";
 
 const NewLetter = () => {
   const { lang, setLang } = useLanguage();
   const { refresh } = useSent?.() || { refresh: undefined };
+  const {
+    department,
+    setDepartment,
+    recipient,
+    setRecipient,
+    reset,
+    users,
+    loadingUsers,
+    fetchUsers,
+    fetchDepartments,
+  } = useLetterForm();
 
   const [letterData, setLetterData] = useState<LetterData>({
     subject: "",
@@ -27,14 +40,11 @@ const NewLetter = () => {
     from: "",
   });
 
-  const [users, setUsers] = useState<any[]>([]);
-  const [selectedDepartment, setSelectedDepartment] = useState("");
-  const [toEmployee, setToEmployee] = useState("");
-  const [loadingUsers, setLoadingUsers] = useState(false);
-
   const [attachment, setAttachment] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [sending, setSending] = useState(false);
+
+  const departmentSelectorRef = useRef<{ reset: () => void }>(null);
 
   const t = {
     title: {
@@ -100,27 +110,20 @@ const NewLetter = () => {
   };
 
   useEffect(() => {
-    setLoadingUsers(true);
-    axios
-      .get("http://localhost:5000/api/users")
-      .then((res) => setUsers(res.data))
-      .finally(() => setLoadingUsers(false));
-  }, []);
+    fetchUsers();
+  }, [fetchUsers]);
 
   useEffect(() => {
-    setLetterData((prev) => ({ ...prev, department: selectedDepartment }));
-    setToEmployee("");
-  }, [selectedDepartment]);
+    setLetterData((prev: LetterData) => ({ ...prev, department: department }));
+  }, [department]);
 
   useEffect(() => {
-    setLetterData((prev) => ({ ...prev, to: toEmployee }));
-  }, [toEmployee]);
+    setLetterData((prev: LetterData) => ({ ...prev, to: recipient }));
+  }, [recipient]);
 
-  const filteredUsers = selectedDepartment
+  const filteredUsers = department
     ? users.filter(
-        (u) =>
-          u.departmentOrSector?.toLowerCase() ===
-          selectedDepartment.toLowerCase()
+        (u) => u.departmentOrSector?.toLowerCase() === department.toLowerCase()
       )
     : [];
 
@@ -138,6 +141,16 @@ const NewLetter = () => {
       return;
     }
 
+    // Debug: Log CC data before sending
+    console.log("CC Employees data before sending:", letterData.ccEmployees);
+    console.log(
+      "Total CC recipients:",
+      Object.values(letterData.ccEmployees).reduce(
+        (total, employees) => total + (employees?.length || 0),
+        0
+      )
+    );
+
     setSending(true);
     try {
       let response;
@@ -147,6 +160,7 @@ const NewLetter = () => {
         Object.entries(letterData).forEach(([key, value]) => {
           if (key === "ccEmployees") {
             formData.append("ccEmployees", JSON.stringify(value));
+            console.log("Adding CC data to FormData:", JSON.stringify(value));
           } else if (key !== "attachments") {
             formData.append(key, value as string);
           }
@@ -162,12 +176,20 @@ const NewLetter = () => {
           }
         );
       } else {
-        response = await axios.post("http://localhost:5000/api/letters", {
+        const requestData = {
           ...letterData,
           from: currentUserId,
           ccEmployees: JSON.stringify(letterData.ccEmployees),
-        });
+        };
+        console.log("Sending request data:", requestData);
+
+        response = await axios.post(
+          "http://localhost:5000/api/letters",
+          requestData
+        );
       }
+
+      console.log("Letter sent successfully with response:", response.data);
 
       setLetterData({
         subject: "",
@@ -180,13 +202,20 @@ const NewLetter = () => {
         ccEmployees: {},
         from: "",
       });
-      setSelectedDepartment("");
-      setToEmployee("");
+      setDepartment("");
+      setRecipient("");
       setAttachment(null);
       toast.success("Letter sent successfully!");
       if (refresh) refresh(); // Force Sent page to refresh
+      reset();
+      // Force refresh users and departments
+      fetchUsers();
+      fetchDepartments();
+      // Collapse department dropdowns
+      departmentSelectorRef.current?.reset();
     } catch (error: any) {
       console.error("Error details:", error);
+      console.error("Error response:", error.response?.data);
       toast.error("Failed to send the letter. Please try again.");
     } finally {
       setSending(false);
@@ -197,7 +226,7 @@ const NewLetter = () => {
     const file = e.target.files?.[0];
     if (file) {
       setAttachment(file);
-      setLetterData((prev) => ({
+      setLetterData((prev: LetterData) => ({
         ...prev,
         attachments: [file.name],
       }));
@@ -209,7 +238,7 @@ const NewLetter = () => {
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       setAttachment(e.dataTransfer.files[0]);
-      setLetterData((prev) => ({
+      setLetterData((prev: LetterData) => ({
         ...prev,
         attachments: [e.dataTransfer.files[0].name],
       }));
@@ -228,7 +257,7 @@ const NewLetter = () => {
 
   const removeAttachment = () => {
     setAttachment(null);
-    setLetterData((prev) => ({
+    setLetterData((prev: LetterData) => ({
       ...prev,
       attachments: [],
     }));
@@ -262,7 +291,8 @@ const NewLetter = () => {
                 {t.department[lang]}
               </label>
               <DepartmentSelector
-                onChange={(val) => setSelectedDepartment(val)}
+                ref={departmentSelectorRef}
+                onChange={setDepartment}
               />
             </div>
             {/* Recipient */}
@@ -274,11 +304,11 @@ const NewLetter = () => {
                 type="text"
                 className="block w-full px-3 py-2 border border-[#BFBFBF] rounded-lg focus:ring-2 focus:ring-[#C88B3D] focus:border-[#C88B3D] transition-all placeholder-[#BFBFBF] hover:border-[#C88B3D] bg-[#F8F8F8]"
                 placeholder={t.selectEmployee[lang]}
-                value={toEmployee}
-                onChange={(e) => setToEmployee(e.target.value)}
+                value={recipient}
+                onChange={(e) => setRecipient(e.target.value)}
                 list="user-list"
                 autoComplete="off"
-                disabled={!selectedDepartment || loadingUsers}
+                disabled={!department || loadingUsers}
               />
               <datalist id="user-list">
                 {filteredUsers.map((user) => (
@@ -441,6 +471,32 @@ const NewLetter = () => {
                 setLetterData={setLetterData}
               />
             </div>
+
+            {/* CC Summary */}
+            {(() => {
+              const totalCCRecipients = Object.values(
+                letterData.ccEmployees
+              ).reduce(
+                (total, employees) => total + (employees?.length || 0),
+                0
+              );
+              return totalCCRecipients > 0 ? (
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="text-blue-600 font-medium">
+                      📧 CC Recipients: {totalCCRecipients} selected
+                    </span>
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                      Confidential
+                    </span>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-1">
+                    These recipients will receive a confidential copy with
+                    forwarding restrictions.
+                  </p>
+                </div>
+              ) : null;
+            })()}
 
             {/* Submit and Save */}
             <div className="flex justify-between mt-8">

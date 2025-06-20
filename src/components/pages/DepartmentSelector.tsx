@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import { useLanguage } from "./LanguageContext";
 
 type DepartmentOption = {
@@ -6,25 +6,42 @@ type DepartmentOption = {
   subDepartments?: DepartmentOption[];
 };
 
-const DepartmentSelector: React.FC<{ onChange: (value: string) => void; showBreadcrumb?: boolean; showSubDropdowns?: boolean }> = ({
-  onChange,
-  showBreadcrumb = true,
-  showSubDropdowns = true,
-}) => {
+const DepartmentSelector = forwardRef<
+  { reset: () => void },
+  {
+    onChange: (value: string) => void;
+    showBreadcrumb?: boolean;
+    showSubDropdowns?: boolean;
+  }
+>(({ onChange, showBreadcrumb = true, showSubDropdowns = true }, ref) => {
   const { t, lang } = useLanguage();
 
   const departments: DepartmentOption[] = t.departmentSelector.departments;
 
   const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
-  const [selectedSubSubCategory, setSelectedSubSubCategory] = useState<string>("");
+  const [selectedSubSubCategory, setSelectedSubSubCategory] =
+    useState<string>("");
+
+  useImperativeHandle(ref, () => ({
+    reset: () => {
+      setSelectedMainCategory("");
+      setSelectedSubCategory("");
+      setSelectedSubSubCategory("");
+    },
+  }));
 
   const flattenedDepartments = React.useMemo(() => {
-    const flatten = (options: DepartmentOption[], parentLabel = ""): { label: string; value: string }[] => {
+    const flatten = (
+      options: DepartmentOption[],
+      parentLabel = ""
+    ): { label: string; value: string }[] => {
       let result: { label: string; value: string }[] = [];
       options.forEach((opt) => {
         const currentLabel = opt.label;
-        const fullLabel = parentLabel ? `${parentLabel} > ${currentLabel}` : currentLabel;
+        const fullLabel = parentLabel
+          ? `${parentLabel} > ${currentLabel}`
+          : currentLabel;
         result.push({ label: currentLabel, value: fullLabel });
         if (opt.subDepartments) {
           result = result.concat(flatten(opt.subDepartments, fullLabel));
@@ -70,7 +87,9 @@ const DepartmentSelector: React.FC<{ onChange: (value: string) => void; showBrea
 
   return (
     <div>
-      <label className="block text-gray-700 font-medium mb-1">{t.departmentSelector.mainCategory}</label>
+      <label className="block text-gray-700 font-medium mb-1">
+        {t.departmentSelector.mainCategory}
+      </label>
       <select
         className="border border-gray-300 rounded-lg px-3 py-2 w-full bg-white focus:ring-2 focus:ring-blue-200 mb-2"
         value={selectedMainCategory}
@@ -114,7 +133,9 @@ const DepartmentSelector: React.FC<{ onChange: (value: string) => void; showBrea
             value={selectedSubSubCategory}
             onChange={handleSubSubCategoryChange}
           >
-            <option value="">{t.departmentSelector.selectSubSubCategory}</option>
+            <option value="">
+              {t.departmentSelector.selectSubSubCategory}
+            </option>
             {subSubCategories.map((subSub) => (
               <option key={subSub.label} value={subSub.label}>
                 {subSub.label}
@@ -124,20 +145,25 @@ const DepartmentSelector: React.FC<{ onChange: (value: string) => void; showBrea
         </>
       )}
 
-      {(showBreadcrumb && (selectedMainCategory ||
-        selectedSubCategory ||
-        selectedSubSubCategory)) && (
-        <div style={{ marginTop: "20px", color: "green" }}>
-          {t.departmentSelector.selectedCategory}: {" "}
-          <strong>
-            {[selectedMainCategory, selectedSubCategory, selectedSubSubCategory]
-              .filter(Boolean)
-              .join(" > ")}
-          </strong>
-        </div>
-      )}
+      {showBreadcrumb &&
+        (selectedMainCategory ||
+          selectedSubCategory ||
+          selectedSubSubCategory) && (
+          <div style={{ marginTop: "20px", color: "green" }}>
+            {t.departmentSelector.selectedCategory}:{" "}
+            <strong>
+              {[
+                selectedMainCategory,
+                selectedSubCategory,
+                selectedSubSubCategory,
+              ]
+                .filter(Boolean)
+                .join(" > ")}
+            </strong>
+          </div>
+        )}
     </div>
   );
-};
+});
 
 export default DepartmentSelector;
