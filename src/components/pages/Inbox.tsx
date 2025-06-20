@@ -38,6 +38,7 @@ interface Letter {
   // CC fields
   isCC?: boolean;
   originalLetter?: string;
+  status?: string;
 }
 
 // Format date function (for modal and lists) - Moved here to be accessible
@@ -184,6 +185,9 @@ const Inbox = () => {
   // Filter letters based on selected filter and search
   const filteredLetters = useMemo(() => {
     return letters.filter((letter) => {
+      // Exclude pending letters from inbox
+      if ((letter as any).status?.toLowerCase() === "pending") return false;
+
       // Check if the letter is meant for the current user (direct recipient or CC)
       const isRecipient = letter.toEmail === userEmail;
       const isCCRecipient = letter.isCC && letter.toEmail === userEmail;
