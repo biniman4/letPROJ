@@ -84,7 +84,7 @@ export const Sidebar = ({
           </div>
 
           {/* Navigation Container */}
-          <div className="flex flex-col h-[calc(100vh-64px)]">
+          <div className="flex flex-col h-[calc(100vh-64px)] pb-6 sm:pb-8">
             {/* Navigation Items */}
             <nav className={`px-2 py-6 flex flex-col ${isOpen ? 'space-y-3' : 'space-y-1'}`}>
               {items.map((item) => (

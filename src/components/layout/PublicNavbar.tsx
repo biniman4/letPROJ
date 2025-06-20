@@ -1,4 +1,4 @@
- import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { GlobeIcon } from "lucide-react";
 import { SupportedLang } from "../pages/LanguageContext";

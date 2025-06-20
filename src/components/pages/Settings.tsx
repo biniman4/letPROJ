@@ -188,25 +188,6 @@ const Settings = () => {
                   }`}
                 />
               </div>
-              <div>
-                <label
-                  className={`block text-sm font-medium ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  {t.settings.profile.department}
-                </label>
-                <input
-                  type="text"
-                  value={profileDepartment}
-                  onChange={(e) => setProfileDepartment(e.target.value)}
-                  className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
-                    theme === "dark"
-                      ? "bg-gray-700 border-gray-600 text-gray-100"
-                      : "border-gray-300"
-                  }`}
-                />
-              </div>
               <button
                 type="submit"
                 disabled={isLoading}
