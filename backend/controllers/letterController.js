@@ -349,13 +349,26 @@ export const getLetters = async (req, res) => {
   try {
     // Get user email from query parameter or headers
     const userEmail = req.query.userEmail || req.headers["user-email"];
+    const fetchAll = req.query.all === "true";
 
     if (!userEmail) {
       return res.status(400).json({ error: "User email is required" });
     }
 
-    console.log("Fetching letters for user:", userEmail);
+    // Find the user to check their role
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
+    if (fetchAll && user.role === "admin") {
+      // Admin requests all letters
+      const letters = await Letter.find({}).sort({ createdAt: -1 });
+      console.log(`Admin ${userEmail} fetched ALL letters: ${letters.length}`);
+      return res.status(200).json(letters);
+    }
+
+    console.log("Fetching letters for user:", userEmail);
     // Find letters where the user is either the recipient or a CC recipient
     const letters = await Letter.find({
       $or: [

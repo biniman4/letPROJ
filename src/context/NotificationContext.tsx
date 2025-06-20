@@ -23,7 +23,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   const fetchUnreadCounts = async () => {
     try {
       // Fetch unread letters count
-      const lettersRes = await axios.get(`http://localhost:5000/api/letters`);
+      const lettersRes = await axios.get(
+        `http://localhost:5000/api/letters?userEmail=${encodeURIComponent(
+          user.email
+        )}`
+      );
       const unreadLettersCount = lettersRes.data.filter(
         (letter: any) => letter.toEmail === user.email && letter.unread
       ).length;

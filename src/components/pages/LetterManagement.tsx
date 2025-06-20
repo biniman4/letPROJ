@@ -9,6 +9,7 @@ import {
   Search,
   Trash2,
   X,
+  Loader2,
 } from "lucide-react";
 import axios from "axios";
 import { Modal } from "react-responsive-modal";
@@ -42,9 +43,10 @@ type Letter = {
   rejectionReason?: string;
 };
 
-const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
-  setSuccessMsg,
-}) => {
+const LetterManagement: React.FC<{
+  setSuccessMsg: (msg: string) => void;
+  isAdmin?: boolean;
+}> = ({ setSuccessMsg, isAdmin }) => {
   const [letters, setLetters] = useState<Letter[]>([]);
   const [pendingLetters, setPendingLetters] = useState<Letter[]>([]);
   const [rejectedLetters, setRejectedLetters] = useState<Letter[]>([]);
@@ -67,30 +69,48 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
     message: string;
     letterSubject: string;
   }>({ show: false, message: "", letterSubject: "" });
+  const [loadingLetters, setLoadingLetters] = useState(true);
+  const [actionLoading, setActionLoading] = useState<{
+    [key: string]: string | null;
+  }>({}); // { [letterId]: 'approve'|'reject'|'delete'|null }
 
   useEffect(() => {
-    setLoading(true);
+    setLoadingLetters(true);
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const userEmail = user.email;
+    const adminAll = isAdmin ? "&all=true" : "";
     axios
-      .get("http://localhost:5000/api/letters")
+      .get(
+        `http://localhost:5000/api/letters?userEmail=${encodeURIComponent(
+          userEmail
+        )}${adminAll}`
+      )
       .then((res: { data: Letter[] }) => {
         setLetters(res.data);
-        setLoading(false);
+        setLoadingLetters(false);
       })
       .catch((error: Error) => {
         setLetters([]);
-        setLoading(false);
+        setLoadingLetters(false);
       });
     // Fetch pending letters for admin approval
     axios
-      .get("http://localhost:5000/api/letters/pending")
+      .get(
+        `http://localhost:5000/api/letters/pending?userEmail=${encodeURIComponent(
+          userEmail
+        )}${adminAll}`
+      )
       .then((res: { data: Letter[] }) => {
         setPendingLetters(res.data);
       })
       .catch(() => setPendingLetters([]));
-
     // Fetch rejected letters for admin review
     axios
-      .get("http://localhost:5000/api/letters")
+      .get(
+        `http://localhost:5000/api/letters?userEmail=${encodeURIComponent(
+          userEmail
+        )}${adminAll}`
+      )
       .then((res: { data: Letter[] }) => {
         const rejected = res.data.filter(
           (letter: Letter) => letter.status === "rejected"
@@ -98,7 +118,7 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
         setRejectedLetters(rejected);
       })
       .catch(() => setRejectedLetters([]));
-  }, []);
+  }, [isAdmin]);
 
   const handleApproveLetter = (id: string) => {
     setLetters((prev) =>
@@ -159,10 +179,12 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
   };
 
   const handleDeleteLetter = (id: string) => {
+    setActionLoading((prev) => ({ ...prev, [id]: "delete" }));
     setShowAdminApprovalDialog(id);
   };
 
   const handleAdminApproval = async (id: string) => {
+    setActionLoading((prev) => ({ ...prev, [id]: "delete" }));
     try {
       await axios.delete(`http://localhost:5000/api/letters/${id}`);
       setLetters((prev) => prev.filter((letter) => letter._id !== id));
@@ -174,10 +196,12 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
       setTimeout(() => setSuccessMsg(""), 2000);
       setShowAdminApprovalDialog(null);
     }
+    setActionLoading((prev) => ({ ...prev, [id]: null }));
   };
 
   // Approve a pending letter (admin)
   const handleApprovePendingLetter = async (id: string) => {
+    setActionLoading((prev) => ({ ...prev, [id]: "approve" }));
     try {
       await axios.post("http://localhost:5000/api/letters/approve", {
         letterId: id,
@@ -189,10 +213,12 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
       setSuccessMsg(`Failed to approve letter ${id}. Please try again.`);
       setTimeout(() => setSuccessMsg(""), 2000);
     }
+    setActionLoading((prev) => ({ ...prev, [id]: null }));
   };
 
   // Reject a pending letter (admin)
   const handleRejectPendingLetter = async (id: string, reason: string) => {
+    setActionLoading((prev) => ({ ...prev, [id]: "reject" }));
     try {
       await axios.post("http://localhost:5000/api/letters/reject", {
         letterId: id,
@@ -208,6 +234,7 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
       setTimeout(() => setSuccessMsg(""), 2000);
       setShowRejectModal(null);
     }
+    setActionLoading((prev) => ({ ...prev, [id]: null }));
   };
 
   // Chronological sort (newest first)
@@ -224,10 +251,13 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
     return matchesSearch && matchesDepartment;
   });
 
-  if (loading)
+  if (loadingLetters)
     return (
-      <div className="flex justify-center items-center min-h-[40vh]">
-        Loading letters...
+      <div className="flex justify-center items-center h-40">
+        <Loader2 className="animate-spin w-8 h-8 text-blue-500" />
+        <span className="ml-2 text-blue-500 font-semibold">
+          Loading letters...
+        </span>
       </div>
     );
 
@@ -548,26 +578,38 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
                     <div className="flex flex-col gap-2">
                       <div className="flex gap-2">
                         <button
-                          className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors flex items-center justify-center gap-1 text-sm"
+                          className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors flex items-center justify-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                           onClick={() => handleDetailLetter(letter)}
                         >
                           <Eye className="w-4 h-4" /> View
                         </button>
                         <button
-                          className="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg shadow hover:bg-green-700 transition-colors flex items-center justify-center gap-1 text-sm"
+                          className="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg shadow hover:bg-green-700 transition-colors flex items-center justify-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-60"
                           onClick={() => handleApprovePendingLetter(letter._id)}
+                          disabled={actionLoading[letter._id] === "approve"}
                         >
-                          <Check className="w-4 h-4" /> Approve
+                          {actionLoading[letter._id] === "approve" ? (
+                            <Loader2 className="animate-spin w-4 h-4" />
+                          ) : (
+                            <Check className="w-4 h-4" />
+                          )}{" "}
+                          Approve
                         </button>
                       </div>
                       <button
-                        className="w-full bg-red-600 text-white px-3 py-2 rounded-lg shadow hover:bg-red-700 transition-colors flex items-center justify-center gap-1 text-sm"
+                        className="w-full bg-red-600 text-white px-3 py-2 rounded-lg shadow hover:bg-red-700 transition-colors flex items-center justify-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-60"
                         onClick={() => {
                           setShowRejectModal(letter);
                           setRejectComment("");
                         }}
+                        disabled={actionLoading[letter._id] === "reject"}
                       >
-                        <X className="w-4 h-4" /> Reject
+                        {actionLoading[letter._id] === "reject" ? (
+                          <Loader2 className="animate-spin w-4 h-4" />
+                        ) : (
+                          <X className="w-4 h-4" />
+                        )}{" "}
+                        Reject
                       </button>
                     </div>
                   </div>
@@ -693,7 +735,7 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
 
                       <div className="flex gap-2">
                         <button
-                          className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                          className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                           onClick={() => handleDetailLetter(letter)}
                         >
                           <Eye className="w-4 h-4" /> View Content
@@ -868,16 +910,22 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
 
                     <div className="flex flex-wrap gap-2">
                       <button
-                        className="text-blue-700 underline text-sm flex items-center gap-1 hover:text-blue-900"
+                        className="text-blue-700 underline text-sm flex items-center gap-1 hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
                         onClick={() => handleDetailLetter(letter)}
                       >
                         <Eye className="w-4 h-4" /> Details
                       </button>
                       <button
-                        className="bg-red-600 text-white px-3 py-1 rounded-lg shadow flex items-center gap-1 hover:bg-red-700 transition-colors"
+                        className="bg-red-600 text-white px-3 py-1 rounded-lg shadow flex items-center gap-1 hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-60"
                         onClick={() => handleDeleteLetter(letter._id)}
+                        disabled={actionLoading[letter._id] === "delete"}
                       >
-                        <Trash2 className="w-4 h-4" /> Delete
+                        {actionLoading[letter._id] === "delete" ? (
+                          <Loader2 className="animate-spin w-4 h-4" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}{" "}
+                        Delete
                       </button>
                     </div>
                   </div>
@@ -980,7 +1028,7 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setViewMode(true)}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <Eye className="w-4 h-4" /> View Full Content
                 </button>
@@ -989,7 +1037,7 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
                     setOpenLetter(null);
                     setViewMode(false);
                   }}
-                  className="bg-gray-600 text-white px-6 py-3 rounded-lg shadow hover:bg-gray-700 transition-colors"
+                  className="bg-gray-600 text-white px-6 py-3 rounded-lg shadow hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   Close
                 </button>
@@ -1004,7 +1052,7 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
                 <div className="flex gap-3">
                   <button
                     onClick={() => setViewMode(false)}
-                    className="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700 transition-colors"
+                    className="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
                   >
                     Back to Details
                   </button>
@@ -1013,7 +1061,7 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
                       setOpenLetter(null);
                       setViewMode(false);
                     }}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
                   >
                     Close
                   </button>
@@ -1047,13 +1095,13 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
             </p>
             <div className="flex justify-end gap-2">
               <button
-                className="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700"
+                className="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 onClick={() => setShowDeleteDialog(null)}
               >
                 Cancel
               </button>
               <button
-                className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700"
+                className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 onClick={() => handleDeleteLetter(showDeleteDialog)}
               >
                 Delete
@@ -1076,15 +1124,19 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
             </p>
             <div className="flex justify-end gap-2">
               <button
-                className="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700"
+                className="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 onClick={() => setShowAdminApprovalDialog(null)}
               >
                 Cancel
               </button>
               <button
-                className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700"
+                className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-60"
                 onClick={() => handleAdminApproval(showAdminApprovalDialog)}
+                disabled={actionLoading[showAdminApprovalDialog] === "delete"}
               >
+                {actionLoading[showAdminApprovalDialog] === "delete" ? (
+                  <Loader2 className="animate-spin w-4 h-4" />
+                ) : null}{" "}
                 Approve
               </button>
             </div>
@@ -1145,7 +1197,7 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
             </div>
             <div className="flex justify-end gap-3">
               <button
-                className="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700 transition-colors"
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
                 onClick={() => {
                   setShowRejectModal(null);
                   setRejectComment("");
@@ -1154,12 +1206,17 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
                 Cancel
               </button>
               <button
-                className="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-400"
                 disabled={!rejectComment.trim()}
                 onClick={async () => {
                   if (!showRejectModal) return;
 
                   try {
+                    const user = JSON.parse(
+                      localStorage.getItem("user") || "{}"
+                    );
+                    const userEmail = user.email;
+                    const adminAll = isAdmin ? "&all=true" : "";
                     const formData = new FormData();
                     formData.append(
                       "subject",
@@ -1249,7 +1306,9 @@ const LetterManagement: React.FC<{ setSuccessMsg: (msg: string) => void }> = ({
                     // Refetch letters to ensure UI is updated
                     try {
                       const response = await axios.get(
-                        "http://localhost:5000/api/letters"
+                        `http://localhost:5000/api/letters?userEmail=${encodeURIComponent(
+                          userEmail
+                        )}${adminAll}`
                       );
                       setLetters(response.data);
                     } catch (error) {
