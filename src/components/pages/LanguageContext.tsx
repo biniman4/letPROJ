@@ -383,6 +383,9 @@ const translations = {
     // Dashboard translations
     dashboard: {
       welcome: "እንኳን ደህና መጡ!",
+      welcomeTitle: "ወደ የደብዳቤ የወደፊት ዘመን እንኳን ደህና መጡ!",
+      welcomeDescription:
+        "ይህ የእርስዎ ሁሉንም የመደበኛ ደብዳቤዎች ለማስተዳደር መሰረታዊ ማዕከልዎ ነው። ደብዳቤዎችን ይፍጠሩ፣ ይከታተሉ፣ ያስቀምጡ፣ እና ሁሉም ግንኙነት ደህንነቱና ቀላልነቱ ተጠብቆ መሆኑን ያውቁ። ቡድናችን ይህን አንድ ግብ ለማሟሟል አከናውኗል፡ የስራዎን ዝርዝር ቀላልና ኃይለኛ ለማድረግ። እንጀምር!",
       totalLetters: "ጠቅላላ ደብዳቤዎች",
       processed: "የተሰሩ",
       pending: "በመጠባበቅ ላይ",
@@ -815,6 +818,9 @@ const translations = {
     // Dashboard translations
     dashboard: {
       welcome: "Welcome!",
+      welcomeTitle: "Welcome to the Future of Correspondence!",
+      welcomeDescription:
+        "This is your command center for managing all official letters. Create, track, and archive with ease, knowing every communication is secure and streamlined. Our team built this with one goal: to make your workflow simpler and more powerful. Let's get started!",
       totalLetters: "Total Letters",
       processed: "Processed",
       pending: "Pending",

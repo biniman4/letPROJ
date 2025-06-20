@@ -25,13 +25,10 @@ const Dashboard = () => {
 
         <div className="text-center bg-white p-8 rounded-xl shadow-md border border-gray-100">
           <h3 className="text-2xl font-bold text-[#003F5D] mb-3">
-            Welcome to the Future of Correspondence!
+            {t.dashboard.welcomeTitle}
           </h3>
           <p className="text-md text-gray-600 max-w-3xl mx-auto">
-            This is your command center for managing all official letters.
-            Create, track, and archive with ease, knowing every communication is
-            secure and streamlined. Our team built this with one goal: to make
-            your workflow simpler and more powerful. Let's get started!
+            {t.dashboard.welcomeDescription}
           </p>
         </div>
 
