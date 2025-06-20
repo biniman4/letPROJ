@@ -16,6 +16,8 @@ interface Letter {
   unread: boolean;
   starred: boolean;
   attachments?: Array<{ filename: string }>;
+  isCC?: boolean;
+  originalLetter?: string;
 }
 
 interface InboxContextType {
@@ -75,7 +77,6 @@ export const InboxProvider: React.FC<{ children: ReactNode }> = ({
       }
 
       const formattedLetters = fetchedLetters
-        .filter((letter: Letter) => letter.toEmail === userEmail)
         .map((letter: Letter) => ({
           ...letter,
           unread: letter.unread ?? true,

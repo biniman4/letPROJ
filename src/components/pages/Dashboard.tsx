@@ -14,9 +14,27 @@ const Dashboard = () => {
           <h2 className="text-4xl font-extrabold bg-gradient-to-r from-[#b97b2a] via-[#cfae7b] to-[#cfc7b7] text-transparent bg-clip-text drop-shadow-md">
             {t.sidebar.dashboard}
           </h2>
-          <p className="text-lg text-[#BFBFBF] font-medium">{t.dashboard.welcome}</p>
+          <p className="text-lg text-[#BFBFBF] font-medium">
+            {t.dashboard.welcome}
+          </p>
         </div>
-        <LetterStats />
+
+        <div className="mb-8">
+          <LetterStats />
+        </div>
+
+        <div className="text-center bg-white p-8 rounded-xl shadow-md border border-gray-100">
+          <h3 className="text-2xl font-bold text-[#003F5D] mb-3">
+            Welcome to the Future of Correspondence!
+          </h3>
+          <p className="text-md text-gray-600 max-w-3xl mx-auto">
+            This is your command center for managing all official letters.
+            Create, track, and archive with ease, knowing every communication is
+            secure and streamlined. Our team built this with one goal: to make
+            your workflow simpler and more powerful. Let's get started!
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           {/* <RecentLetters /> */}
           {/* <ActivityTimeline /> */}

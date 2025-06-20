@@ -49,13 +49,18 @@ export const SentProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       const userEmail = user.email || "";
+
+      if (!userEmail) {
+        setLetters([]);
+        return;
+      }
+
       const response = await axios.get(
-        "http://localhost:5000/api/letters/sent"
+        `http://localhost:5000/api/letters/sent?userEmail=${encodeURIComponent(
+          userEmail
+        )}`
       );
-      const filtered = response.data.filter(
-        (letter: Letter) => letter.fromEmail === userEmail
-      );
-      setLetters(filtered);
+      setLetters(response.data);
     } catch (error) {
       setLetters([]);
     } finally {

@@ -32,9 +32,20 @@ const letterSchema = new mongoose.Schema(
     cc: [String],
     ccEmployees: { type: Map, of: [String] },
     toEmail: { type: String, required: true },
+    // New fields for CC letters
+    isCC: { type: Boolean, default: false }, // Indicates if this is a CC copy
+    originalLetter: { type: mongoose.Schema.Types.ObjectId, ref: "Letter" }, // Reference to original letter
     status: {
       type: String,
-      enum: ["draft", "pending", "approved", "sent", "delivered", "read", "rejected"],
+      enum: [
+        "draft",
+        "pending",
+        "approved",
+        "sent",
+        "delivered",
+        "read",
+        "rejected",
+      ],
       default: "draft",
     },
     rejectionReason: { type: String },

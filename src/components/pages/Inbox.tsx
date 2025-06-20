@@ -19,6 +19,7 @@ import { useInbox } from "../../context/InboxContext";
 import { useLanguage } from "./LanguageContext";
 import LoadingSpinner from "../common/LoadingSpinner";
 import { FaPaperclip } from "react-icons/fa";
+import logo from "../../img icon/logo.png";
 
 interface Letter {
   _id: string;
@@ -34,6 +35,9 @@ interface Letter {
   unread: boolean;
   starred: boolean;
   attachments?: Array<{ filename: string }>;
+  // CC fields
+  isCC?: boolean;
+  originalLetter?: string;
 }
 
 // Format date function (for modal and lists) - Moved here to be accessible
@@ -180,11 +184,12 @@ const Inbox = () => {
   // Filter letters based on selected filter and search
   const filteredLetters = useMemo(() => {
     return letters.filter((letter) => {
-      // First check if the letter is meant for the current user
+      // Check if the letter is meant for the current user (direct recipient or CC)
       const isRecipient = letter.toEmail === userEmail;
+      const isCCRecipient = letter.isCC && letter.toEmail === userEmail;
 
-      // If not the recipient, don't show the letter
-      if (!isRecipient) return false;
+      // If not the recipient or CC recipient, don't show the letter
+      if (!isRecipient && !isCCRecipient) return false;
 
       const matchesSearch = search
         ? letter.subject.toLowerCase().includes(search.toLowerCase()) ||
@@ -322,7 +327,9 @@ const Inbox = () => {
       }) => (
         <div
           key={letter._id}
-          className={`p-4 cursor-pointer hover:bg-gray-50 ${letter.unread ? "bg-blue-50/30" : ""} transition-transform duration-200 hover:shadow-lg hover:scale-[1.02]`}
+          className={`p-4 cursor-pointer hover:bg-gray-50 ${
+            letter.unread ? "bg-blue-50/30" : ""
+          } transition-transform duration-200 hover:shadow-lg hover:scale-[1.02]`}
           onClick={() => onOpen(letter)}
         >
           {letter.unread && (
@@ -330,9 +337,19 @@ const Inbox = () => {
               New
             </span>
           )}
+          {letter.isCC && (
+            <span className="absolute top-4 right-16 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
+              CC
+            </span>
+          )}
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-lg font-bold text-[#C88B3D] truncate max-w-xs">
               {letter.subject}
+              {letter.isCC && (
+                <span className="ml-2 text-sm text-blue-600 font-normal">
+                  (Copy)
+                </span>
+              )}
             </h4>
             <button
               onClick={(e) => onStarToggle(letter, e)}
@@ -583,6 +600,244 @@ const Inbox = () => {
       setIsPreviewLoading(false);
     }
   }, [previewVisible, previewType]);
+
+  const handlePrint = () => {
+    if (!openLetter) return;
+
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      const printContent = `
+        <html>
+          <head>
+            <title>Memo - ${openLetter.subject}</title>
+            <style>
+              @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;700&display=swap");
+              @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+              
+              body {
+                font-family: 'Roboto', 'Noto Sans Ethiopic', sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f4;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+              }
+              .memo-container {
+                display: flex;
+                flex-direction: column;
+                width: 210mm;
+                height: 297mm;
+                margin: 20px auto;
+                background: white;
+                padding: 20mm;
+                box-sizing: border-box;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+              }
+              .header {
+                text-align: center;
+                flex-shrink: 0;
+              }
+              .logo {
+                height: 60px;
+                margin-bottom: 10px;
+              }
+              .institute-name .amharic {
+                font-family: 'Noto Sans Ethiopic', sans-serif;
+                font-weight: 700;
+                font-size: 18px;
+                color: #003F5D;
+                margin: 0;
+              }
+              .institute-name .english {
+                font-family: 'Roboto', sans-serif;
+                font-weight: 700;
+                font-size: 16px;
+                color: #000;
+                margin-top: 5px;
+                margin-bottom: 0;
+              }
+              .color-bars {
+                display: flex;
+                width: 100%;
+                height: 4px;
+                margin-top: 15px;
+              }
+              .color-bars .bar { flex: 1; }
+              .color-bars .blue { background-color: #005f9e; }
+              .color-bars .brown { background-color: #c88b3d; margin: 0 5px; }
+              .color-bars .red { background-color: #d62e2e; }
+              
+              .memo-title-section {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                border-top: 2px solid #c88b3d;
+                padding-top: 15px;
+                margin-top: 20px;
+                flex-shrink: 0;
+              }
+              .memo-title .amharic {
+                font-family: 'Noto Sans Ethiopic', sans-serif;
+                font-size: 16px;
+                font-weight: 700;
+                margin: 0;
+              }
+              .memo-title .english {
+                font-size: 14px;
+                font-weight: 700;
+                margin-top: 5px;
+              }
+              .memo-date {
+                text-align: right;
+                font-size: 14px;
+              }
+              .memo-date p { margin: 0; }
+              .memo-date .date-label {
+                font-size: 12px;
+                color: #555;
+              }
+              
+              .memo-body {
+                margin-top: 20px;
+                flex-grow: 1; /* Allows this to take up space */
+                overflow-y: auto; /* In case content is too long, for viewing */
+              }
+              
+              .signature-section {
+                margin-top: 20px;
+              }
+              .signature-section p {
+                margin: 0;
+              }
+
+              .footer {
+                text-align: center;
+                flex-shrink: 0;
+                margin-top: 20px;
+              }
+              .footer-line {
+                border-top: 2px solid #003F5D;
+              }
+              .footer-content {
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                padding: 10px 0;
+                font-size: 11px;
+              }
+              .footer-item {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+              }
+              .footer-item svg {
+                width: 16px;
+                height: 16px;
+              }
+              .footer-quote {
+                margin-top: 10px;
+                font-family: 'Noto Sans Ethiopic', sans-serif;
+                font-style: italic;
+                font-size: 12px;
+              }
+
+              @media print {
+                body { margin: 0; background-color: white; }
+                .memo-container {
+                  margin: 0;
+                  box-shadow: none;
+                  width: 100%;
+                  height: 100vh; /* Use viewport height for printing */
+                  padding: 15mm;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="memo-container">
+                <div class="header">
+                    <img src="${logo}" alt="SSGI Logo" class="logo">
+                    <div class="institute-name">
+                        <p class="amharic">የኅዋ ሳይንስና ጂኦስፓሻል ኢንስቲትዩት</p>
+                        <p class="english">SPACE SCIENCE AND GEOSPATIAL INSTITUTE</p>
+                    </div>
+                    <div class="color-bars">
+                        <div class="bar blue"></div>
+                        <div class="bar brown"></div>
+                        <div class="bar red"></div>
+                    </div>
+                </div>
+
+                <div class="memo-title-section">
+                    <div class="memo-title">
+                        <p class="amharic">የውስጥ ማስታወሻ</p>
+                        <p class="english">OFFICE MEMO</p>
+                    </div>
+                    <div class="memo-date">
+                        <p><strong>${new Date(
+                          openLetter.createdAt
+                        ).toLocaleDateString("en-GB")}</strong></p>
+                        <p class="date-label">Date</p>
+                    </div>
+                </div>
+
+                <div class="memo-body">
+                    <p><strong>Subject:</strong> ${openLetter.subject}</p>
+                    <p><strong>To:</strong> ${getRecipientDisplayName(
+                      openLetter
+                    )}</p>
+                    <br>
+                    <div class="content-body">${openLetter.content.replace(
+                      /\n/g,
+                      "<br>"
+                    )}</div>
+                    <div class="signature-section">
+                        <p>Signature:</p>
+                        <br><br>
+                        <p>${openLetter.fromName}</p>
+                    </div>
+                </div>
+
+                <div class="footer">
+                    <div class="footer-line"></div>
+                    <div class="footer-content">
+                        <div class="footer-item">
+                          <svg fill="#c88b3d" viewBox="0 0 24 24"><path d="M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z"></path></svg>
+                          <span>+251 118 96 10 50 / 51</span>
+                        </div>
+                        <div class="footer-item">
+                           <svg fill="#c88b3d" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,19.93C7.05,19.44 4,16.08 4,12C4,11.38 4.08,10.78 4.21,10.21L9,15V16A1,1 0 0,0 10,17H14A1,1 0 0,0 15,16V15L19.79,10.21C19.92,10.78 20,11.38 20,12C20,16.08 16.95,19.44 13,19.93V18H11V19.93M17.89,8.11L13,13H11L6.11,8.11C6.5,7.22 7.22,6.5 8.11,6.11L12,10L15.89,6.11C16.78,6.5 17.5,7.22 17.89,8.11Z"></path></svg>
+                          <span>www.ssgi.gov.et</span>
+                        </div>
+                        <div class="footer-item">
+                           <svg fill="#c88b3d" viewBox="0 0 24 24"><path d="M4,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,11L20,6H4L12,11M20,18V8L12,13L4,8V18H20Z"></path></svg>
+                           <span>33679 / 597</span>
+                        </div>
+                         <div class="footer-item">
+                           <svg fill="#c88b3d" viewBox="0 0 24 24"><path d="M4,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,11L20,6H4L12,11M20,18V8L12,13L4,8V18H20Z"></path></svg>
+                           <span>info@ssgi.gov.et</span>
+                        </div>
+                    </div>
+                    <div class="footer-quote">
+                        <p>"ከምድር እስከ ህዋ..."</p>
+                    </div>
+                </div>
+            </div>
+            <script>
+              window.onload = function() {
+                setTimeout(function() {
+                  window.print();
+                  window.close();
+                }, 500);
+              };
+            </script>
+          </body>
+        </html>
+      `;
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FFFFFF] py-8">
@@ -928,13 +1183,36 @@ const Inbox = () => {
                     {t.inbox.backButton}
                   </button>
                   <button
-                    onClick={() => setShowForwardModal(true)}
-                    className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700"
+                    onClick={() => handlePrint()}
+                    className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 flex items-center gap-2"
                   >
-                    {t.inbox.forwardButton}
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                      />
+                    </svg>
+                    {t.inbox.printButton}
                   </button>
+                  {/* Only show forward button for non-CC letters */}
+                  {!openLetter.isCC && (
+                    <button
+                      onClick={() => setShowForwardModal(true)}
+                      className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700"
+                    >
+                      {t.inbox.forwardButton}
+                    </button>
+                  )}
                 </div>
-                {showForwardModal && (
+                {/* Only show forward modal for non-CC letters */}
+                {showForwardModal && !openLetter.isCC && (
                   <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
                       <h3 className="text-lg font-semibold mb-4">

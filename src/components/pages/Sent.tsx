@@ -283,10 +283,8 @@ const Sent: React.FC = () => {
         }
       );
 
-      // Only add the letter if it was sent by the current user
-      if (response.data.letter.fromEmail === userEmail) {
-        fetchLetters([response.data.letter, ...letters]);
-      }
+      // Refresh the sent letters list to include the new letter
+      refresh();
       toast.success(t.sent.letterSentSuccess);
       setComposeVisible(false);
       form.resetFields();
