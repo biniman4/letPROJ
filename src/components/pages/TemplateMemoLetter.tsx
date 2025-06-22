@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 // Example departments (replace with API call if needed)
-const DEPARTMENTS = [
-  "IT",
-  "HR",
-  "Finance",
-  "Research",
-  "Operations",
-  "Space Science",
-];
+
 
 const getFormattedUTCDate = () => {
   const now = new Date();
@@ -56,13 +49,9 @@ const TemplateMemoLetter = ({
 }) => {
   const [userName, setUserName] = useState("");
   const [userDepartment, setUserDepartment] = useState("");
-  const [departments, setDepartments] = useState<string[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState("");
 
   useEffect(() => {
-    // Simulate fetching departments (replace with API if needed)
-    setDepartments(DEPARTMENTS);
-
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     setUserName(
       user.name && user.name !== "undefined"
