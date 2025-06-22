@@ -79,13 +79,25 @@ const Settings = () => {
   };
 
   return (
-    <div className={`min-h-screen py-8 transition-colors duration-300 ${
-      theme === "dark" ? "bg-gray-900 text-gray-100" : "bg-[#FFFFFF] text-gray-900"
-    }`}>
+    <div
+      className={`min-h-screen py-8 transition-colors duration-300 ${
+        theme === "dark"
+          ? "bg-gray-900 text-gray-100"
+          : "bg-[#FFFFFF] text-gray-900"
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-col items-center">
-          <h2 className="text-4xl font-extrabold bg-gradient-to-r from-[#b97b2a] via-[#cfae7b] to-[#cfc7b7] text-transparent bg-clip-text drop-shadow-md">{t.settings.title}</h2>
-          <p className={`text-lg font-medium ${theme === "dark" ? "text-gray-400" : "text-[#BFBFBF]"}`}>{t.settings.profile.title}</p>
+          <h2 className="text-4xl font-extrabold bg-gradient-to-r from-[#b97b2a] via-[#cfae7b] to-[#cfc7b7] text-transparent bg-clip-text drop-shadow-md">
+            {t.settings.title}
+          </h2>
+          <p
+            className={`text-lg font-medium ${
+              theme === "dark" ? "text-gray-400" : "text-[#BFBFBF]"
+            }`}
+          >
+            {t.settings.profile.title}
+          </p>
         </div>
 
         <div className="space-y-6">
@@ -188,6 +200,29 @@ const Settings = () => {
                   }`}
                 />
               </div>
+              <div>
+                <label
+                  className={`block text-sm font-medium ${
+                    theme === "dark" ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
+                  {t.settings.profile.department}
+                </label>
+                <div
+                  className={`mt-1 block w-full rounded-md shadow-sm px-3 py-2 ${
+                    theme === "dark"
+                      ? "bg-gray-700 border-gray-600 text-gray-100"
+                      : "bg-gray-100 border-gray-300 text-gray-700"
+                  }`}
+                  style={{ minHeight: "40px" }}
+                >
+                  {profileDepartment ? (
+                    <span className="text-base">{profileDepartment}</span>
+                  ) : (
+                    <span className="text-gray-400 text-base">Not set</span>
+                  )}
+                </div>
+              </div>
               <button
                 type="submit"
                 disabled={isLoading}
@@ -197,7 +232,9 @@ const Settings = () => {
                     : "bg-blue-600 hover:bg-blue-700 text-white"
                 } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
-                {isLoading ? t.settings.profile.saving : t.settings.profile.saveChanges}
+                {isLoading
+                  ? t.settings.profile.saving
+                  : t.settings.profile.saveChanges}
               </button>
             </form>
           </div>
@@ -336,7 +373,9 @@ const Settings = () => {
                     theme === "dark" ? "text-gray-400" : "text-gray-500"
                   }`}
                 >
-                  {theme === "dark" ? t.settings.appearance.dark : t.settings.appearance.light}
+                  {theme === "dark"
+                    ? t.settings.appearance.dark
+                    : t.settings.appearance.light}
                 </p>
               </div>
               <button
