@@ -1,12 +1,4 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  SearchIcon,
-  FilterIcon,
-  FileTextIcon,
-  StarIcon,
-  Download,
-  Eye,
-} from "lucide-react";
 import axios from "axios";
 import { Modal } from "react-responsive-modal";
 import "react-responsive-modal/styles.css";
@@ -20,6 +12,14 @@ import { useLanguage } from "./LanguageContext";
 import LoadingSpinner from "../common/LoadingSpinner";
 import { FaPaperclip } from "react-icons/fa";
 import logo from "../../img icon/logo.png";
+import {
+  SearchIcon,
+  FilterIcon,
+  FileTextIcon,
+  StarIcon,
+  Download,
+  Eye,
+} from "lucide-react";
 
 interface Letter {
   _id: string;
@@ -132,6 +132,31 @@ const Inbox = () => {
     updateLetterStatus,
   } = useInbox();
   const { t } = useLanguage();
+
+  const getPriorityBadge = (priority?: string) => {
+    switch (priority?.toLowerCase()) {
+      case "urgent":
+        return (
+          <span className="px-2 py-0.5 text-xs font-bold bg-red-100 text-red-600 rounded-full">
+            Urgent
+          </span>
+        );
+      case "high":
+        return (
+          <span className="px-2 py-0.5 text-xs font-bold bg-yellow-100 text-yellow-600 rounded-full">
+            High
+          </span>
+        );
+      case "normal":
+        return (
+          <span className="px-2 py-0.5 text-xs font-bold bg-green-100 text-green-600 rounded-full">
+            Normal
+          </span>
+        );
+      default:
+        return null;
+    }
+  };
 
   // Calculate total pages
   const totalPages = Math.ceil(totalLetters / itemsPerPage);
@@ -324,82 +349,69 @@ const Inbox = () => {
         letter: Letter;
         onOpen: (letter: Letter) => void;
         onStarToggle: (letter: Letter, e: React.MouseEvent) => void;
-      }) => (
-        <div
-          key={letter._id}
-          className={`p-4 cursor-pointer hover:bg-gray-50 ${
-            letter.unread ? "bg-blue-50/30" : ""
-          } transition-transform duration-200 hover:shadow-lg hover:scale-[1.02]`}
-          onClick={() => onOpen(letter)}
-        >
-          {letter.unread && (
-            <span className="absolute top-4 right-4 bg-[#D62E2E] text-white text-xs font-bold px-3 py-1 rounded-full shadow">
-              New
-            </span>
-          )}
-          {letter.isCC && (
-            <span className="absolute top-4 right-16 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
-              CC
-            </span>
-          )}
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-lg font-bold text-[#C88B3D] truncate max-w-xs">
-              {letter.subject}
-              {letter.isCC && (
-                <span className="ml-2 text-sm text-blue-600 font-normal">
-                  (Copy)
-                </span>
-              )}
-            </h4>
-            <button
-              onClick={(e) => onStarToggle(letter, e)}
-              className={`ml-2 text-xl ${
-                letter.starred ? "text-[#C88B3D]" : "text-[#BFBFBF]"
-              } hover:text-[#C88B3D] transition-colors`}
-              title={letter.starred ? "Unstar" : "Star"}
-            >
-              <StarIcon
-                className="w-5 h-5"
-                fill={letter.starred ? "#C88B3D" : "none"}
-              />
-            </button>
-          </div>
-          <div className="flex flex-wrap items-center gap-4 mb-2">
-            <span className="text-sm text-[#C88B3D] font-semibold">
-              {t.inbox.from}:{" "}
-              <span className="text-[#003F5D]">{letter.fromName}</span>
-            </span>
-            <span className="text-sm text-[#BFBFBF]">
-              {formatDate(letter.createdAt)}
-            </span>
-            {letter.priority === "urgent" && (
-              <span className="px-2 py-1 text-xs font-bold bg-[#D62E2E] text-white rounded-full">
-                {t.inbox.filterOptions.urgent}
+      }) => {
+        const isUnread = letter.unread;
+        return (
+          <div
+            className={`flex items-center p-3 cursor-pointer border-l-4 ${
+              isUnread ? "border-blue-500 bg-blue-50/70" : "border-transparent"
+            } hover:bg-gray-100 transition-colors duration-200 group`}
+            onClick={() => onOpen(letter)}
+          >
+            <div className="flex items-center gap-4 w-48 shrink-0">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStarToggle(letter, e);
+                }}
+                className={`text-xl ${
+                  letter.starred ? "text-yellow-400" : "text-gray-300"
+                } hover:text-yellow-400 transition-colors`}
+              >
+                <StarIcon
+                  fill={letter.starred ? "currentColor" : "none"}
+                  className="w-5 h-5"
+                />
+              </button>
+              <span
+                className={`font-semibold truncate ${
+                  isUnread ? "text-gray-800" : "text-gray-600"
+                }`}
+              >
+                {letter.fromName}
               </span>
-            )}
-          </div>
-          <p className="text-gray-700 mb-2 truncate max-w-2xl">
-            {letter.content.length > 120
-              ? letter.content.substring(0, 120) + "..."
-              : letter.content}
-          </p>
-          {letter.attachments && letter.attachments.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {letter.attachments.map((attachment) => (
-                <span
-                  key={attachment.filename}
-                  className="flex items-center gap-1 bg-[#BFBFBF] text-white px-2 py-1 rounded-full text-xs"
-                >
-                  <FaPaperclip className="text-[#C88B3D]" />
-                  {attachment.filename}
-                </span>
-              ))}
             </div>
-          )}
-        </div>
-      )
+            <div className="flex-grow min-w-0 mx-4">
+              <span
+                className={`font-semibold truncate ${
+                  isUnread ? "text-gray-900" : "text-gray-700"
+                }`}
+              >
+                {letter.subject}
+              </span>
+              <span className="text-gray-500 text-sm ml-2 truncate">
+                {" "}
+                - {letter.content.substring(0, 80)}
+              </span>
+            </div>
+            <div className="flex items-center justify-end gap-4 w-48 shrink-0 ml-auto">
+              {getPriorityBadge(letter.priority)}
+              {letter.attachments && letter.attachments.length > 0 && (
+                <FaPaperclip className="text-gray-400" />
+              )}
+              <span
+                className={`text-sm font-medium whitespace-nowrap ${
+                  isUnread ? "text-blue-600" : "text-gray-500"
+                }`}
+              >
+                {new Date(letter.createdAt).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+        );
+      }
     );
-  }, [t.inbox.from, t.inbox.filterOptions.urgent]);
+  }, []);
 
   // Memoize pagination handlers
   const handleNextPage = useCallback(() => {
@@ -460,13 +472,22 @@ const Inbox = () => {
 
   // Forward letter logic (send to actual users)
   const handleForwardLetter = async () => {
-    if (!openLetter || (!toEmployee && selectedUsers.length === 0)) return;
+    if (!openLetter) return;
 
     try {
       setIsForwardLoading(true);
-      // Find the selected user from the toEmployee field
-      const toUser = departmentUsers.find((u) => u.name === toEmployee);
-      const recipients = toUser ? [toUser, ...selectedUsers] : selectedUsers;
+      // Always include the sender as a recipient (check person)
+      const senderUser = {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        department: user.department || selectedDepartment,
+      };
+      // Exclude sender from selectedUsers if present (shouldn't be, but for safety)
+      const filteredSelectedUsers = selectedUsers.filter(
+        (u) => u.email !== user.email
+      );
+      const recipients = [senderUser, ...filteredSelectedUsers];
 
       // Create a new letter for each recipient
       const forwardPromises = recipients.map(async (recipient) => {
@@ -477,8 +498,8 @@ const Inbox = () => {
           department: recipient.department || selectedDepartment,
           priority: openLetter.priority,
           content: forwardComment
-            ? `${forwardComment}\n\n--- ${t.inbox.forwardedMessage} ---\n\n${openLetter.content}`
-            : `--- ${t.inbox.forwardedMessage} ---\n\n${openLetter.content}`,
+            ? `${forwardComment}\n\n--- Forwarded Message ---\n\n${openLetter.content}`
+            : `--- Forwarded Message ---\n\n${openLetter.content}`,
           ccEmployees: {}, // Empty object for CC
           cc: [], // Empty array for CC
           status: "sent",
@@ -490,14 +511,14 @@ const Inbox = () => {
       await Promise.all(forwardPromises);
 
       const recipientNames = recipients.map((u) => u.name).join(", ");
-      setForwardStatus(`${t.inbox.messageForwarded} ${recipientNames}`);
+      setForwardStatus(`Message forwarded to: ${recipientNames}`);
       setTimeout(() => setForwardStatus(null), 3000);
       setShowForwardModal(false);
       setSelectedDepartment("");
       setSelectedUsers([]);
       setToEmployee("");
       setForwardComment("");
-      toast.success(`${t.inbox.messageForwarded} ${recipientNames}`);
+      toast.success(`Message forwarded to: ${recipientNames}`);
 
       // Refresh the letters list
       const res = await axios.get("http://localhost:5000/api/letters");
@@ -524,8 +545,8 @@ const Inbox = () => {
       updateUnreadLetters(unreadCount);
     } catch (error) {
       console.error("Error forwarding letter:", error);
-      setForwardStatus(t.inbox.failedToForward);
-      toast.error(t.inbox.failedToForward);
+      setForwardStatus("Failed to forward message.");
+      toast.error("Failed to forward message.");
     } finally {
       setIsForwardLoading(false);
     }
@@ -758,7 +779,7 @@ const Inbox = () => {
                 <div class="header">
                     <img src="${logo}" alt="SSGI Logo" class="logo">
                     <div class="institute-name">
-                        <p class="amharic">የኅዋ ሳይንስና ጂኦስፓሻል ኢንስቲትዩት</p>
+                        <p class="amharic">የኅዋ ሳይንስና ጂኦስፓሻል ኢንስቲዩት</p>
                         <p class="english">SPACE SCIENCE AND GEOSPATIAL INSTITUTE</p>
                     </div>
                     <div class="color-bars">
@@ -853,32 +874,24 @@ const Inbox = () => {
         <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8 justify-between">
           <div className="flex flex-wrap gap-2 w-full md:w-auto">
             {[
-              t.inbox.filterOptions.all,
-              t.inbox.filterOptions.unread,
-              t.inbox.filterOptions.starred,
-              t.inbox.filterOptions.urgent,
-              t.inbox.filterOptions.seen,
-            ].map((filterKey) => {
-              const filterValue = Object.keys(t.inbox.filterOptions).find(
-                (key) =>
-                  t.inbox.filterOptions[
-                    key as keyof typeof t.inbox.filterOptions
-                  ] === filterKey
-              );
-              return (
-                <button
-                  key={filterValue}
-                  onClick={() => setSelectedFilter(filterValue || "all")}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-sm border border-blue-100 bg-white hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-400 ${
-                    selectedFilter === filterValue
-                      ? "bg-blue-100 text-blue-700 shadow-md border-blue-300"
-                      : "text-gray-600"
-                  }`}
-                >
-                  {filterKey}
-                </button>
-              );
-            })}
+              { key: "all", label: t.inbox.filterOptions.all },
+              { key: "unread", label: t.inbox.filterOptions.unread },
+              { key: "starred", label: t.inbox.filterOptions.starred },
+              { key: "urgent", label: t.inbox.filterOptions.urgent },
+              { key: "seen", label: t.inbox.filterOptions.seen },
+            ].map((filter) => (
+              <button
+                key={filter.key}
+                onClick={() => setSelectedFilter(filter.key)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-sm border border-blue-100 bg-white hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-400 ${
+                  selectedFilter === filter.key
+                    ? "bg-blue-100 text-blue-700 shadow-md border-blue-300"
+                    : "text-gray-600"
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
           </div>
           <div className="flex items-center space-x-3">
             <div className="relative w-full sm:w-72">
@@ -952,7 +965,9 @@ const Inbox = () => {
               ))}
             </div>
           )}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+        </div>
+        {currentLetters.length > 0 && (
+          <div className="mt-8 flex items-center justify-between">
             <p className="text-sm text-gray-600">
               {t.inbox.showing}{" "}
               <span className="font-semibold text-gray-900">
@@ -993,7 +1008,7 @@ const Inbox = () => {
               </button>
             </div>
           </div>
-        </div>
+        )}
       </div>
       {openLetter && (
         <Modal
@@ -1004,88 +1019,85 @@ const Inbox = () => {
           }}
           center
           classNames={{
-            modal: "rounded-2xl shadow-2xl max-w-4xl w-full",
+            modal:
+              "rounded-2xl shadow-2xl max-w-3xl w-full h-auto max-h-[90vh] flex flex-col",
             overlay: "bg-black/50 backdrop-blur-sm",
           }}
         >
-          <div className="p-6">
+          <div className="p-4 overflow-y-auto">
             {!viewMode ? (
-              <div className="bg-[#FFFFFF] rounded-2xl shadow-xl border border-[#BFBFBF] p-8 max-w-3xl mx-auto">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-extrabold text-[#C88B3D] flex-1 truncate">
+              <div className="bg-white p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-[#C88B3D] flex-1 truncate">
                     {openLetter.subject}
                   </h3>
-                  {openLetter.priority === "urgent" && (
-                    <span className="ml-4 px-4 py-1 rounded-full bg-[#D62E2E] text-white font-bold text-sm shadow">
-                      {t.inbox.filterOptions.urgent}
-                    </span>
-                  )}
+                  {getPriorityBadge(openLetter.priority)}
                 </div>
-                <div className="flex flex-wrap gap-4 mb-6">
-                  <div className="flex-1 min-w-[180px] bg-[#BFBFBF] bg-opacity-20 rounded-lg p-4">
-                    <div className="text-xs text-[#BFBFBF] font-semibold mb-1">
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="bg-gray-100/70 rounded-lg p-3">
+                    <div className="text-xs text-gray-500 font-semibold mb-1">
                       {t.inbox.from}
                     </div>
-                    <div className="text-[#003F5D] font-bold">
+                    <div className="text-gray-800 font-semibold text-sm truncate">
                       {getSenderDisplayName(openLetter)}
                     </div>
                   </div>
-                  <div className="flex-1 min-w-[180px] bg-[#BFBFBF] bg-opacity-20 rounded-lg p-4">
-                    <div className="text-xs text-[#BFBFBF] font-semibold mb-1">
+                  <div className="bg-gray-100/70 rounded-lg p-3">
+                    <div className="text-xs text-gray-500 font-semibold mb-1">
                       {t.inbox.recipient}
                     </div>
-                    <div className="text-[#003F5D] font-bold">
+                    <div className="text-gray-800 font-semibold text-sm truncate">
                       {getRecipientDisplayName(openLetter)}
                     </div>
                   </div>
-                  <div className="flex-1 min-w-[180px] bg-[#BFBFBF] bg-opacity-20 rounded-lg p-4">
-                    <div className="text-xs text-[#BFBFBF] font-semibold mb-1">
+                  <div className="bg-gray-100/70 rounded-lg p-3">
+                    <div className="text-xs text-gray-500 font-semibold mb-1">
                       {t.inbox.department}
                     </div>
-                    <div className="text-[#003F5D] font-bold">
+                    <div className="text-gray-800 font-semibold text-sm truncate">
                       {openLetter.department}
                     </div>
                   </div>
-                  <div className="flex-1 min-w-[180px] bg-[#BFBFBF] bg-opacity-20 rounded-lg p-4">
-                    <div className="text-xs text-[#BFBFBF] font-semibold mb-1">
+                  <div className="bg-gray-100/70 rounded-lg p-3">
+                    <div className="text-xs text-gray-500 font-semibold mb-1">
                       {t.inbox.date}
                     </div>
-                    <div className="text-[#C88B3D] font-bold">
+                    <div className="text-gray-800 font-semibold text-sm truncate">
                       {formatDate(openLetter.createdAt)}
                     </div>
                   </div>
                 </div>
-                <div className="mb-6">
-                  <div className="text-xs text-[#BFBFBF] font-semibold mb-2">
+                <div className="mb-4">
+                  <div className="text-xs text-gray-500 font-semibold mb-2">
                     Content
                   </div>
-                  <div className="bg-[#FFF7E6] border-l-4 border-[#C88B3D] rounded-lg p-6 text-gray-800 whitespace-pre-line text-lg shadow-inner">
+                  <div className="bg-blue-50/50 border-l-4 border-blue-400 rounded-md p-4 text-gray-800 whitespace-pre-line text-sm shadow-inner">
                     {openLetter.content}
                   </div>
                 </div>
                 {openLetter.attachments &&
                   openLetter.attachments.length > 0 && (
-                    <div className="mt-6">
-                      <h4 className="text-lg font-semibold text-[#C88B3D] mb-4 flex items-center gap-2">
-                        <FaPaperclip className="text-[#C88B3D]" />{" "}
-                        {t.inbox.attachments}
+                    <div className="mt-4">
+                      <h4 className="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <FaPaperclip /> {t.inbox.attachments}
                       </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {openLetter.attachments.map((file, idx) => (
                           <div
                             key={idx}
-                            className="flex items-center justify-between bg-[#BFBFBF] bg-opacity-20 p-4 rounded-lg border border-[#BFBFBF] hover:border-[#C88B3D] transition-colors duration-200"
+                            className="flex items-center justify-between bg-gray-100 p-3 rounded-lg border border-gray-200 hover:border-blue-400 transition-colors duration-200"
                           >
-                            <div className="flex items-center space-x-3">
-                              <FileTextIcon className="h-8 w-8 text-[#C88B3D]" />
-                              <span className="text-sm text-[#003F5D] font-medium">
+                            <div className="flex items-center space-x-2 min-w-0">
+                              <FileTextIcon className="h-6 w-6 text-gray-500 shrink-0" />
+                              <span className="text-sm text-gray-800 font-medium truncate">
                                 {file.filename}
                               </span>
                             </div>
-                            <div className="flex space-x-2 items-center">
+                            <div className="flex space-x-2 items-center shrink-0">
                               <button
-                                className="text-green-600 hover:text-green-800 underline"
-                                onClick={() => {
+                                className="text-blue-600 hover:text-blue-800 text-sm font-semibold"
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   // Guess file type from extension
                                   const ext = file.filename
                                     .split(".")
@@ -1107,27 +1119,23 @@ const Inbox = () => {
                                     }`;
                                   } else if (ext === "pdf") {
                                     type = "application/pdf";
-                                  } else {
-                                    type = "";
                                   }
-                                  setIsPreviewLoading(true);
-                                  setPreviewUrl(
-                                    `http://localhost:5000/api/letters/view/${
-                                      openLetter._id
-                                    }/${encodeURIComponent(file.filename)}`
+                                  handleView(
+                                    openLetter._id,
+                                    file.filename,
+                                    type
                                   );
-                                  setPreviewType(type);
-                                  setPreviewVisible(true);
                                 }}
                               >
                                 preview
                               </button>
                               <button
-                                onClick={() =>
-                                  handleDownload(openLetter._id, file.filename)
-                                }
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDownload(openLetter._id, file.filename);
+                                }}
                                 disabled={isDownloadLoading[file.filename]}
-                                className={`p-2 text-[#C88B3D] hover:text-[#D62E2E] hover:bg-[#FFF7E6] rounded-lg transition-colors duration-200 ${
+                                className={`p-1.5 text-gray-600 hover:text-blue-600 hover:bg-gray-200/70 rounded-md transition-colors duration-200 ${
                                   isDownloadLoading[file.filename]
                                     ? "opacity-50 cursor-not-allowed"
                                     : ""
@@ -1135,9 +1143,9 @@ const Inbox = () => {
                                 title={t.inbox.download}
                               >
                                 {isDownloadLoading[file.filename] ? (
-                                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#C88B3D] border-t-transparent"></div>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-500 border-t-transparent"></div>
                                 ) : (
-                                  <Download className="h-5 w-5" />
+                                  <Download className="h-4 w-4" />
                                 )}
                               </button>
                             </div>
@@ -1146,11 +1154,11 @@ const Inbox = () => {
                       </div>
                     </div>
                   )}
-                <div className="mt-8 flex space-x-3 justify-end">
+                <div className="mt-6 flex space-x-3 justify-end">
                   <button
                     onClick={() => setViewMode(true)}
                     disabled={isViewLoading}
-                    className={`px-6 py-3 bg-[#C88B3D] text-white rounded-lg shadow-md hover:bg-[#D62E2E] transition-all duration-200 font-bold text-lg ${
+                    className={`px-5 py-2 bg-[#C88B3D] text-white rounded-lg shadow-md hover:bg-[#D62E2E] transition-all duration-200 font-semibold text-base ${
                       isViewLoading ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
@@ -1211,158 +1219,124 @@ const Inbox = () => {
                     </button>
                   )}
                 </div>
-                {/* Only show forward modal for non-CC letters */}
-                {showForwardModal && !openLetter.isCC && (
-                  <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
-                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-                      <h3 className="text-lg font-semibold mb-4">
-                        {t.inbox.forwardLetter}
-                      </h3>
-                      <div className="mb-4">
-                        <DepartmentSelector
-                          onChange={(value) => {
-                            setSelectedDepartment(value);
-                            setSelectedUsers([]);
-                            setToEmployee("");
-                          }}
-                        />
-                      </div>
-                      <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          {t.inbox.recipient}
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="text"
-                            className="block w-full px-3 py-2 border border-gray-300 rounded-md"
-                            placeholder={
-                              loadingUsers
-                                ? t.inbox.loadingUsers
-                                : t.inbox.selectEmployee
-                            }
-                            value={toEmployee}
-                            onChange={(e) => setToEmployee(e.target.value)}
-                            list="user-list"
-                            autoComplete="off"
-                            disabled={!selectedDepartment || loadingUsers}
-                          />
-                          {loadingUsers && (
-                            <div className="absolute right-3 top-2.5">
-                              <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
-                            </div>
-                          )}
-                          <datalist id="user-list">
-                            {departmentUsers.map((user) => (
-                              <option key={user.email} value={user.name}>
-                                {user.name}
-                              </option>
-                            ))}
-                          </datalist>
-                        </div>
-                      </div>
-                      <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          {t.inbox.addComment}
-                        </label>
-                        <textarea
-                          className="block w-full px-3 py-2 border border-gray-300 rounded-md"
-                          placeholder={t.inbox.addCommentPlaceholder}
-                          value={forwardComment}
-                          onChange={(e) => setForwardComment(e.target.value)}
-                          rows={3}
-                        />
-                      </div>
-                      {loadingUsers ? (
-                        <div className="mb-4 p-4 text-center">
-                          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
-                          <p className="mt-2 text-gray-600">
-                            {t.inbox.loadingUsers}
-                          </p>
-                        </div>
-                      ) : departmentUsers.length > 0 ? (
-                        <div className="mb-4">
-                          <label className="block mb-2 text-sm font-medium text-gray-700">
-                            {t.inbox.additionalRecipients}
-                          </label>
-                          <div className="border rounded-lg p-2 max-h-48 overflow-y-auto">
-                            {departmentUsers.map((user) => (
-                              <div
-                                key={user.email}
-                                className="flex items-center space-x-2 p-2 hover:bg-gray-50"
-                              >
-                                <input
-                                  type="checkbox"
-                                  id={user.email}
-                                  checked={selectedUsers.some(
-                                    (u) => u.email === user.email
-                                  )}
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      setSelectedUsers([
-                                        ...selectedUsers,
-                                        user,
-                                      ]);
-                                    } else {
-                                      setSelectedUsers(
-                                        selectedUsers.filter(
-                                          (u) => u.email !== user.email
-                                        )
-                                      );
-                                    }
-                                  }}
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                />
-                                <label
-                                  htmlFor={user.email}
-                                  className="text-sm text-gray-700"
-                                >
-                                  {user.name}
-                                </label>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
-                      <div className="flex justify-end space-x-2">
-                        <button
-                          onClick={() => {
-                            setShowForwardModal(false);
-                            setSelectedDepartment("");
-                            setSelectedUsers([]);
-                            setToEmployee("");
-                            setForwardComment("");
-                          }}
-                          className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-                        >
-                          {t.inbox.cancel}
-                        </button>
-                        <button
-                          onClick={handleForwardLetter}
-                          disabled={
-                            isForwardLoading ||
-                            (!toEmployee && selectedUsers.length === 0)
-                          }
-                          className={`px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed ${
-                            isForwardLoading
-                              ? "opacity-50 cursor-not-allowed"
-                              : ""
-                          }`}
-                        >
-                          {isForwardLoading ? (
-                            <div className="flex items-center">
-                              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                              {t.inbox.forwarding}
-                            </div>
-                          ) : (
-                            t.inbox.forwardButton
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
+          </div>
+        </Modal>
+      )}
+      {showForwardModal && openLetter && (
+        <Modal
+          open={showForwardModal}
+          onClose={() => setShowForwardModal(false)}
+          center
+          classNames={{
+            modal: "custom-modal-small",
+          }}
+        >
+          <div className="p-6 bg-white rounded-lg w-full max-w-md">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              Forward Letter
+            </h3>
+
+            {/* Sender as Check Person */}
+            <div className="mb-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded flex items-center gap-2">
+              <span className="font-semibold text-blue-700">Check Person:</span>
+              <span className="text-gray-800">{user.name || user.email}</span>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Select Department
+                </label>
+                <DepartmentSelector
+                  onChange={(value) => {
+                    setSelectedDepartment(value);
+                    setSelectedUsers([]); // Reset users when department changes
+                  }}
+                />
+              </div>
+
+              {selectedDepartment && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Select User(s)
+                  </label>
+                  {loadingUsers ? (
+                    <LoadingSpinner />
+                  ) : (
+                    <div className="max-h-40 overflow-y-auto border rounded-md p-2 bg-gray-50">
+                      {departmentUsers
+                        .filter((u) => u.email !== user.email) // Exclude sender
+                        .map((user) => (
+                          <div
+                            key={user._id}
+                            className="flex items-center space-x-2 p-1.5 rounded-md hover:bg-gray-100"
+                          >
+                            <input
+                              type="checkbox"
+                              id={`user-${user._id}`}
+                              checked={selectedUsers.some(
+                                (su) => su._id === user._id
+                              )}
+                              onChange={() => {
+                                setSelectedUsers((prev) =>
+                                  prev.some((su) => su._id === user._id)
+                                    ? prev.filter((su) => su._id !== user._id)
+                                    : [...prev, user]
+                                );
+                              }}
+                              className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500"
+                            />
+                            <label
+                              htmlFor={`user-${user._id}`}
+                              className="text-sm text-gray-700"
+                            >
+                              {user.name} ({user.email})
+                            </label>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div>
+                <label
+                  htmlFor="forwardComment"
+                  className="block text-sm font-medium text-gray-600 mb-1"
+                >
+                  Comment (Optional)
+                </label>
+                <textarea
+                  id="forwardComment"
+                  value={forwardComment}
+                  onChange={(e) => setForwardComment(e.target.value)}
+                  className="w-full border rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  rows={3}
+                  placeholder="Add a comment..."
+                ></textarea>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                onClick={() => setShowForwardModal(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm font-semibold"
+              >
+                {t.inbox.cancel}
+              </button>
+              <button
+                onClick={handleForwardLetter}
+                disabled={isForwardLoading || selectedUsers.length === 0}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 flex items-center text-sm font-semibold"
+              >
+                {isForwardLoading && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                )}
+                {t.inbox.forwardButton}
+              </button>
+            </div>
           </div>
         </Modal>
       )}
