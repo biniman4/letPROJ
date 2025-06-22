@@ -10,6 +10,8 @@ import {
   FileTextOutlined,
   PrinterOutlined,
   MailOutlined,
+  AppstoreOutlined,
+  BarsOutlined,
 } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -46,6 +48,7 @@ const Sent: React.FC = () => {
   const { letters, loading, fetchLetters, refresh } = useSent();
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [viewType, setViewType] = useState<"grid" | "list">("list");
   const [composeVisible, setComposeVisible] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>("");
@@ -153,6 +156,19 @@ const Sent: React.FC = () => {
     }
   };
 
+  const getPriorityClass = (priority: string) => {
+    switch (priority) {
+      case "urgent":
+        return "bg-red-500 text-white";
+      case "high":
+        return "bg-orange-500 text-white";
+      case "normal":
+        return "bg-blue-500 text-white";
+      default:
+        return "bg-gray-400 text-white";
+    }
+  };
+
   const columns = [
     {
       title: t.sent.subjectColumn,
@@ -186,8 +202,15 @@ const Sent: React.FC = () => {
       title: t.sent.priorityColumn,
       dataIndex: "priority",
       key: "priority",
-      render: (priority: string) =>
-        priority.charAt(0).toUpperCase() + priority.slice(1),
+      render: (priority: string) => (
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-semibold ${getPriorityClass(
+            priority
+          )}`}
+        >
+          {priority.charAt(0).toUpperCase() + priority.slice(1)}
+        </span>
+      ),
     },
     {
       title: t.sent.attachmentsColumn,
@@ -249,9 +272,25 @@ const Sent: React.FC = () => {
     const matchesSearch =
       letter.subject.toLowerCase().includes(searchText.toLowerCase()) ||
       letter.to.toLowerCase().includes(searchText.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || letter.status === statusFilter;
-    return matchesSearch && matchesStatus;
+
+    if (!matchesSearch) return false;
+
+    if (statusFilter === "all") {
+      return true;
+    }
+
+    if (statusFilter === "delivered") {
+      return letter.status !== "pending";
+    }
+
+    const isPriorityFilter = ["normal", "high", "urgent"].includes(
+      statusFilter
+    );
+    if (isPriorityFilter) {
+      return letter.priority === statusFilter;
+    }
+
+    return letter.status === statusFilter;
   });
 
   const handleSendLetter = async (values: {
@@ -309,8 +348,8 @@ const Sent: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6">
       <div className="flex flex-col items-center mb-10">
         <div className="flex items-center gap-3 mb-2">
-          <MailOutlined className="text-4xl text-blue-500 animate-bounce" />
-          <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 drop-shadow-lg">
+          <MailOutlined className="text-4xl text-[#C88B3D] animate-bounce" />
+          <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#C88B3D] to-[#BFBFBF] drop-shadow-lg">
             {t.sent.title || "Sent Letters"}
           </h1>
         </div>
@@ -336,18 +375,49 @@ const Sent: React.FC = () => {
             <Select.Option value="all">
               {t.sent.allStatus || "All Status"}
             </Select.Option>
-            <Select.Option value="sent">
-              {t.sent.statusSent || "Sent"}
-            </Select.Option>
             <Select.Option value="delivered">
               {t.sent.statusDelivered || "Delivered"}
             </Select.Option>
+            <Select.Option value="pending">
+              {t.sent.statusPending || "Pending"}
+            </Select.Option>
+            <Select.Option value="normal">
+              {t.sent.priorityNormal || "Normal"}
+            </Select.Option>
+            <Select.Option value="high">
+              {t.sent.priorityHigh || "High"}
+            </Select.Option>
+            <Select.Option value="urgent">
+              {t.sent.priorityUrgent || "Urgent"}
+            </Select.Option>
           </Select>
+          <div className="flex items-center rounded-lg p-1 bg-gray-100 border border-gray-200">
+            <Button
+              type="text"
+              icon={<AppstoreOutlined />}
+              onClick={() => setViewType("grid")}
+              className={
+                viewType === "grid"
+                  ? "text-white bg-[#003F5D]"
+                  : "text-gray-500"
+              }
+            />
+            <Button
+              type="text"
+              icon={<BarsOutlined />}
+              onClick={() => setViewType("list")}
+              className={
+                viewType === "list"
+                  ? "text-white bg-[#003F5D]"
+                  : "text-gray-500"
+              }
+            />
+          </div>
         </div>
         <Button
           type="primary"
           icon={<SendOutlined />}
-          className="bg-gradient-to-r from-blue-500 to-pink-500 border-0 shadow-lg hover:from-pink-500 hover:to-blue-500 transition-all duration-300"
+          className="bg-gradient-to-r from-[#C88B3D] to-[#BFBFBF] text-[#003F5D] border-0 shadow-lg hover:from-[#BFBFBF] hover:to-[#C88B3D] transition-all duration-300"
           onClick={() => navigate("/new-letter")}
         >
           {t.sent.newLetterButton || "New Letter"}
@@ -357,109 +427,169 @@ const Sent: React.FC = () => {
       {loading ? (
         <LoadingSpinner message="Loading your sent letters..." />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {letters.length === 0 && (
+        <>
+          {letters.length === 0 ? (
             <div className="col-span-full text-center text-gray-400 text-xl font-semibold py-20">
               <MailOutlined className="text-6xl mb-4 animate-pulse text-blue-300" />
               <div>No sent letters found.</div>
             </div>
-          )}
-          {filteredLetters.map((letter) => (
-            <div
-              key={letter._id}
-              className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300 border-t-4 border-blue-400 hover:border-pink-400 relative group"
-            >
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-lg font-bold text-blue-700 group-hover:text-pink-600 transition-colors duration-300">
-                  {letter.subject}
-                </span>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    letter.priority === "urgent"
-                      ? "bg-pink-100 text-pink-600"
-                      : "bg-blue-100 text-blue-600"
-                  }`}
+          ) : viewType === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredLetters.map((letter) => (
+                <div
+                  key={letter._id}
+                  className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300 border-t-4 border-[#003F5D] hover:border-[#C88B3D] relative group"
                 >
-                  {letter.priority.charAt(0).toUpperCase() +
-                    letter.priority.slice(1)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-gray-500 text-sm">
-                  To:{" "}
-                  <span className="font-medium text-gray-700">{letter.to}</span>
-                </span>
-                <span className="text-gray-400 text-xs">
-                  {new Date(letter.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-              <div className="mb-2 text-gray-600 text-sm">
-                Department:{" "}
-                <span className="font-medium">{letter.department}</span>
-              </div>
-              <div className="mb-3 text-gray-700 line-clamp-2">
-                {letter.content}
-              </div>
-              <div className="flex gap-2 mb-2">
-                {letter.attachments && letter.attachments.length > 0 ? (
-                  letter.attachments.map((attachment, idx) => (
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-lg font-bold text-[#003F5D] group-hover:text-[#C88B3D] transition-colors duration-300">
+                      {letter.subject}
+                    </span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${getPriorityClass(
+                        letter.priority
+                      )}`}
+                    >
+                      {letter.priority.charAt(0).toUpperCase() +
+                        letter.priority.slice(1)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm text-[#BFBFBF]">
+                      To:{" "}
+                      <span className="font-medium text-[#003F5D]">
+                        {letter.to}
+                      </span>
+                    </span>
+                    <span className="text-xs text-[#BFBFBF]">
+                      {new Date(letter.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="mb-2 text-sm text-[#BFBFBF]">
+                    Department:{" "}
+                    <span className="font-medium text-[#003F5D]">
+                      {letter.department}
+                    </span>
+                  </div>
+                  <div className="mb-3 text-[#003F5D] line-clamp-2">
+                    {letter.content}
+                  </div>
+                  <div className="flex gap-2 mb-2">
+                    {letter.attachments && letter.attachments.length > 0 ? (
+                      letter.attachments.map((attachment, idx) => (
+                        <Button
+                          key={idx}
+                          type="link"
+                          icon={<PaperClipOutlined />}
+                          className="text-[#003F5D] hover:text-[#C88B3D]"
+                          onClick={() =>
+                            handleDownload(letter._id, attachment.filename)
+                          }
+                        >
+                          {attachment.filename}
+                        </Button>
+                      ))
+                    ) : (
+                      <span className="text-[#BFBFBF] italic">
+                        No attachments
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex justify-end gap-2 mt-4">
                     <Button
-                      key={idx}
-                      type="link"
-                      icon={<PaperClipOutlined />}
-                      className="text-blue-500 hover:text-pink-500"
+                      type="default"
+                      icon={<EyeOutlined />}
+                      className="hover:bg-[#003F5D]/10 hover:text-[#003F5D]"
                       onClick={() =>
-                        handleDownload(letter._id, attachment.filename)
+                        handleView(
+                          letter._id,
+                          letter.attachments[0]?.filename,
+                          letter.attachments[0]?.contentType
+                        )
+                      }
+                      disabled={
+                        !letter.attachments || letter.attachments.length === 0
                       }
                     >
-                      {attachment.filename}
+                      View
                     </Button>
-                  ))
-                ) : (
-                  <span className="text-gray-300 italic">No attachments</span>
-                )}
-              </div>
-              <div className="flex justify-end gap-2 mt-4">
-                <Button
-                  type="default"
-                  icon={<EyeOutlined />}
-                  className="hover:bg-blue-50 hover:text-blue-700"
-                  onClick={() =>
-                    handleView(
-                      letter._id,
-                      letter.attachments[0]?.filename,
-                      letter.attachments[0]?.contentType
-                    )
-                  }
-                  disabled={
-                    !letter.attachments || letter.attachments.length === 0
-                  }
-                >
-                  View
-                </Button>
-                <Button
-                  type="default"
-                  icon={<FileTextOutlined />}
-                  className="hover:bg-pink-50 hover:text-pink-700"
-                  onClick={() => handleMemoView(letter)}
-                >
-                  Memo
-                </Button>
-              </div>
-              <span
-                className={`absolute top-4 right-4 px-2 py-1 rounded text-xs font-bold ${
-                  letter.status === "read"
-                    ? "bg-green-100 text-green-600"
-                    : letter.status === "delivered"
-                    ? "bg-yellow-100 text-yellow-600"
-                    : "bg-gray-100 text-gray-500"
-                }`}
-              >
-                {letter.status.charAt(0).toUpperCase() + letter.status.slice(1)}
-              </span>
+                    <Button
+                      type="default"
+                      icon={<FileTextOutlined />}
+                      className="hover:bg-[#C88B3D]/10 hover:text-[#C88B3D]"
+                      onClick={() => handleMemoView(letter)}
+                    >
+                      Memo
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredLetters.map((letter) => (
+                <div
+                  key={letter._id}
+                  className="group bg-white rounded-xl shadow-lg p-4 hover:shadow-2xl hover:bg-blue-50 transform hover:-translate-y-1 transition-all duration-300 border-l-4 border-[#003F5D] hover:border-[#C88B3D] flex items-center justify-between gap-4 cursor-pointer"
+                >
+                  <div className="flex items-center gap-4 flex-grow">
+                    <MailOutlined className="text-2xl text-[#003F5D]" />
+                    <div className="flex-grow">
+                      <div className="flex items-center gap-4">
+                        <span className="font-bold text-lg text-[#003F5D] group-hover:text-[#C88B3D] transition-colors duration-300">
+                          {letter.subject}
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getPriorityClass(
+                            letter.priority
+                          )}`}
+                        >
+                          {letter.priority.charAt(0).toUpperCase() +
+                            letter.priority.slice(1)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        To: <span className="font-medium">{letter.to}</span> |
+                        Dept:{" "}
+                        <span className="font-medium">{letter.department}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end justify-between">
+                    <span className="text-xs text-gray-400 mb-2">
+                      {new Date(letter.createdAt).toLocaleDateString()}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {letter.attachments && letter.attachments.length > 0 && (
+                        <Button
+                          type="default"
+                          size="small"
+                          icon={<EyeOutlined />}
+                          onClick={() =>
+                            handleView(
+                              letter._id,
+                              letter.attachments[0]?.filename,
+                              letter.attachments[0]?.contentType
+                            )
+                          }
+                        >
+                          View
+                        </Button>
+                      )}
+                      <Button
+                        type="default"
+                        size="small"
+                        icon={<FileTextOutlined />}
+                        onClick={() => handleMemoView(letter)}
+                      >
+                        Memo
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       <Modal
@@ -501,7 +631,7 @@ const Sent: React.FC = () => {
           >
             <Input.TextArea rows={4} />
           </Form.Item>
-          <Form.Item label={t.sent.attachmentLabel}>
+          <Form.Item label={t.sent.attachmentLabel || "Attachment"}>
             <div className="flex flex-col gap-2">
               <Input
                 type="file"
@@ -612,7 +742,7 @@ const Sent: React.FC = () => {
             icon={<PrinterOutlined />}
             onClick={handlePrint}
           >
-            {t.sent.printButton}
+            {t.sent.printButton || "Print"}
           </Button>,
         ]}
         width={800}
