@@ -58,15 +58,33 @@ const wordVariants = {
 };
 
 export function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [hasLoadedBefore, setHasLoadedBefore] = useState<boolean>(
-    sessionStorage.getItem("hasLoadedBefore") === "true"
-  );
-  const [appLoading, setAppLoading] = useState<boolean>(hasLoadedBefore);
-  const [isOpen, setIsOpen] = useState(true); // Move isOpen state here
+  // Initialize from localStorage so state is correct on first render
+  const getInitialAuth = () => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      try {
+        const parsed = JSON.parse(user);
+        return {
+          isAuthenticated: true,
+          isAdmin: parsed.role === "admin"
+        };
+      } catch {
+        return { isAuthenticated: false, isAdmin: false };
+      }
+    }
+    return { isAuthenticated: false, isAdmin: false };
+  };
 
-  useEffect(() => {
+  const initialAuth = getInitialAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(initialAuth.isAuthenticated);
+  const [isAdmin, setIsAdmin] = useState<boolean>(initialAuth.isAdmin);
+  const [appLoading, setAppLoading] = useState<boolean>(
+    sessionStorage.getItem("hasLoadedBefore") !== "true"
+  );
+  const [isOpen, setIsOpen] = useState(true);
+
+  // Helper to sync auth state from localStorage
+  const syncAuthState = () => {
     const user = localStorage.getItem("user");
     if (user) {
       setIsAuthenticated(true);
@@ -75,30 +93,34 @@ export function App() {
       setIsAuthenticated(false);
       setIsAdmin(false);
     }
+  };
 
-    if (!hasLoadedBefore) {
-      setAppLoading(false);
-      sessionStorage.setItem("hasLoadedBefore", "true");
-    } else {
+  useEffect(() => {
+    // Always check auth state on mount
+    syncAuthState();
+    // Show splash only on first load
+    if (sessionStorage.getItem("hasLoadedBefore") !== "true") {
+      setAppLoading(true);
       const timer = setTimeout(() => {
         setAppLoading(false);
-      }, 2000); // Display logo for 2 seconds
-      return () => clearTimeout(timer); // Clean up the timer
+        sessionStorage.setItem("hasLoadedBefore", "true");
+      }, 2000);
+      return () => clearTimeout(timer);
+    } else {
+      setAppLoading(false);
     }
-  }, [hasLoadedBefore]);
+  }, []);
 
   const handleLogin = () => {
-    setIsAuthenticated(true);
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    setIsAdmin(user.role === "admin");
+    syncAuthState();
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     setIsAdmin(false);
-    localStorage.removeItem("user"); // Ensure user data is cleared from localStorage on logout
-    localStorage.removeItem("userId"); // Ensure userId is cleared from localStorage on logout
-    sessionStorage.removeItem("hasLoadedBefore");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userId");
+    // Do not reset splash for the session
   };
 
   const PrivateRoute = ({

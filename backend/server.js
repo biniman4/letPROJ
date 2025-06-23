@@ -6,6 +6,7 @@ import userRoutes from "./routes/userRoutes.js";
 import letterRoutes from "./routes/letterRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import path from "path";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ mongoose
 app.use("/api/users", userRoutes);
 app.use("/api/letters", letterRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/dashboard-stats", dashboardRoutes);
 
 // Serve uploads folder statically
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
