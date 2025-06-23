@@ -103,6 +103,7 @@ const Inbox = () => {
   const [toEmployee, setToEmployee] = useState("");
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [forwardComment, setForwardComment] = useState("");
+  const [forwardIncludeSender, setForwardIncludeSender] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [previewType, setPreviewType] = useState<string>("");
@@ -493,6 +494,15 @@ const Inbox = () => {
       );
       const recipients = [senderUser, ...filteredSelectedUsers];
 
+      if (forwardIncludeSender && openLetter) {
+        // Assuming openLetter.fromEmail and openLetter.fromName are available
+        recipients.push({
+          name: openLetter.fromName,
+          email: openLetter.fromEmail,
+          department: openLetter.department, // Or fetch if not available
+        });
+      }
+
       // Create a new letter for each recipient
       const forwardPromises = recipients.map(async (recipient) => {
         const forwardData = {
@@ -518,6 +528,7 @@ const Inbox = () => {
       setForwardStatus(`Message forwarded to: ${recipientNames}`);
       setTimeout(() => setForwardStatus(null), 3000);
       setShowForwardModal(false);
+      setForwardIncludeSender(false);
       setSelectedDepartment("");
       setSelectedUsers([]);
       setToEmployee("");
@@ -1243,9 +1254,23 @@ const Inbox = () => {
             </h3>
 
             {/* Sender as Check Person */}
-            <div className="mb-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded flex items-center gap-2">
-              <span className="font-semibold text-blue-700">Check Person:</span>
-              <span className="text-gray-800">{user.name || user.email}</span>
+            <div className="mb-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="includeSender"
+                  checked={forwardIncludeSender}
+                  onChange={(e) => setForwardIncludeSender(e.target.checked)}
+                  className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500"
+                />
+                <label
+                  htmlFor="includeSender"
+                  className="font-semibold text-blue-700"
+                >
+                  Include Original Sender:
+                </label>
+              </div>
+              <span className="text-gray-800">{openLetter.fromName}</span>
             </div>
 
             <div className="space-y-4">
@@ -1332,7 +1357,10 @@ const Inbox = () => {
               </button>
               <button
                 onClick={handleForwardLetter}
-                disabled={isForwardLoading || selectedUsers.length === 0}
+                disabled={
+                  isForwardLoading ||
+                  (selectedUsers.length === 0 && !forwardIncludeSender)
+                }
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 flex items-center text-sm font-semibold"
               >
                 {isForwardLoading && (
