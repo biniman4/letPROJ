@@ -22,11 +22,34 @@ interface HeaderProps {
 
 export const Header = ({ onLogout }: HeaderProps) => {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const { unreadNotifications } = useNotifications();
   const { lang, setLang, t } = useLanguage();
+
+  useEffect(() => {
+    // Load user data from localStorage
+    const userData = JSON.parse(localStorage.getItem("user") || "{}");
+    setUser(userData);
+  }, []);
+
+  // Listen for changes in localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const userData = JSON.parse(localStorage.getItem("user") || "{}");
+      setUser(userData);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    // Also listen for custom events when user data is updated
+    window.addEventListener('userDataUpdated', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('userDataUpdated', handleStorageChange);
+    };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -98,14 +121,14 @@ export const Header = ({ onLogout }: HeaderProps) => {
             className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg p-2 transition-colors"
           >
             <img
-              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                user.name || t.header.profile
+              src={user?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                user?.name || t.header.profile
               )}&background=E3F2FD&color=2563EB`}
               alt="User Avatar"
-              className="w-8 h-8 rounded-full"
+              className="w-8 h-8 rounded-full object-cover border border-gray-200"
             />
             <span className="text-sm font-medium text-gray-700">
-              {user.name || t.header.profile}
+              {user?.name || t.header.profile}
             </span>
           </button>
 

@@ -16,6 +16,7 @@ interface User {
   email: string;
   departmentOrSector: string;
   phone?: string;
+  profileImage?: string;
 }
 
 // Debounce hook to optimize filtering on search
@@ -250,9 +251,18 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
                   </div>
                 ) : (
                   <div className="space-y-2 flex-1">
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      {user.name}
-                    </h3>
+                    <div className="flex items-center space-x-3 mb-3">
+                      <img
+                        src={user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          user.name
+                        )}&background=E3F2FD&color=2563EB&size=48`}
+                        alt={`${user.name}'s profile`}
+                        className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
+                      />
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        {user.name}
+                      </h3>
+                    </div>
                     <div className="grid grid-cols-1 gap-2 text-sm">
                       <div>
                         <span className="text-gray-600 inline-block mr-2">

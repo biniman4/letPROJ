@@ -41,8 +41,10 @@ export const loginUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        phone: user.phone,
         departmentOrSector: user.departmentOrSector,
+        profileImage: user.profileImage,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -54,6 +56,21 @@ export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}, "-password");
     res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id, "-password");
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -157,6 +174,38 @@ export const resetPassword = async (req, res) => {
     user.resetPasswordExpires = undefined;
     await user.save();
     res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const uploadProfileImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    if (!req.file) {
+      return res.status(400).json({ message: "No image file provided" });
+    }
+
+    // Create the image URL
+    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    
+    // Update user with profile image
+    const user = await User.findByIdAndUpdate(
+      id,
+      { profileImage: imageUrl },
+      { new: true, select: "-password" }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ 
+      message: "Profile image uploaded successfully",
+      profileImage: imageUrl,
+      user 
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { SettingsIcon, Bell, Moon, Sun, Mail, User } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { SettingsIcon, Bell, Moon, Sun, Mail, User, Camera } from "lucide-react";
 import { useNotifications } from "../../context/NotificationContext";
 import { useTheme } from "../../context/ThemeContext";
 import { useLanguage } from "./LanguageContext";
@@ -11,6 +11,7 @@ interface UserProfile {
   email: string;
   phone?: string;
   departmentOrSector?: string;
+  profileImage?: string;
 }
 
 const Settings = () => {
@@ -23,8 +24,11 @@ const Settings = () => {
   const [profileEmail, setProfileEmail] = useState("");
   const [profilePhone, setProfilePhone] = useState("");
   const [profileDepartment, setProfileDepartment] = useState("");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Load user data from localStorage
@@ -34,6 +38,7 @@ const Settings = () => {
       setProfileEmail(userData.email || "");
       setProfilePhone(userData.phone || "");
       setProfileDepartment(userData.departmentOrSector || "");
+      setProfileImage(userData.profileImage || null);
     }
   }, []);
 
@@ -45,6 +50,71 @@ const Settings = () => {
   const handleNotificationSoundToggle = () => {
     setNotificationSound(!notificationSound);
     // Add notification sound logic here
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setMessage({ type: "error", text: "Please select a valid image file" });
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setMessage({ type: "error", text: "Image size should be less than 5MB" });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setProfileImage(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadProfileImage = async () => {
+    if (!profileImage || !fileInputRef.current?.files?.[0]) return;
+
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append('profileImage', fileInputRef.current.files[0]);
+
+    try {
+      const userData = JSON.parse(localStorage.getItem("user") || "{}");
+      const response = await axios.post(
+        `http://localhost:5000/api/users/${userData._id}/profile-image`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      
+      // Update user data in localStorage
+      const updatedUser = { ...userData, profileImage: response.data.profileImage };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new Event('userDataUpdated'));
+      
+      setMessage({ type: "success", text: "Profile picture updated successfully!" });
+      
+      // Clear the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error: any) {
+      setMessage({
+        type: "error",
+        text: error.response?.data?.message || "Failed to upload profile picture",
+      });
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
@@ -66,6 +136,9 @@ const Settings = () => {
 
       // Update localStorage with new user data
       localStorage.setItem("user", JSON.stringify(response.data));
+      
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new Event('userDataUpdated'));
 
       setMessage({ type: "success", text: t.settings.profile.saveChanges });
     } catch (error: any) {
@@ -141,6 +214,87 @@ const Settings = () => {
             )}
 
             <form onSubmit={handleProfileUpdate} className="space-y-4">
+              {/* Profile Picture Section */}
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="relative">
+                  <img
+                    src={profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      profileName
+                    )}&background=E3F2FD&color=2563EB&size=128`}
+                    alt="Profile"
+                    className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 bg-blue-600 text-white p-1.5 rounded-full hover:bg-blue-700 transition-colors"
+                    title="Change profile picture"
+                  >
+                    <Camera className="h-3 w-3" />
+                  </button>
+                </div>
+                <div>
+                  <h4 className={`text-sm font-medium ${
+                    theme === "dark" ? "text-gray-100" : "text-gray-900"
+                  }`}>
+                    Profile Picture
+                  </h4>
+                  <p className={`text-xs ${
+                    theme === "dark" ? "text-gray-400" : "text-gray-500"
+                  }`}>
+                    Click the camera icon to change your profile picture
+                  </p>
+                </div>
+              </div>
+
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+
+              {/* Profile picture upload section */}
+              {profileImage && profileImage !== (JSON.parse(localStorage.getItem("user") || "{}").profileImage || null) && (
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">New Profile Picture</h4>
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={profileImage}
+                      alt="Preview"
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    <div className="flex space-x-2">
+                      <button
+                        type="button"
+                        onClick={uploadProfileImage}
+                        disabled={uploadingImage}
+                        className={`bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700 ${
+                          uploadingImage ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                      >
+                        {uploadingImage ? "Uploading..." : "Upload"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const userData = JSON.parse(localStorage.getItem("user") || "{}");
+                          setProfileImage(userData.profileImage || null);
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = "";
+                          }
+                        }}
+                        className="bg-gray-300 text-gray-700 px-3 py-1 rounded-md text-sm hover:bg-gray-400"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label
                   className={`block text-sm font-medium ${
