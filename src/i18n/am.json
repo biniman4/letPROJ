@@ -31,6 +31,7 @@
     "statusDelivered": "ደረሰ",
     "statusRead": "ታይቷል",
     "statusPending": "በመጠባበቅ ላይ",
+    "statusRejected": "ውድቅ ተደርጓል",
     "priorityNormal": "መደበኛ",
     "priorityHigh": "ከፍተኛ",
     "priorityUrgent": "አስቸኳይ",
@@ -74,7 +75,8 @@
       "unread": "ያልተነበበ",
       "starred": "ኮከብ የተደረገበት",
       "urgent": "አስቸኳይ",
-      "seen": "የታየ"
+      "seen": "የታየ",
+      "rejected": "ውድቅ ተደርጓል"
     },
     "refreshButton": "አድስ",
     "newLetterNotification": "አዲስ ደብዳቤዎች ደርሰዋል!",
@@ -91,6 +93,8 @@
     "download": "አውርድ",
     "preview": "ቅድመ እይታ",
     "loading": "በመጫን ላይ...",
+    "letterRejected": "ደብዳቤ ውድቅ ተደርጓል",
+    "rejectionReason": "ምክንያት",
     "forwardTitle": "ደብዳቤ አስተላልፍ",
     "selectDepartment": "መምሪያ ይምረጡ",
     "selectUsers": "ተጠቃሚ(ዎች) ይምረጡ",

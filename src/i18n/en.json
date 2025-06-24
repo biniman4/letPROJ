@@ -30,6 +30,7 @@
     "statusDelivered": "Delivered",
     "statusRead": "Read",
     "statusPending": "Pending",
+    "statusRejected": "Rejected",
     "priorityNormal": "Normal",
     "priorityHigh": "High",
     "priorityUrgent": "Urgent",
@@ -73,7 +74,8 @@
       "unread": "Unread",
       "starred": "Starred",
       "urgent": "Urgent",
-      "seen": "Seen"
+      "seen": "Seen",
+      "rejected": "Rejected"
     },
     "refreshButton": "Refresh",
     "newLetterNotification": "New letters have arrived!",
@@ -90,6 +92,8 @@
     "download": "Download",
     "preview": "Preview",
     "loading": "Loading...",
+    "letterRejected": "Letter Rejected",
+    "rejectionReason": "Reason",
     "forwardTitle": "Forward Letter",
     "selectDepartment": "Select Department",
     "selectUsers": "Select User(s)",

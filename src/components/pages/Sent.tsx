@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../common/LoadingSpinner";
 import { useSent } from "../../context/SentContext";
 import ErrorBoundary from "../common/ErrorBoundary";
+import logo from "../../img icon/logo.png";
 
 interface Attachment {
   filename: string;
@@ -37,6 +38,7 @@ interface Letter {
   fromEmail: string;
   createdAt: string;
   status: string;
+  rejectionNote?: string;
   department: string;
   priority: string;
   attachments: Attachment[];
@@ -60,6 +62,8 @@ const Sent: React.FC = () => {
   const memoPrintRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   // Get current user from localStorage
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -122,37 +126,251 @@ const Sent: React.FC = () => {
   };
 
   const handlePrint = () => {
-    if (memoPrintRef.current) {
-      const printWindow = window.open("", "_blank");
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>${t.sent.memoLetterView}</title>
-              <style>
-                @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;700&display=swap");
-                body {
-                  font-family: 'Noto Sans Ethiopic', Arial, sans-serif;
-                  margin: 40px;
+    if (!selectedLetter) return;
+
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      const printContent = `
+        <html>
+          <head>
+            <title>Memo - ${selectedLetter.subject}</title>
+            <style>
+              @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;700&display=swap");
+              @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+              
+              body {
+                font-family: 'Roboto', 'Noto Sans Ethiopic', sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f4;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+              }
+              .memo-container {
+                display: flex;
+                flex-direction: column;
+                width: 210mm;
+                height: 297mm;
+                margin: 20px auto;
+                background: white;
+                padding: 20mm;
+                box-sizing: border-box;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+              }
+              .header {
+                text-align: center;
+                flex-shrink: 0;
+              }
+              .logo {
+                height: 60px;
+                margin-bottom: 10px;
+              }
+              .institute-name .amharic {
+                font-family: 'Noto Sans Ethiopic', sans-serif;
+                font-weight: 700;
+                font-size: 18px;
+                color: #003F5D;
+                margin: 0;
+              }
+              .institute-name .english {
+                font-family: 'Roboto', sans-serif;
+                font-weight: 700;
+                font-size: 16px;
+                color: #000;
+                margin-top: 5px;
+                margin-bottom: 0;
+              }
+              .color-bars {
+                display: flex;
+                width: 100%;
+                height: 4px;
+                margin-top: 15px;
+              }
+              .color-bars .bar { flex: 1; }
+              .color-bars .blue { background-color: #005f9e; }
+              .color-bars .brown { background-color: #c88b3d; margin: 0 5px; }
+              .color-bars .red { background-color: #d62e2e; }
+              
+              .memo-title-section {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                border-top: 2px solid #c88b3d;
+                padding-top: 15px;
+                margin-top: 20px;
+                flex-shrink: 0;
+              }
+              .memo-title .amharic {
+                font-family: 'Noto Sans Ethiopic', sans-serif;
+                font-size: 16px;
+                font-weight: 700;
+                margin: 0;
+              }
+              .memo-title .english {
+                font-size: 14px;
+                font-weight: 700;
+                margin-top: 5px;
+              }
+              .memo-date {
+                text-align: right;
+                font-size: 14px;
+              }
+              .memo-date p { margin: 0; }
+              .memo-date .date-label {
+                font-size: 12px;
+                color: #555;
+              }
+              
+              .memo-body {
+                margin-top: 20px;
+                flex-grow: 1; /* Allows this to take up space */
+                overflow-y: auto; /* In case content is too long, for viewing */
+              }
+              
+              .signature-section {
+                margin-top: 20px;
+              }
+              .signature-section p {
+                margin: 0;
+              }
+
+              .footer {
+                text-align: center;
+                flex-shrink: 0;
+                margin-top: 20px;
+              }
+              .footer-line {
+                border-top: 2px solid #003F5D;
+              }
+              .footer-content {
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                padding: 10px 0;
+                font-size: 11px;
+              }
+              .footer-item {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+              }
+              .footer-item svg {
+                width: 16px;
+                height: 16px;
+              }
+              .footer-quote {
+                margin-top: 10px;
+                font-family: 'Noto Sans Ethiopic', sans-serif;
+                font-style: italic;
+                font-size: 12px;
+              }
+
+              @media print {
+                body { margin: 0; background-color: white; }
+                .memo-container {
+                  margin: 0;
+                  box-shadow: none;
+                  width: 100%;
+                  height: 100vh; /* Use viewport height for printing */
+                  padding: 15mm;
                 }
-                @media print {
-                  body {
-                    margin: 0;
-                    padding: 20px;
+                .memo-body {
+                  overflow-y: visible;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="memo-container">
+                <div class="header">
+                    <img src="${logo}" alt="SSGI Logo" class="logo">
+                    <div class="institute-name">
+                        <p class="amharic">የኅዋ ሳይንስና ጂኦስፓሻል ኢንስቲዩት</p>
+                        <p class="english">SPACE SCIENCE AND GEOSPATIAL INSTITUTE</p>
+                    </div>
+                    <div class="color-bars">
+                        <div class="bar blue"></div>
+                        <div class="bar brown"></div>
+                        <div class="bar red"></div>
+                    </div>
+                </div>
+
+                <div class="memo-title-section">
+                    <div class="memo-title">
+                        <p class="amharic">የውስጥ ማስታወሻ</p>
+                        <p class="english">OFFICE MEMO</p>
+                    </div>
+                    <div class="memo-date">
+                        <p><strong>${new Date(
+                          selectedLetter.createdAt
+                        ).toLocaleDateString("en-GB")}</strong></p>
+                        <p class="date-label">Date</p>
+                    </div>
+                </div>
+
+                <div class="memo-body">
+                    <p><strong>Subject:</strong> ${selectedLetter.subject}</p>
+                    <p><strong>To:</strong> ${selectedLetter.to}</p>
+                    <br>
+                    <div class="content-body">${selectedLetter.content.replace(
+                      /\n/g,
+                      "<br>"
+                    )}</div>
+                    <div class="signature-section">
+                        <p>Signature:</p>
+                        <br><br>
+                        <p>${selectedLetter.fromName}</p>
+                    </div>
+                </div>
+
+                <div class="footer">
+                    <div class="footer-line"></div>
+                    <div class="footer-content">
+                        <div class="footer-item">
+                          <svg fill="#c88b3d" viewBox="0 0 24 24"><path d="M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z"></path></svg>
+                          <span>+251 118 96 10 50 / 51</span>
+                        </div>
+                        <div class="footer-item">
+                           <svg fill="#c88b3d" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,19.93C7.05,19.44 4,16.08 4,12C4,11.38 4.08,10.78 4.21,10.21L9,15V16A1,1 0 0,0 10,17H14A1,1 0 0,0 15,16V15L19.79,10.21C19.92,10.78 20,11.38 20,12C20,16.08 16.95,19.44 13,19.93V18H11V19.93M17.89,8.11L13,13H11L6.11,8.11C6.5,7.22 7.22,6.5 8.11,6.11L12,10L15.89,6.11C16.78,6.5 17.5,7.22 17.89,8.11Z"></path></svg>
+                          <span>www.ssgi.gov.et</span>
+                        </div>
+                        <div class="footer-item">
+                           <svg fill="#c88b3d" viewBox="0 0 24 24"><path d="M4,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,11L20,6H4L12,11M20,18V8L12,13L4,8V18H20Z"></path></svg>
+                           <span>33679 / 597</span>
+                        </div>
+                         <div class="footer-item">
+                           <svg fill="#c88b3d" viewBox="0 0 24 24"><path d="M4,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,11L20,6H4L12,11M20,18V8L12,13L4,8V18H20Z"></path></svg>
+                           <span>info@ssgi.gov.et</span>
+                        </div>
+                    </div>
+                    <div class="footer-quote">
+                        <p>"ከምድር እስከ ህዋ..."</p>
+                    </div>
+                </div>
+            </div>
+            <script>
+              window.onload = function() {
+                setTimeout(function() {
+                  const container = document.querySelector('.memo-container');
+                  const content = document.querySelector('.content-body');
+                  if (container.scrollHeight > container.clientHeight) {
+                    let fontSize = 12; // Starting font size in px
+                    content.style.fontSize = fontSize + 'px';
+                    while (container.scrollHeight > container.clientHeight && fontSize > 6) {
+                      fontSize -= 0.5;
+                      content.style.fontSize = fontSize + 'px';
+                    }
                   }
-                }
-              </style>
-            </head>
-            <body>
-              ${memoPrintRef.current.innerHTML}
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-        printWindow.focus();
-        printWindow.print();
-        printWindow.close();
-      }
+                  window.print();
+                  window.close();
+                }, 500);
+              };
+            </script>
+          </body>
+        </html>
+      `;
+      printWindow.document.write(printContent);
+      printWindow.document.close();
     }
   };
 
@@ -293,6 +511,28 @@ const Sent: React.FC = () => {
     return letter.status === statusFilter;
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredLetters.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentLetters = filteredLetters.slice(startIndex, endIndex);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchText, statusFilter]);
+
   const handleSendLetter = async (values: {
     subject: string;
     recipient: string;
@@ -381,6 +621,9 @@ const Sent: React.FC = () => {
             <Select.Option value="pending">
               {t.sent.statusPending || "Pending"}
             </Select.Option>
+            <Select.Option value="rejected">
+              {t.sent.statusRejected || "Rejected"}
+            </Select.Option>
             <Select.Option value="normal">
               {t.sent.priorityNormal || "Normal"}
             </Select.Option>
@@ -435,7 +678,7 @@ const Sent: React.FC = () => {
             </div>
           ) : viewType === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredLetters.map((letter) => (
+              {currentLetters.map((letter) => (
                 <div
                   key={letter._id}
                   className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300 border-t-4 border-[#003F5D] hover:border-[#C88B3D] relative group"
@@ -526,7 +769,7 @@ const Sent: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredLetters.map((letter) => (
+              {currentLetters.map((letter) => (
                 <div
                   key={letter._id}
                   className="group bg-white rounded-xl shadow-lg p-4 hover:shadow-2xl hover:bg-blue-50 transform hover:-translate-y-1 transition-all duration-300 border-l-4 border-[#003F5D] hover:border-[#C88B3D] flex items-center justify-between gap-4 cursor-pointer"
@@ -587,6 +830,49 @@ const Sent: React.FC = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+          {filteredLetters.length > 0 && (
+            <div className="mt-8 flex items-center justify-between">
+              <p className="text-sm text-gray-600">
+                {t.inbox.showing}{" "}
+                <span className="font-semibold text-gray-900">
+                  {startIndex + 1}
+                </span>{" "}
+                {t.inbox.to}{" "}
+                <span className="font-semibold text-gray-900">
+                  {Math.min(endIndex, filteredLetters.length)}
+                </span>{" "}
+                {t.inbox.of}{" "}
+                <span className="font-semibold text-gray-900">
+                  {filteredLetters.length}
+                </span>{" "}
+                {t.inbox.letters}
+              </p>
+              <div className="flex space-x-2">
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm border border-blue-100 bg-white hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-400 ${
+                    currentPage === 1
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-gray-700"
+                  }`}
+                >
+                  {t.inbox.previous}
+                </button>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm border border-blue-100 bg-white hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-400 ${
+                    currentPage === totalPages
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-gray-700"
+                  }`}
+                >
+                  {t.inbox.next}
+                </button>
+              </div>
             </div>
           )}
         </>
@@ -749,6 +1035,19 @@ const Sent: React.FC = () => {
       >
         {selectedLetter && (
           <div className="p-4" ref={memoPrintRef}>
+            {selectedLetter.status === "rejected" && (
+              <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-lg shadow">
+                <h4 className="font-bold text-lg mb-2">
+                  {t.inbox.letterRejected}
+                </h4>
+                <p>
+                  <span className="font-semibold">
+                    {t.inbox.rejectionReason}:
+                  </span>{" "}
+                  {selectedLetter.rejectionNote}
+                </p>
+              </div>
+            )}
             <TemplateMemoLetter
               subject={selectedLetter.subject}
               date={selectedLetter.createdAt}

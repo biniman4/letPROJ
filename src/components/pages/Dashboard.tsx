@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { StatsBarChart } from "../dashboard/StatsBarChart";
 import { StatsPieChart } from "../dashboard/StatsPieChart";
 import { StatsLineChart } from "../dashboard/StatsLineChart";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 const CACHE_KEY = "dashboardStats";
 const CACHE_TIME = 5 * 60 * 1000; // 5 minutes
@@ -42,7 +43,10 @@ const Dashboard = () => {
       .then((data) => {
         setStats(data);
         setLoading(false);
-        localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({ data, timestamp: Date.now() })
+        );
       })
       .catch((err) => {
         setError("Failed to load dashboard stats");
@@ -63,7 +67,10 @@ const Dashboard = () => {
       .then((data) => {
         setStats(data);
         setRefreshing(false);
-        localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({ data, timestamp: Date.now() })
+        );
       })
       .catch((err) => {
         setError("Failed to load dashboard stats");
@@ -71,14 +78,23 @@ const Dashboard = () => {
       });
   };
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
+  if (loading) return <LoadingSpinner message="Loading dashboard stats..." />;
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
   if (!stats) return null;
 
   // Prepare data for charts
-  const barData = stats.letterStatusCounts.map((s: any) => ({ name: s._id, value: s.count }));
-  const pieData = stats.letterDeptCounts.map((d: any) => ({ name: d._id, value: d.count }));
-  const lineData = stats.lettersByDate.map((d: any) => ({ date: d._id, value: d.count }));
+  const barData = stats.letterStatusCounts.map((s: any) => ({
+    name: s._id,
+    value: s.count,
+  }));
+  const pieData = stats.letterDeptCounts.map((d: any) => ({
+    name: d._id,
+    value: d.count,
+  }));
+  const lineData = stats.lettersByDate.map((d: any) => ({
+    date: d._id,
+    value: d.count,
+  }));
 
   return (
     <div className="min-h-screen bg-[#f8fafc] py-8">
@@ -100,15 +116,21 @@ const Dashboard = () => {
         </button>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
-            <span className="text-3xl font-bold text-[#6366f1]">{stats.userCount}</span>
+            <span className="text-3xl font-bold text-[#6366f1]">
+              {stats.userCount}
+            </span>
             <span className="text-gray-500 mt-2">Total Users</span>
           </div>
           <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
-            <span className="text-3xl font-bold text-[#10b981]">{stats.letterCount}</span>
+            <span className="text-3xl font-bold text-[#10b981]">
+              {stats.letterCount}
+            </span>
             <span className="text-gray-500 mt-2">Total Letters</span>
           </div>
           <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
-            <span className="text-3xl font-bold text-[#f59e42]">{stats.departmentCount}</span>
+            <span className="text-3xl font-bold text-[#f59e42]">
+              {stats.departmentCount}
+            </span>
             <span className="text-gray-500 mt-2">Departments</span>
           </div>
         </div>

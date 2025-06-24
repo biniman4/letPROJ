@@ -34,6 +34,8 @@ interface Letter {
   createdAt: string;
   unread: boolean;
   starred: boolean;
+  status?: string;
+  rejectionNote?: string;
   attachments?: Array<{ filename: string }>;
   // CC fields
   isCC?: boolean;
@@ -233,6 +235,8 @@ const Inbox = () => {
             return letter.priority === "urgent";
           case "seen":
             return !letter.unread;
+          case "rejected":
+            return letter.status === "rejected";
           default:
             return true;
         }
@@ -773,6 +777,9 @@ const Inbox = () => {
                   height: 100vh; /* Use viewport height for printing */
                   padding: 15mm;
                 }
+                .memo-body {
+                  overflow-y: visible;
+                }
               }
             </style>
           </head>
@@ -849,6 +856,16 @@ const Inbox = () => {
             <script>
               window.onload = function() {
                 setTimeout(function() {
+                  const container = document.querySelector('.memo-container');
+                  const content = document.querySelector('.content-body');
+                  if (container.scrollHeight > container.clientHeight) {
+                    let fontSize = 12; // Starting font size in px
+                    content.style.fontSize = fontSize + 'px';
+                    while (container.scrollHeight > container.clientHeight && fontSize > 6) {
+                      fontSize -= 0.5;
+                      content.style.fontSize = fontSize + 'px';
+                    }
+                  }
                   window.print();
                   window.close();
                 }, 500);
@@ -881,6 +898,7 @@ const Inbox = () => {
               { key: "starred", label: t.inbox.filterOptions.starred },
               { key: "urgent", label: t.inbox.filterOptions.urgent },
               { key: "seen", label: t.inbox.filterOptions.seen },
+              { key: "rejected", label: t.inbox.filterOptions.rejected },
             ].map((filter) => (
               <button
                 key={filter.key}
@@ -1030,6 +1048,19 @@ const Inbox = () => {
           <div className="p-4 overflow-y-auto">
             {!viewMode ? (
               <div className="bg-white p-4">
+                {openLetter.status === "rejected" && (
+                  <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-lg shadow">
+                    <h4 className="font-bold text-lg mb-2">
+                      {t.inbox.letterRejected}
+                    </h4>
+                    <p>
+                      <span className="font-semibold">
+                        {t.inbox.rejectionReason}:
+                      </span>{" "}
+                      {openLetter.rejectionNote}
+                    </p>
+                  </div>
+                )}
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold text-[#C88B3D] flex-1 truncate">
                     {openLetter.subject}
