@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { NotificationProvider } from "./context/NotificationContext";
 import { ThemeProvider } from "./context/ThemeContext";
-import { InboxProvider } from "./context/InboxContext";
+import { InboxProvider, useInbox } from "./context/InboxContext";
 import { SentProvider } from "./context/SentContext";
 import { LetterFormProvider } from "./context/LetterFormContext";
 
@@ -66,7 +66,7 @@ export function App() {
         const parsed = JSON.parse(user);
         return {
           isAuthenticated: true,
-          isAdmin: parsed.role === "admin"
+          isAdmin: parsed.role === "admin",
         };
       } catch {
         return { isAuthenticated: false, isAdmin: false };
@@ -76,7 +76,9 @@ export function App() {
   };
 
   const initialAuth = getInitialAuth();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(initialAuth.isAuthenticated);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
+    initialAuth.isAuthenticated
+  );
   const [isAdmin, setIsAdmin] = useState<boolean>(initialAuth.isAdmin);
   const [appLoading, setAppLoading] = useState<boolean>(
     sessionStorage.getItem("hasLoadedBefore") !== "true"
@@ -123,6 +125,44 @@ export function App() {
     // Do not reset splash for the session
   };
 
+  const AuthenticatedApp = ({
+    children,
+    isAdmin,
+    onLogout,
+  }: {
+    children: React.ReactNode;
+    isAdmin: boolean;
+    onLogout: () => void;
+  }) => {
+    const { letters } = useInbox();
+    const newInboxCount = letters.filter((letter) => letter.unread).length;
+
+    return (
+      <div className="flex w-full min-h-screen bg-gray-50">
+        <Sidebar
+          isAdmin={isAdmin}
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+          newInboxCount={newInboxCount}
+          hasNewLetters={newInboxCount > 0}
+        />
+        <div
+          className={`flex-1 overflow-hidden transition-all duration-300 ease-in-out ${
+            isOpen ? "ml-80" : "ml-12"
+          } md:ml-0`}
+        >
+          <Header onLogout={onLogout} />
+          <main
+            className="p-6 overflow-auto"
+            style={{ height: "calc(100vh - 64px)" }}
+          >
+            {children}
+          </main>
+        </div>
+      </div>
+    );
+  };
+
   const PrivateRoute = ({
     children,
     adminRequired = false,
@@ -143,23 +183,9 @@ export function App() {
     }
 
     return (
-      <div className="flex w-full min-h-screen bg-gray-50">
-        <Sidebar isAdmin={isAdmin} isOpen={isOpen} setIsOpen={setIsOpen} />
-        <div
-          className={`flex-1 overflow-hidden transition-all duration-300 ease-in-out
-          ${isOpen ? "ml-80" : "ml-12"}
-          md:ml-0
-          `}
-        >
-          <Header onLogout={handleLogout} />
-          <main
-            className="p-6 overflow-auto"
-            style={{ height: "calc(100vh - 64px)" }}
-          >
-            {children}
-          </main>
-        </div>
-      </div>
+      <AuthenticatedApp isAdmin={isAdmin} onLogout={handleLogout}>
+        {children}
+      </AuthenticatedApp>
     );
   };
 
@@ -197,12 +223,12 @@ export function App() {
   }
 
   return (
-    <InboxProvider>
-      <ThemeProvider>
-        <LanguageProvider>
-          <NotificationProvider>
-            <SentProvider>
-              <LetterFormProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <NotificationProvider>
+          <SentProvider>
+            <LetterFormProvider>
+              <InboxProvider>
                 <Router future={{ v7_relativeSplatPath: true }}>
                   <>
                     <ToastContainer />
@@ -246,14 +272,6 @@ export function App() {
                         }
                       />
                       <Route
-                        path="/sent"
-                        element={
-                          <PrivateRoute>
-                            <Sent />
-                          </PrivateRoute>
-                        }
-                      />
-                      <Route
                         path="/archive"
                         element={
                           <PrivateRoute>
@@ -286,6 +304,14 @@ export function App() {
                         }
                       />
                       <Route
+                        path="/admin"
+                        element={
+                          <PrivateRoute adminRequired={true}>
+                            <AdminPanel />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
                         path="/profile"
                         element={
                           <PrivateRoute>
@@ -294,22 +320,22 @@ export function App() {
                         }
                       />
                       <Route
-                        path="/admin"
+                        path="/sent"
                         element={
-                          <PrivateRoute adminRequired={true}>
-                            <AdminPanel />
+                          <PrivateRoute>
+                            <Sent />
                           </PrivateRoute>
                         }
                       />
                     </Routes>
                   </>
                 </Router>
-              </LetterFormProvider>
-            </SentProvider>
-          </NotificationProvider>
-        </LanguageProvider>
-      </ThemeProvider>
-    </InboxProvider>
+              </InboxProvider>
+            </LetterFormProvider>
+          </SentProvider>
+        </NotificationProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 /*******  0cfabed7-dce5-43a5-8d65-b66ce1d202f6  *******/

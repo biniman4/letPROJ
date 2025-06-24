@@ -26,16 +26,22 @@ const navItems = [
   { icon: SettingsIcon, labelKey: "settings", path: "/settings" },
 ];
 
-const adminItems = [{ icon: ShieldIcon, labelKey: "adminPanel", path: "/admin" }];
+const adminItems = [
+  { icon: ShieldIcon, labelKey: "adminPanel", path: "/admin" },
+];
 
 export const Sidebar = ({
   isAdmin = false,
   isOpen,
   setIsOpen,
+  hasNewLetters = false,
+  newInboxCount = 0,
 }: {
   isAdmin?: boolean;
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  hasNewLetters?: boolean;
+  newInboxCount?: number;
 }) => {
   const { t } = useLanguage();
   const items = isAdmin ? [...navItems, ...adminItems] : navItems;
@@ -44,7 +50,9 @@ export const Sidebar = ({
     <>
       {/* Fixed Top Toggle Button for Mobile */}
       <div className="fixed top-0 left-0 w-full bg-white border-b md:hidden z-50 flex items-center justify-between p-4">
-        <h1 className="text-xl font-semibold text-main-text">{t.sidebar.letterFlow}</h1>
+        <h1 className="text-xl font-semibold text-main-text">
+          {t.sidebar.letterFlow}
+        </h1>
         <button onClick={() => setIsOpen(!isOpen)} className="text-main-text">
           {isOpen ? (
             <XIcon className="w-6 h-6" />
@@ -56,9 +64,11 @@ export const Sidebar = ({
 
       {/* Sidebar */}
       <div
-      className={`fixed z-40 bg-white transform transition-transform duration-300 ease-in-out
+        className={`fixed z-40 bg-white transform transition-transform duration-300 ease-in-out
       top-16 h-[calc(100vh-64px)] /* Mobile: always positioned below header and takes remaining height */
-      ${isOpen ? "translate-x-0 w-80" : "translate-x-0 w-12"} /* Mobile width: open 80, closed 12 */
+      ${
+        isOpen ? "translate-x-0 w-80" : "translate-x-0 w-12"
+      } /* Mobile width: open 80, closed 12 */
       md:translate-x-0 md:static md:block md:h-screen /* Desktop: always visible, static, full height */
       ${isOpen ? "md:w-64" : "md:w-20"} /* Desktop width: open 64, closed 20 */
       `}
@@ -86,7 +96,11 @@ export const Sidebar = ({
           {/* Navigation Container */}
           <div className="flex flex-col h-[calc(100vh-64px)] pb-6 sm:pb-8">
             {/* Navigation Items */}
-            <nav className={`px-2 py-6 flex flex-col ${isOpen ? 'space-y-3' : 'space-y-1'}`}>
+            <nav
+              className={`px-2 py-6 flex flex-col ${
+                isOpen ? "space-y-3" : "space-y-1"
+              }`}
+            >
               {items.map((item) => (
                 <NavLink
                   key={item.path}
@@ -97,7 +111,11 @@ export const Sidebar = ({
                       : "text-main-text group-hover:text-hover-gold";
 
                     return `flex items-center rounded-md text-[16px] transition-all group
-                    ${isOpen ? "w-full gap-8 px-4 py-2.5" : "justify-center py-2.5"}
+                    ${
+                      isOpen
+                        ? "w-full gap-8 px-4 py-2.5"
+                        : "justify-center py-2.5"
+                    }
                     ${
                       isActive
                         ? "bg-active-bg-dark font-medium text-hover-gold"
@@ -107,11 +125,21 @@ export const Sidebar = ({
                 >
                   {({ isActive }) => (
                     <>
-                      <item.icon 
-                        className={`w-[22px] h-[22px] flex-shrink-0 ${
-                          isActive ? "text-hover-gold" : "text-main-text group-hover:text-hover-gold"
-                        }`} 
-                      />
+                      <div className="relative flex items-center">
+                        <item.icon
+                          className={`w-[22px] h-[22px] flex-shrink-0 ${
+                            isActive
+                              ? "text-hover-gold"
+                              : "text-main-text group-hover:text-hover-gold"
+                          }`}
+                        />
+                        {/* Show badge if Inbox and newInboxCount > 0 */}
+                        {item.labelKey === "inbox" && newInboxCount > 0 && (
+                          <span className="absolute -top-2 -right-2 min-w-[18px] h-5 px-1 bg-red-500 text-white text-xs font-bold rounded-full border-2 border-white flex items-center justify-center animate-bounce">
+                            {newInboxCount > 9 ? "9+" : newInboxCount}
+                          </span>
+                        )}
+                      </div>
                       {isOpen && (
                         <span className="flex-grow truncate">
                           {t.sidebar[item.labelKey as keyof typeof t.sidebar]}

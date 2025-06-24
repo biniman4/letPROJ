@@ -346,18 +346,27 @@ const Inbox = () => {
         letter,
         onOpen,
         onStarToggle,
+        isActive,
       }: {
         letter: Letter;
         onOpen: (letter: Letter) => void;
         onStarToggle: (letter: Letter, e: React.MouseEvent) => void;
+        isActive: boolean;
       }) => {
         const isUnread = letter.unread;
         return (
           <div
             className={`flex items-center p-3 cursor-pointer border-l-4 ${
-              isUnread ? "border-blue-500 bg-blue-50/70" : "border-transparent"
-            } hover:bg-gray-100 transition-colors duration-200 group`}
+              isActive
+                ? "border-[#C88B3D] bg-yellow-50/80 shadow-md scale-[1.01]"
+                : isUnread
+                ? "border-blue-500 bg-blue-50/70"
+                : "border-transparent"
+            } hover:bg-gray-100 transition-all duration-200 group`}
             onClick={() => onOpen(letter)}
+            style={{
+              transition: "box-shadow 0.2s, background 0.2s, transform 0.1s",
+            }}
           >
             <div className="flex items-center gap-4 w-48 shrink-0">
               <button
@@ -389,10 +398,6 @@ const Inbox = () => {
                 }`}
               >
                 {letter.subject}
-              </span>
-              <span className="text-gray-500 text-sm ml-2 truncate">
-                {" "}
-                - {letter.content.substring(0, 80)}
               </span>
             </div>
             <div className="flex items-center justify-end gap-4 w-48 shrink-0 ml-auto">
@@ -477,21 +482,20 @@ const Inbox = () => {
 
     try {
       setIsForwardLoading(true);
-      // Always include the sender as a recipient (check person)
-      const senderUser = {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        department: user.department || selectedDepartment,
-      };
-      // Exclude sender from selectedUsers if present (shouldn't be, but for safety)
-      const filteredSelectedUsers = selectedUsers.filter(
-        (u) => u.email !== user.email
-      );
-      const recipients = [senderUser, ...filteredSelectedUsers];
 
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!user.email) {
+        throw new Error("User email not found");
+      }
+
+      const recipients = selectedUsers.map((u) => ({
+        name: u.name,
+        email: u.email,
+        department: u.department,
+      }));
+
+      // If "Include Original Sender" is checked, add the sender to recipients
       if (forwardIncludeSender && openLetter) {
-        // Assuming openLetter.fromEmail and openLetter.fromName are available
         recipients.push({
           name: openLetter.fromName,
           email: openLetter.fromEmail,
@@ -499,65 +503,52 @@ const Inbox = () => {
         });
       }
 
-      // Create a new letter for each recipient
-      const forwardPromises = recipients.map(async (recipient) => {
-        const forwardData = {
-          subject: `Fwd: ${openLetter.subject}`,
-          from: user.email, // The server will look up the user by email
-          to: recipient.name, // The server expects the recipient's name
-          department: recipient.department || selectedDepartment,
-          priority: openLetter.priority,
-          content: forwardComment
-            ? `${forwardComment}\n\n--- Forwarded Message ---\n\n${openLetter.content}`
-            : `--- Forwarded Message ---\n\n${openLetter.content}`,
-          ccEmployees: {}, // Empty object for CC
-          cc: [], // Empty array for CC
-          status: "sent",
-        };
+      // Send all recipients in one request to the new /forward endpoint
+      const forwardData = {
+        subject: `Fwd: ${openLetter.subject}`,
+        from: user.email,
+        recipients,
+        department: selectedDepartment,
+        priority: openLetter.priority,
+        content: forwardComment
+          ? `${forwardComment}\n\n--- Forwarded Message ---\n\n${openLetter.content}`
+          : `--- Forwarded Message ---\n\n${openLetter.content}`,
+      };
 
-        return axios.post("http://localhost:5000/api/letters", forwardData);
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/letters/forward",
+        forwardData
+      );
 
-      await Promise.all(forwardPromises);
+      if (response.status === 201) {
+        const recipientNames = recipients.map((u) => u.name).join(", ");
+        setForwardStatus(`Message forwarded to: ${recipientNames}`);
+        setTimeout(() => setForwardStatus(null), 3000);
+        setShowForwardModal(false);
+        setForwardIncludeSender(false);
+        setSelectedDepartment("");
+        setSelectedUsers([]);
+        setToEmployee("");
+        setForwardComment("");
+        toast.success(`Message forwarded to: ${recipientNames}`);
 
-      const recipientNames = recipients.map((u) => u.name).join(", ");
-      setForwardStatus(`Message forwarded to: ${recipientNames}`);
-      setTimeout(() => setForwardStatus(null), 3000);
-      setShowForwardModal(false);
-      setForwardIncludeSender(false);
-      setSelectedDepartment("");
-      setSelectedUsers([]);
-      setToEmployee("");
-      setForwardComment("");
-      toast.success(`Message forwarded to: ${recipientNames}`);
-
-      // Refresh the letters list
-      const res = await axios.get("http://localhost:5000/api/letters");
-      const formattedLetters = res.data
-        .filter((letter: Letter) => letter.toEmail === userEmail)
-        .map((letter: Letter) => ({
-          ...letter,
-          unread: letter.unread ?? true,
-          starred: letter.starred ?? false,
-          priority: letter.priority ?? "normal",
-          createdAt: letter.createdAt || new Date().toISOString(),
-        }))
-        .sort(
-          (a: Letter, b: Letter) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        // Refresh the letters list
+        fetchLetters();
+      } else {
+        // Handle unexpected success statuses if necessary
+        setForwardStatus(
+          "Failed to forward message due to unexpected server response."
         );
-      updateLetterStatus(openLetter._id, { unread: false, starred: false });
-      fetchLetters();
-
-      // Update unread count
-      const unreadCount = formattedLetters.filter(
-        (l: Letter) => l.unread
-      ).length;
-      updateUnreadLetters(unreadCount);
-    } catch (error) {
+        toast.error(
+          "Failed to forward message due to unexpected server response."
+        );
+      }
+    } catch (error: any) {
       console.error("Error forwarding letter:", error);
-      setForwardStatus("Failed to forward message.");
-      toast.error("Failed to forward message.");
+      const errorMessage =
+        error.response?.data?.error || "Failed to forward message.";
+      setForwardStatus(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsForwardLoading(false);
     }
@@ -972,6 +963,7 @@ const Inbox = () => {
                   letter={letter}
                   onOpen={handleLetterOpen}
                   onStarToggle={handleStarToggle}
+                  isActive={!!openLetter && openLetter._id === letter._id}
                 />
               ))}
             </div>
@@ -1292,7 +1284,13 @@ const Inbox = () => {
                   ) : (
                     <div className="max-h-40 overflow-y-auto border rounded-md p-2 bg-gray-50">
                       {departmentUsers
-                        .filter((u) => u.email !== user.email) // Exclude sender
+                        .filter(
+                          (u) =>
+                            u.email !== user.email &&
+                            u.departmentOrSector &&
+                            u.departmentOrSector.trim().toLowerCase() ===
+                              selectedDepartment.trim().toLowerCase()
+                        )
                         .map((user) => (
                           <div
                             key={user._id}

@@ -35,15 +35,15 @@ export const loginUser = async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: "Invalid credentials" });
 
-    res.status(200).json({ 
-      message: "Login successful", 
+    res.status(200).json({
+      message: "Login successful",
       user: {
         _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-        departmentOrSector: user.departmentOrSector
-      }
+        departmentOrSector: user.departmentOrSector,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -121,13 +121,18 @@ export const forgotPassword = async (req, res) => {
         pass: process.env.EMAIL_PASS,
       },
     });
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${token}`;
-    const html = PASSWORD_RESET_REQUEST_TEMPLATE.replace("{resetURL}", resetUrl);
+    const resetUrl = `${
+      process.env.FRONTEND_URL || "http://localhost:5173"
+    }/reset-password/${token}`;
+    const html = PASSWORD_RESET_REQUEST_TEMPLATE.replace(
+      "{resetURL}",
+      resetUrl
+    );
     const mailOptions = {
       to: user.email,
       from: process.env.EMAIL_USER,
       subject: "Password Reset",
-      html
+      html,
     };
     await transporter.sendMail(mailOptions);
     res.status(200).json({ message: "Reset link sent to email" });

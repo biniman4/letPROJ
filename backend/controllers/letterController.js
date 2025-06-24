@@ -730,3 +730,67 @@ export const getPendingLetters = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// Check for new letters
+export const checkNewLetters = async (req, res) => {
+  try {
+    const { lastChecked, userEmail } = req.query;
+    if (!lastChecked || !userEmail) {
+      return res
+        .status(400)
+        .json({ error: "Missing lastChecked or userEmail" });
+    }
+    const since = new Date(lastChecked);
+    // Find letters where user is recipient or CC, created after lastChecked
+    const newLetters = await Letter.find({
+      $and: [
+        { createdAt: { $gt: since } },
+        {
+          $or: [
+            { toEmail: userEmail },
+            { cc: { $elemMatch: { $eq: userEmail } } },
+          ],
+        },
+      ],
+    });
+    res.json({ hasNewLetters: newLetters.length > 0 });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// If you have a forwardLetter controller, update it to accept an array of recipients and create a letter for each. If not, add a new function:
+export const forwardLetter = async (req, res) => {
+  try {
+    const { subject, from, recipients, priority, content, department } =
+      req.body;
+    if (!Array.isArray(recipients) || recipients.length === 0) {
+      return res.status(400).json({ error: "No recipients provided" });
+    }
+    // Look up sender by email
+    const sender = await User.findOne({ email: from });
+    if (!sender) {
+      return res.status(404).json({ error: "Sender user not found" });
+    }
+    const letters = await Promise.all(
+      recipients.map(async (recipient) => {
+        const letter = new Letter({
+          subject,
+          from: sender._id,
+          fromName: sender.name,
+          fromEmail: sender.email,
+          to: recipient.name,
+          toEmail: recipient.email,
+          department: recipient.department || department,
+          priority,
+          content,
+          status: "sent",
+        });
+        return letter.save();
+      })
+    );
+    res.status(201).json({ message: "Letters forwarded", letters });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
