@@ -122,7 +122,7 @@ export function App() {
     setIsAdmin(false);
     localStorage.removeItem("user");
     localStorage.removeItem("userId");
-    // Do not reset splash for the session
+    // Navigation will be handled in Header
   };
 
   const AuthenticatedApp = ({

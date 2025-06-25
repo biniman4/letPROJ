@@ -77,6 +77,7 @@ export const Header = ({ onLogout }: HeaderProps) => {
   const handleLogout = () => {
     setOpen(false);
     onLogout();
+    navigate("/");
   };
 
   const handleLanguageSwitch = () => {
