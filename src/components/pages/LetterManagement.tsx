@@ -16,6 +16,7 @@ import { Modal } from "react-responsive-modal";
 import "react-responsive-modal/styles.css";
 import TemplateMemoLetter from "./TemplateMemoLetter";
 import DepartmentSelector from "./DepartmentSelector";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 const getLetterSentDate = (dateString: string) => {
   const d = new Date(dateString);
@@ -253,12 +254,7 @@ const LetterManagement: React.FC<{
 
   if (loadingLetters)
     return (
-      <div className="flex justify-center items-center h-40">
-        <Loader2 className="animate-spin w-8 h-8 text-blue-500" />
-        <span className="ml-2 text-blue-500 font-semibold">
-          Loading letters...
-        </span>
-      </div>
+      <LoadingSpinner message="Loading letters..." />
     );
 
   return (

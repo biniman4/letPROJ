@@ -16,7 +16,7 @@ const PIE_COLORS = [
 export function StatsPieChart({ data }: { data: { name: string; value: number }[] }) {
   const chartRef = useRef<any>(null);
   const chartData = {
-    labels: data.map((d) => d.name),
+    labels: data.map((d) => d.name.split('>').pop()?.trim() || d.name),
     datasets: [
       {
         data: data.map((d) => d.value),
@@ -30,7 +30,7 @@ export function StatsPieChart({ data }: { data: { name: string; value: number }[
   };
   const options = {
     plugins: {
-      legend: { position: "bottom" as const },
+      legend: { display: false },
       tooltip: { enabled: true },
     },
     animation: {
@@ -47,6 +47,14 @@ export function StatsPieChart({ data }: { data: { name: string; value: number }[
         Letters by Department
       </h3>
       <Pie ref={chartRef} data={chartData} options={options} />
+      <div className="mt-4 max-h-32 overflow-y-auto flex flex-col gap-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+        {chartData.labels.map((label: string, idx: number) => (
+          <div key={label} className="flex items-center space-x-2">
+            <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }}></span>
+            <span className="text-sm text-gray-700">{label}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 } 
