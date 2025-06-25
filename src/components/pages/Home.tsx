@@ -100,6 +100,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
     password: "",
   });
   const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
   const navigate = useNavigate();
   const { t, lang, setLang } = useLanguage();
 
@@ -121,6 +122,12 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
     } catch (error: any) {
       setLoginError("Invalid credentials");
     }
+  };
+
+  const handleLoginButton = async () => {
+    setLoginLoading(true);
+    navigate('/login');
+    setTimeout(() => setLoginLoading(false), 1000); // fallback in case navigation is slow
   };
 
   return (
@@ -205,10 +212,17 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 </motion.p>
                 <div className="mt-10 flex justify-center">
                   <button
-                    onClick={() => navigate('/login')}
-                    className="px-12 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold text-lg shadow-lg hover:from-blue-700 hover:to-blue-900 transition duration-300 transform hover:scale-105"
+                    onClick={handleLoginButton}
+                    className="px-12 py-4 rounded-full bg-[#b97b2a] text-white font-semibold text-lg shadow-lg hover:bg-[#a06d2a] hover:scale-105 transition-transform duration-150 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                    disabled={loginLoading}
                   >
-                    {t.home.login}
+                    {loginLoading ? (
+                      <svg className="animate-spin h-5 w-5 text-white mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                      </svg>
+                    ) : null}
+                    {loginLoading ? "Loading..." : t.home.login}
                   </button>
                 </div>
               </motion.div>
