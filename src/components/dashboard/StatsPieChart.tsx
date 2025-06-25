@@ -51,7 +51,7 @@ export function StatsPieChart({ data }: { data: { name: string; value: number }[
         {chartData.labels.map((label: string, idx: number) => (
           <div key={label} className="flex items-center space-x-2">
             <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }}></span>
-            <span className="text-sm text-gray-700">{label}</span>
+            <span className="text-sm text-gray- 700">{label}</span>
           </div>
         ))}
       </div>

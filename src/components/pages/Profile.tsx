@@ -322,7 +322,17 @@ const Profile = () => {
                   name="departmentOrSector"
                   value={formData.departmentOrSector}
                   onChange={handleInputChange}
-                  className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  disabled={[
+                    "Director General",
+                    "Director General > Head of Office",
+                    "Director General > Head of Office > Legal Services Executive"
+                  ].includes(formData.departmentOrSector)}
+                  title={[
+                    "Director General",
+                    "Director General > Head of Office",
+                    "Director General > Head of Office > Legal Services Executive"
+                  ].includes(formData.departmentOrSector) ? "This department cannot be edited." : undefined}
                 />
               </div>
             </div>
