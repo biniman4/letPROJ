@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { GlobeIcon } from "lucide-react";
 import { SupportedLang } from "../pages/LanguageContext";
+import { useLanguage } from "../../components/pages/LanguageContext";
 
 interface PublicNavbarProps {
   lang?: SupportedLang;
@@ -13,6 +14,7 @@ export const PublicNavbar = ({
   onLanguageChange,
 }: PublicNavbarProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { t } = useLanguage();
 
   // Handle scroll effect
   useEffect(() => {
@@ -59,6 +61,12 @@ export const PublicNavbar = ({
                 className="text-gray-600 hover:text-gray-900 font-medium"
               >
                 Services
+              </a>
+              <a
+                href="#video-demo"
+                className="text-gray-600 hover:text-gray-900 font-medium"
+              >
+                See How It Works
               </a>
             </div>
 

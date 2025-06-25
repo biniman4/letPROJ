@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { PublicNavbar } from "../layout/PublicNavbar";
 import { PublicFooter } from "../layout/PublicFooter";
@@ -103,6 +103,16 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
   const [loginLoading, setLoginLoading] = useState(false);
   const navigate = useNavigate();
   const { t, lang, setLang } = useLanguage();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {/* Autoplay might be blocked, ignore */});
+      }
+    }
+  }, []);
 
   const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -278,6 +288,197 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                   </p>
                 </motion.div>
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Video Section */}
+        <div className="py-24 bg-gradient-to-br from-gray-50 via-white to-blue-50 relative overflow-hidden" id="video-demo">
+          {/* Background decorations */}
+          <div className="absolute inset-0">
+            <div className="absolute top-0 left-0 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+            <div className="absolute top-0 right-0 w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(#E4E9FF_1px,transparent_1px)] [background-size:40px_40px] opacity-10"></div>
+          </div>
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="text-center mb-16">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 text-blue-800 text-sm font-medium mb-6"
+              >
+                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                </svg>
+                {lang === "am" ? "የስርዓቱ አጠቃቀም" : "System Demo"}
+              </motion.div>
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="text-3xl sm:text-4xl font-extrabold text-main-text sm:text-5xl hover:text-hover-gold transition-colors duration-200"
+              >
+                {lang === "am" ? "ስርዓቱን እንዴት እንደሚጠቀሙ" : "See How It Works"}
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="mt-4 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto"
+              >
+                {lang === "am" 
+                  ? "የስርዓታችንን አጠቃቀም ይመልከቱ እና ለድርጅትዎ የሚያመጡትን ጥቅሞች ይወቁ"
+                  : "Watch our system in action and discover the benefits it brings to your organization"
+                }
+              </motion.p>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Video Container */}
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="relative group"
+              >
+                <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-2 shadow-2xl">
+                  <div className="relative aspect-video rounded-2xl bg-black">
+                    <video
+                      ref={videoRef}
+                      className="w-full h-full"
+                      controls
+                      autoPlay
+                      muted
+                      playsInline
+                    >
+                      <source src="/demo-video.mp4" type="video/mp4" />
+                      {lang === "am" ? "የብራውዘርዎ ቪዲዮ አይደገፍም" : "Your browser does not support the video tag."}
+                    </video>
+                  </div>
+                  
+                  {/* Floating elements */}
+                  <div className="absolute -top-4 -right-4 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2 6a2 2 0 012-2h6l2 2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
+                    </svg>
+                  </div>
+                </div>
+                
+                {/* Video stats */}
+                <div className="mt-6 flex items-center justify-center space-x-8 text-sm text-gray-600">
+                  <div className="flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                    </svg>
+                    <span>2:45 {lang === "am" ? "ደቂቃ" : "min"}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{lang === "am" ? "HD ጥራት" : "HD Quality"}</span>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Benefits List */}
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+                className="space-y-8"
+              >
+                <div>
+                  <h3 className="text-2xl font-bold text-main-text mb-6">
+                    {lang === "am" ? "የስርዓቱ ጥቅሞች" : "System Benefits"}
+                  </h3>
+                  
+                  <div className="space-y-6">
+                    {[
+                      {
+                        icon: "🚀",
+                        title: lang === "am" ? "ፈጣን እና ቀልጣፋ" : "Fast & Efficient",
+                        description: lang === "am" 
+                          ? "ደብዳበዎችን በፍጹም ፍጥነት ያስተዳድሩ እና ያስገቡ"
+                          : "Manage and submit letters with lightning speed and efficiency"
+                      },
+                      {
+                        icon: "🔒",
+                        title: lang === "am" ? "ደህንነቱ የተጠበቀ" : "Secure & Reliable",
+                        description: lang === "am"
+                          ? "ደብዳበዎች በደህንነት ይቀመጣሉ እና ይጠበቃሉ"
+                          : "Your letters are stored securely and protected at all times"
+                      },
+                      {
+                        icon: "📊",
+                        title: lang === "am" ? "የተሻሻለ ቁጥጥር" : "Better Tracking",
+                        description: lang === "am"
+                          ? "የደብዳበዎችን ሁኔታ በቀጥታ ይከታተሉ"
+                          : "Track the status of your letters in real-time"
+                      },
+                      {
+                        icon: "👥",
+                        title: lang === "am" ? "የተሻሻለ ትብብር" : "Enhanced Collaboration",
+                        description: lang === "am"
+                          ? "ከቡድን አባላት ጋር በቀላሉ ያብቁ"
+                          : "Collaborate seamlessly with team members"
+                      }
+                    ].map((benefit, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.5 + index * 0.1 }}
+                        className="flex items-start space-x-4 group"
+                      >
+                        <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          {benefit.icon}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-lg font-semibold text-main-text group-hover:text-hover-gold transition-colors duration-200">
+                            {benefit.title}
+                          </h4>
+                          <p className="mt-2 text-gray-600 leading-relaxed">
+                            {benefit.description}
+                          </p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* CTA Button */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.8 }}
+                  className="pt-6"
+                >
+                  <button
+                    onClick={handleLoginButton}
+                    className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group"
+                  >
+                    <svg className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
+                    </svg>
+                    {lang === "am" ? "አሁን ጀምሩ" : "Get Started Now"}
+                  </button>
+                </motion.div>
+              </motion.div>
             </div>
           </div>
         </div>

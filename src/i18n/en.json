@@ -3,7 +3,7 @@
   "subtitle": "Space Science and Geospatial Institute (SSGI)",
   "description": "A centralized platform designed for SSGI to manage, track, and organize official correspondence with precision, security, and efficiency.",
   "login": "Log In",
-  "featuresTitle": "Empowering SSGI's Communication Flow",
+  "featuresTitle": "Features",
   "featuresDescription": "Launch your digital transformation journey today.",
   "ctaTitle1": "Ready to get started?",
   "ctaTitle2": "Start your free trial today.",
@@ -101,5 +101,9 @@
     "commentPlaceholder": "Add a comment...",
     "cancel": "Cancel",
     "contentType": "Content Type"
+  },
+  "home": {
+    "seeHowItWorksNav": "See How It Works",
+    "servicesHeading": "Services"
   }
 }
