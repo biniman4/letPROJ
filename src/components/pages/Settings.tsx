@@ -29,6 +29,9 @@ const Settings = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [changePwd, setChangePwd] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+  const [changePwdMsg, setChangePwdMsg] = useState({ type: '', text: '' });
+  const [changePwdLoading, setChangePwdLoading] = useState(false);
 
   useEffect(() => {
     // Load user data from localStorage
@@ -389,6 +392,78 @@ const Settings = () => {
                 {isLoading
                   ? t.settings.profile.saving
                   : t.settings.profile.saveChanges}
+              </button>
+            </form>
+          </div>
+
+          {/* Change Password Section */}
+          <div className={`rounded-lg border p-6 mt-8 transition-colors duration-300 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+            <h3 className={`text-lg font-semibold mb-4 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>Change Password</h3>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setChangePwdMsg({ type: '', text: '' });
+                setChangePwdLoading(true);
+                if (changePwd.newPassword !== changePwd.confirmNewPassword) {
+                  setChangePwdMsg({ type: 'error', text: 'New passwords do not match.' });
+                  setChangePwdLoading(false);
+                  return;
+                }
+                try {
+                  const userData = JSON.parse(localStorage.getItem('user') || '{}');
+                  await axios.put(`http://localhost:5000/api/users/${userData._id}/change-password`, {
+                    currentPassword: changePwd.currentPassword,
+                    newPassword: changePwd.newPassword,
+                  });
+                  setChangePwdMsg({ type: 'success', text: 'Password changed successfully!' });
+                  setChangePwd({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+                } catch (error: any) {
+                  setChangePwdMsg({ type: 'error', text: error.response?.data?.message || 'Failed to change password.' });
+                } finally {
+                  setChangePwdLoading(false);
+                }
+              }}
+              className="space-y-4"
+            >
+              {changePwdMsg.text && (
+                <div className={`p-3 rounded-md ${changePwdMsg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{changePwdMsg.text}</div>
+              )}
+              <div>
+                <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Current Password</label>
+                <input
+                  type="password"
+                  value={changePwd.currentPassword}
+                  onChange={e => setChangePwd({ ...changePwd, currentPassword: e.target.value })}
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500`}
+                  required
+                />
+              </div>
+              <div>
+                <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>New Password</label>
+                <input
+                  type="password"
+                  value={changePwd.newPassword}
+                  onChange={e => setChangePwd({ ...changePwd, newPassword: e.target.value })}
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500`}
+                  required
+                />
+              </div>
+              <div>
+                <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Confirm New Password</label>
+                <input
+                  type="password"
+                  value={changePwd.confirmNewPassword}
+                  onChange={e => setChangePwd({ ...changePwd, confirmNewPassword: e.target.value })}
+                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500`}
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={changePwdLoading}
+                className={`w-full py-2 px-4 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition ${changePwdLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {changePwdLoading ? 'Changing...' : 'Change Password'}
               </button>
             </form>
           </div>
