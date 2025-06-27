@@ -29,24 +29,46 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
     }
 
     setIsSubmitting(true);
+    setError(""); // Clear any previous errors
+    
     try {
       const response = await axios.post(
         "http://localhost:5000/api/users/login",
         formData
       );
       console.log("Login successful:", response.data);
-      setError("");
+      
       // Save userId and user object to localStorage
       localStorage.setItem("userId", response.data.user._id);
-      localStorage.setItem("user", JSON.stringify(response.data.user)); // <-- Add this line
+      localStorage.setItem("user", JSON.stringify(response.data.user));
       onLogin();
+      
       if (response.data.user.role === "admin") {
         navigate("/admin");
       } else {
         navigate("/dashboard");
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || t.login.errorOccurred);
+      // Handle different types of errors
+      if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
+        // Database/Server connection issue
+        setError("Unable to connect to the server. Please check your internet connection and try again.");
+      } else if (err.response?.status === 400 && err.response?.data?.message === "Invalid credentials") {
+        // Wrong password - backend returns 400 with "Invalid credentials"
+        setError("Incorrect password. Please check your password and try again.");
+      } else if (err.response?.status === 401) {
+        // Invalid credentials (if backend uses 401)
+        setError("Incorrect password. Please check your password and try again.");
+      } else if (err.response?.status === 404) {
+        // User not found
+        setError("User account not found. Please check your email address.");
+      } else if (err.response?.status >= 500) {
+        // Server error
+        setError("Server error occurred. Please try again later.");
+      } else {
+        // Other errors
+        setError(err.response?.data?.message || "Login failed. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -55,22 +77,21 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
   const goHome = () => navigate("/");
 
   return (
-    <div className="h-screen bg-gray-100 flex items-center justify-center">
-      <div
-        className="w-full max-w-4xl bg-white p-10 rounded-3xl shadow-2xl border border-gray-200"
-        style={{ height: "90%" }}
-      >
-        <h2 className="text-4xl font-bold text-center text-teal-700 mb-8">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-8 px-4">
+      <div className="w-full max-w-4xl bg-white p-8 md:p-10 rounded-3xl shadow-2xl border border-gray-200">
+        <h2 className="text-3xl md:text-4xl font-bold text-center text-teal-700 mb-6 md:mb-8">
           {t.login.title}
         </h2>
 
         {error && (
-          <p className="text-red-600 bg-red-100 p-3 rounded text-center mb-6">
-            {error}
-          </p>
+          <div className="mb-6 p-3 rounded-lg text-center bg-red-50 border border-red-200">
+            <p className="text-red-700 text-sm md:text-base break-words">
+              {error}
+            </p>
+          </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
           <InputField
             label={t.login.emailLabel}
             id="email"
@@ -93,32 +114,34 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
           />
 
           {/* Buttons & Redirect */}
-          <div className="mt-6 space-y-5">
-            <button
-              type="submit"
-              className={`w-full py-3 ${isSubmitting ? 'bg-[#a06d2a]' : 'bg-[#C88B3D]'} text-white font-semibold rounded-xl ${isSubmitting ? '' : 'hover:bg-[#a06d2a]'} transition shadow-md flex items-center justify-center`}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                  </svg>
-                  Logging in...
-                </>
-              ) : (
-                t.login.loginButton
-              )}
-            </button>
+          <div className="mt-6 space-y-4 md:space-y-5">
+            <div className="flex flex-col md:flex-row gap-4">
+              <button
+                type="submit"
+                className={`flex-1 py-3 ${isSubmitting ? 'bg-[#a06d2a]' : 'bg-[#C88B3D]'} text-white font-semibold rounded-xl ${isSubmitting ? '' : 'hover:bg-[#a06d2a]'} transition shadow-md flex items-center justify-center`}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                    Logging in...
+                  </>
+                ) : (
+                  t.login.loginButton
+                )}
+              </button>
 
-            <button
-              type="button"
-              onClick={goHome}
-              className="w-full py-2 bg-gray-100 text-teal-700 rounded-xl hover:bg-gray-200 transition border border-gray-300"
-            >
-              {t.login.backToHome}
-            </button>
+              <button
+                type="button"
+                onClick={goHome}
+                className="flex-1 py-3 bg-gray-100 text-teal-700 rounded-xl hover:bg-gray-200 transition border border-gray-300"
+              >
+                {t.login.backToHome}
+              </button>
+            </div>
 
             <p className="text-center text-gray-600 text-sm mt-4">
               <button
@@ -175,7 +198,7 @@ const InputField = ({
       <button
         type="button"
         tabIndex={-1}
-        className="absolute right-3 top-10 transform -translate-y-1/2 text-gray-500 focus:outline-none"
+        className="absolute right-3 top-[70%] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
         onClick={() => setShowPassword((prev) => !prev)}
         aria-label={showPassword ? 'Hide password' : 'Show password'}
       >

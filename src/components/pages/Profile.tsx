@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { User, Mail, Phone, Building, Camera, Upload } from "lucide-react";
+import { User, Mail, Phone, Building, Camera, Upload, Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 
 const Profile = () => {
@@ -19,6 +19,9 @@ const Profile = () => {
   const [changePwd, setChangePwd] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
   const [changePwdMsg, setChangePwdMsg] = useState({ type: '', text: '' });
   const [changePwdLoading, setChangePwdLoading] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -386,7 +389,7 @@ const Profile = () => {
 
             <button
               onClick={() => setIsEditing(true)}
-              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              className="mt-4 bg-[#C88B3D] text-white px-4 py-2 rounded-md hover:bg-[#a06d2a] transition shadow-md"
             >
               Edit Profile
             </button>
@@ -395,7 +398,7 @@ const Profile = () => {
       </div>
       {/* Change Password Section */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 mt-8">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Change Password</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-6">Change Password</h3>
         <form
           onSubmit={async (e) => {
             e.preventDefault();
@@ -413,54 +416,129 @@ const Profile = () => {
               });
               setChangePwdMsg({ type: 'success', text: 'Password changed successfully!' });
               setChangePwd({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
-            } catch (error) {
+            } catch (error: any) {
               setChangePwdMsg({ type: 'error', text: error.response?.data?.message || 'Failed to change password.' });
             } finally {
               setChangePwdLoading(false);
             }
           }}
-          className="space-y-4"
+          className="space-y-6"
         >
           {changePwdMsg.text && (
-            <div className={`p-3 rounded-md ${changePwdMsg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{changePwdMsg.text}</div>
+            <div className={`p-4 rounded-lg ${changePwdMsg.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+              {changePwdMsg.text}
+            </div>
           )}
+          
           <div>
-            <label className="block text-sm font-medium text-gray-700">Current Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+            <div className="relative">
             <input
-              type="password"
+                type={showCurrentPassword ? "text" : "password"}
               value={changePwd.currentPassword}
               onChange={e => setChangePwd({ ...changePwd, currentPassword: e.target.value })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 transition pr-12"
+                placeholder="Enter current password"
               required
             />
+              <button
+                type="button"
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                tabIndex={-1}
+              >
+                {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700">New Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+              <div className="relative">
             <input
-              type="password"
+                  type={showNewPassword ? "text" : "password"}
               value={changePwd.newPassword}
               onChange={e => setChangePwd({ ...changePwd, newPassword: e.target.value })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 transition pr-12"
+                  placeholder="Enter new password"
               required
             />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  tabIndex={-1}
+                >
+                  {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
           </div>
+            
           <div>
-            <label className="block text-sm font-medium text-gray-700">Confirm New Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+              <div className="relative">
             <input
-              type="password"
+                  type={showConfirmPassword ? "text" : "password"}
               value={changePwd.confirmNewPassword}
               onChange={e => setChangePwd({ ...changePwd, confirmNewPassword: e.target.value })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 transition pr-12"
+                  placeholder="Confirm new password"
               required
             />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
           </div>
+          
+          <div className="flex items-end">
+            <div className="w-full bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-medium text-blue-800 mb-2">Password Requirements</h4>
+              <ul className="text-sm text-blue-700 space-y-1">
+                <li>• At least 8 characters</li>
+                <li>• Mix of letters and numbers</li>
+                <li>• Include special characters</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="flex gap-4 pt-4">
           <button
             type="submit"
             disabled={changePwdLoading}
-            className={`w-full py-2 px-4 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition ${changePwdLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            {changePwdLoading ? 'Changing...' : 'Change Password'}
+              className={`flex-1 py-3 ${changePwdLoading ? 'bg-[#a06d2a]' : 'bg-[#C88B3D]'} text-white font-semibold rounded-xl ${changePwdLoading ? '' : 'hover:bg-[#a06d2a]'} transition shadow-md flex items-center justify-center`}
+            >
+              {changePwdLoading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                  </svg>
+                  Changing Password...
+                </>
+              ) : (
+                'Change Password'
+              )}
+            </button>
+            
+            <button
+              type="button"
+              onClick={() => {
+                setChangePwd({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+                setChangePwdMsg({ type: '', text: '' });
+              }}
+              className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition border border-gray-300"
+            >
+              Clear Form
           </button>
+          </div>
         </form>
       </div>
     </div>

@@ -68,6 +68,14 @@ export const PublicNavbar = ({
               >
                 See How It Works
               </a>
+              <a
+                href="https://docs.google.com/forms/d/14KkSeXLDL_0OJ8KXSjnYIHGHWpBq4pTqjUFERxrOH94/edit"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-[#C88B3D] text-white px-4 py-2 rounded-lg hover:bg-[#a06d2a] transition-colors duration-200 font-medium"
+              >
+                Apply Form
+              </a>
             </div>
 
             {/* Language Switch */}

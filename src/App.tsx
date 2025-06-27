@@ -24,6 +24,7 @@ import Settings from "./components/pages/Settings";
 import Signup from "./components/pages/Signup";
 import Login from "./components/pages/Login";
 import AdminPanel from "./components/pages/AdminPanel";
+import AdminCreateUser from "./components/pages/AdminCreateUser";
 import Profile from "./components/pages/Profile";
 import Sent from "./components/pages/Sent";
 import Forget from "./components/pages/Forget";
@@ -324,6 +325,14 @@ export function App() {
                         element={
                           <PrivateRoute>
                             <Sent />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/admin/create-user"
+                        element={
+                          <PrivateRoute adminRequired={true}>
+                            <AdminCreateUser />
                           </PrivateRoute>
                         }
                       />

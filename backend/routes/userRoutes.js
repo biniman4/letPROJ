@@ -11,6 +11,8 @@ import {
   forgotPassword,
   resetPassword,
   uploadProfileImage,
+  createUserByAdmin,
+  changePassword,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -42,10 +44,12 @@ const upload = multer({
 });
 
 router.post("/register", registerUser);
+router.post("/admin/create-user", createUserByAdmin);
 router.post("/login", loginUser);
 router.get("/", getAllUsers);
 router.get("/:id", getUserById);
 router.put("/:id", updateUser);
+router.put("/:id/change-password", changePassword);
 router.delete("/:id", deleteUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);

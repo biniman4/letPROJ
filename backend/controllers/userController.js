@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import { PASSWORD_RESET_REQUEST_TEMPLATE } from "./emailTemplate.js";
+import { WELCOME_EMAIL_TEMPLATE } from "./welcomeTemplate.js";
+import path from "path";
 
 export const registerUser = async (req, res) => {
   const { name, email, password, phone, departmentOrSector } = req.body;
@@ -18,6 +20,46 @@ export const registerUser = async (req, res) => {
       role: "user", // Default role
     });
     await user.save();
+
+    // Send welcome email
+    try {
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      const loginUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login`;
+      
+      // Replace placeholders in the welcome template
+      let html = WELCOME_EMAIL_TEMPLATE
+        .replace(/{userName}/g, name)
+        .replace(/{userEmail}/g, email)
+        .replace(/{userDepartment}/g, departmentOrSector || "Not specified")
+        .replace(/{loginURL}/g, loginUrl);
+
+      const mailOptions = {
+        to: email,
+        from: process.env.EMAIL_USER,
+        subject: "Welcome to SSPI Letter Management System",
+        html,
+        attachments: [
+          {
+            filename: 'logo.png',
+            path: path.join(process.cwd(), 'uploads', 'logo.png'),
+            cid: 'logo'
+          }
+        ]
+      };
+
+      await transporter.sendMail(mailOptions);
+    } catch (emailError) {
+      console.error("Failed to send welcome email:", emailError);
+      // Don't fail the registration if email fails
+    }
+
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -206,6 +248,141 @@ export const uploadProfileImage = async (req, res) => {
       profileImage: imageUrl,
       user 
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Generate a random temporary password
+const generateTemporaryPassword = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  let password = '';
+  for (let i = 0; i < 12; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
+
+// Admin creates user with temporary password
+export const createUserByAdmin = async (req, res) => {
+  const { name, email, phone, departmentOrSector, role = "user" } = req.body;
+
+  try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User with this email already exists" });
+    }
+
+    // Generate temporary password
+    const temporaryPassword = generateTemporaryPassword();
+    const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+
+    // Create user
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      phone,
+      departmentOrSector,
+      role,
+      isFirstLogin: true, // Flag to force password change
+    });
+    await user.save();
+
+    // Send welcome email with temporary password
+    try {
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      const loginUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login`;
+      
+      // Create welcome email with temporary password
+      let html = WELCOME_EMAIL_TEMPLATE
+        .replace(/{userName}/g, name)
+        .replace(/{userEmail}/g, email)
+        .replace(/{userDepartment}/g, departmentOrSector || "Not specified")
+        .replace(/{loginURL}/g, loginUrl);
+
+      // Add temporary password section to the email
+      const tempPasswordSection = `
+        <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 20px 0; border-radius: 4px;">
+          <h3 style="margin: 0 0 10px 0; color: #856404;">Your Temporary Password:</h3>
+          <p style="margin: 5px 0; font-family: monospace; font-size: 18px; font-weight: bold; color: #856404; background: #f8f9fa; padding: 10px; border-radius: 4px; text-align: center;">${temporaryPassword}</p>
+          <p style="margin: 10px 0 0 0; color: #856404; font-size: 14px;"><strong>Important:</strong> Please change this password immediately after your first login for security reasons.</p>
+        </div>
+      `;
+
+      // Insert temporary password section before the "Get Started" button
+      html = html.replace('<div style="text-align: center; margin: 30px 0;">', tempPasswordSection + '<div style="text-align: center; margin: 30px 0;">');
+
+      const mailOptions = {
+        to: email,
+        from: process.env.EMAIL_USER,
+        subject: "Welcome to SSPI Letter Management System - Your Account Details",
+        html,
+        attachments: [
+          {
+            filename: 'logo.png',
+            path: path.join(process.cwd(), 'uploads', 'logo.png'),
+            cid: 'logo'
+          }
+        ]
+      };
+
+      await transporter.sendMail(mailOptions);
+    } catch (emailError) {
+      console.error("Failed to send welcome email:", emailError);
+      // Don't fail the user creation if email fails
+    }
+
+    res.status(201).json({ 
+      message: "User created successfully", 
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        departmentOrSector: user.departmentOrSector,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Change password for logged-in user
+export const changePassword = async (req, res) => {
+  const { id } = req.params;
+  const { currentPassword, newPassword } = req.body;
+
+  try {
+    // Find the user
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    // Hash the new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the password and set isFirstLogin to false
+    user.password = hashedNewPassword;
+    user.isFirstLogin = false;
+    await user.save();
+
+    res.status(200).json({ message: "Password changed successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

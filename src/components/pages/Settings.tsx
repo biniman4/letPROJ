@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { SettingsIcon, Bell, Moon, Sun, Mail, User, Camera } from "lucide-react";
+import { SettingsIcon, Bell, Moon, Sun, Mail, User, Camera, Eye, EyeOff } from "lucide-react";
 import { useNotifications } from "../../context/NotificationContext";
 import { useTheme } from "../../context/ThemeContext";
 import { useLanguage } from "./LanguageContext";
@@ -18,30 +18,31 @@ const Settings = () => {
   const { unreadNotifications } = useNotifications();
   const { theme, toggleTheme } = useTheme();
   const { t } = useLanguage();
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [notificationSound, setNotificationSound] = useState(true);
-  const [profileName, setProfileName] = useState("");
-  const [profileEmail, setProfileEmail] = useState("");
-  const [profilePhone, setProfilePhone] = useState("");
-  const [profileDepartment, setProfileDepartment] = useState("");
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    _id: "",
+    name: "",
+    email: "",
+    phone: "",
+    departmentOrSector: "",
+    profileImage: "",
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [notificationSound, setNotificationSound] = useState(true);
   const [changePwd, setChangePwd] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
   const [changePwdMsg, setChangePwdMsg] = useState({ type: '', text: '' });
   const [changePwdLoading, setChangePwdLoading] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Load user data from localStorage
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
     if (userData._id) {
-      setProfileName(userData.name || "");
-      setProfileEmail(userData.email || "");
-      setProfilePhone(userData.phone || "");
-      setProfileDepartment(userData.departmentOrSector || "");
-      setProfileImage(userData.profileImage || null);
+      setUserProfile(userData);
     }
   }, []);
 
@@ -72,23 +73,22 @@ const Settings = () => {
 
       const reader = new FileReader();
       reader.onload = (event) => {
-        setProfileImage(event.target?.result as string);
+        setUserProfile(prev => ({ ...prev, profileImage: event.target?.result as string }));
       };
       reader.readAsDataURL(file);
     }
   };
 
   const uploadProfileImage = async () => {
-    if (!profileImage || !fileInputRef.current?.files?.[0]) return;
+    if (!userProfile.profileImage || !fileInputRef.current?.files?.[0]) return;
 
-    setUploadingImage(true);
+    setIsLoading(true);
     const formData = new FormData();
     formData.append('profileImage', fileInputRef.current.files[0]);
 
     try {
-      const userData = JSON.parse(localStorage.getItem("user") || "{}");
       const response = await axios.post(
-        `http://localhost:5000/api/users/${userData._id}/profile-image`,
+        `http://localhost:5000/api/users/${userProfile._id}/profile-image`,
         formData,
         {
           headers: {
@@ -98,7 +98,7 @@ const Settings = () => {
       );
       
       // Update user data in localStorage
-      const updatedUser = { ...userData, profileImage: response.data.profileImage };
+      const updatedUser = { ...userProfile, profileImage: response.data.profileImage };
       localStorage.setItem("user", JSON.stringify(updatedUser));
       
       // Dispatch custom event to notify other components
@@ -116,24 +116,22 @@ const Settings = () => {
         text: error.response?.data?.message || "Failed to upload profile picture",
       });
     } finally {
-      setUploadingImage(false);
+      setIsLoading(false);
     }
   };
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage({ type: "", text: "" });
 
     try {
-      const userData = JSON.parse(localStorage.getItem("user") || "{}");
       const response = await axios.put(
-        `http://localhost:5000/api/users/${userData._id}`,
+        `http://localhost:5000/api/users/${userProfile._id}`,
         {
-          name: profileName,
-          email: profileEmail,
-          phone: profilePhone,
-          departmentOrSector: profileDepartment,
+          name: userProfile.name,
+          email: userProfile.email,
+          phone: userProfile.phone,
+          departmentOrSector: userProfile.departmentOrSector,
         }
       );
 
@@ -151,6 +149,32 @@ const Settings = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setChangePwdMsg({ type: '', text: '' });
+    setChangePwdLoading(true);
+    
+    if (changePwd.newPassword !== changePwd.confirmNewPassword) {
+      setChangePwdMsg({ type: 'error', text: 'New passwords do not match.' });
+      setChangePwdLoading(false);
+      return;
+    }
+    
+    try {
+      await axios.put(`http://localhost:5000/api/users/${userProfile._id}/change-password`, {
+        currentPassword: changePwd.currentPassword,
+        newPassword: changePwd.newPassword,
+      });
+      
+      setChangePwdMsg({ type: 'success', text: 'Password changed successfully!' });
+      setChangePwd({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+    } catch (error: any) {
+      setChangePwdMsg({ type: 'error', text: error.response?.data?.message || 'Failed to change password.' });
+    } finally {
+      setChangePwdLoading(false);
     }
   };
 
@@ -200,10 +224,10 @@ const Settings = () => {
               </h3>
             </div>
 
-            {message.text && (
+            {changePwdMsg.text && (
               <div
                 className={`mb-4 p-3 rounded-md ${
-                  message.type === "success"
+                  changePwdMsg.type === "success"
                     ? theme === "dark"
                       ? "bg-green-900 text-green-200"
                       : "bg-green-50 text-green-700"
@@ -212,7 +236,7 @@ const Settings = () => {
                     : "bg-red-50 text-red-700"
                 }`}
               >
-                {message.text}
+                {changePwdMsg.text}
               </div>
             )}
 
@@ -221,8 +245,8 @@ const Settings = () => {
               <div className="flex items-center space-x-4 mb-4">
                 <div className="relative">
                   <img
-                    src={profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                      profileName
+                    src={userProfile.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      userProfile.name
                     )}&background=E3F2FD&color=2563EB&size=128`}
                     alt="Profile"
                     className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
@@ -260,12 +284,12 @@ const Settings = () => {
               />
 
               {/* Profile picture upload section */}
-              {profileImage && profileImage !== (JSON.parse(localStorage.getItem("user") || "{}").profileImage || null) && (
+              {userProfile.profileImage && userProfile.profileImage !== (JSON.parse(localStorage.getItem("user") || "{}").profileImage || null) && (
                 <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">New Profile Picture</h4>
                   <div className="flex items-center space-x-3">
                     <img
-                      src={profileImage}
+                      src={userProfile.profileImage}
                       alt="Preview"
                       className="w-12 h-12 rounded-full object-cover"
                     />
@@ -273,18 +297,18 @@ const Settings = () => {
                       <button
                         type="button"
                         onClick={uploadProfileImage}
-                        disabled={uploadingImage}
+                        disabled={isLoading}
                         className={`bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700 ${
-                          uploadingImage ? "opacity-50 cursor-not-allowed" : ""
+                          isLoading ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                       >
-                        {uploadingImage ? "Uploading..." : "Upload"}
+                        {isLoading ? "Uploading..." : "Upload"}
                       </button>
                       <button
                         type="button"
                         onClick={() => {
                           const userData = JSON.parse(localStorage.getItem("user") || "{}");
-                          setProfileImage(userData.profileImage || null);
+                          setUserProfile(userData);
                           if (fileInputRef.current) {
                             fileInputRef.current.value = "";
                           }
@@ -308,8 +332,8 @@ const Settings = () => {
                 </label>
                 <input
                   type="text"
-                  value={profileName}
-                  onChange={(e) => setProfileName(e.target.value)}
+                  value={userProfile.name}
+                  onChange={(e) => setUserProfile(prev => ({ ...prev, name: e.target.value }))}
                   className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
                     theme === "dark"
                       ? "bg-gray-700 border-gray-600 text-gray-100"
@@ -328,8 +352,8 @@ const Settings = () => {
                 </label>
                 <input
                   type="email"
-                  value={profileEmail}
-                  onChange={(e) => setProfileEmail(e.target.value)}
+                  value={userProfile.email}
+                  onChange={(e) => setUserProfile(prev => ({ ...prev, email: e.target.value }))}
                   className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
                     theme === "dark"
                       ? "bg-gray-700 border-gray-600 text-gray-100"
@@ -348,8 +372,8 @@ const Settings = () => {
                 </label>
                 <input
                   type="tel"
-                  value={profilePhone}
-                  onChange={(e) => setProfilePhone(e.target.value)}
+                  value={userProfile.phone}
+                  onChange={(e) => setUserProfile(prev => ({ ...prev, phone: e.target.value }))}
                   className={`mt-1 block w-full rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 ${
                     theme === "dark"
                       ? "bg-gray-700 border-gray-600 text-gray-100"
@@ -373,8 +397,8 @@ const Settings = () => {
                   }`}
                   style={{ minHeight: "40px" }}
                 >
-                  {profileDepartment ? (
-                    <span className="text-base">{profileDepartment}</span>
+                  {userProfile.departmentOrSector ? (
+                    <span className="text-base">{userProfile.departmentOrSector}</span>
                   ) : (
                     <span className="text-gray-400 text-base">Not set</span>
                   )}
@@ -384,10 +408,8 @@ const Settings = () => {
                 type="submit"
                 disabled={isLoading}
                 className={`px-4 py-2 rounded-md transition-colors duration-300 ${
-                  theme === "dark"
-                    ? "bg-blue-600 hover:bg-blue-700 text-white"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
-                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                  isLoading ? 'bg-[#a06d2a]' : 'bg-[#C88B3D]'
+                } text-white font-semibold hover:bg-[#a06d2a] transition shadow-md ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 {isLoading
                   ? t.settings.profile.saving
@@ -398,73 +420,126 @@ const Settings = () => {
 
           {/* Change Password Section */}
           <div className={`rounded-lg border p-6 mt-8 transition-colors duration-300 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-            <h3 className={`text-lg font-semibold mb-4 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>Change Password</h3>
+            <h3 className={`text-lg font-semibold mb-6 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>Change Password</h3>
             <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setChangePwdMsg({ type: '', text: '' });
-                setChangePwdLoading(true);
-                if (changePwd.newPassword !== changePwd.confirmNewPassword) {
-                  setChangePwdMsg({ type: 'error', text: 'New passwords do not match.' });
-                  setChangePwdLoading(false);
-                  return;
-                }
-                try {
-                  const userData = JSON.parse(localStorage.getItem('user') || '{}');
-                  await axios.put(`http://localhost:5000/api/users/${userData._id}/change-password`, {
-                    currentPassword: changePwd.currentPassword,
-                    newPassword: changePwd.newPassword,
-                  });
-                  setChangePwdMsg({ type: 'success', text: 'Password changed successfully!' });
-                  setChangePwd({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
-                } catch (error: any) {
-                  setChangePwdMsg({ type: 'error', text: error.response?.data?.message || 'Failed to change password.' });
-                } finally {
-                  setChangePwdLoading(false);
-                }
-              }}
-              className="space-y-4"
+              onSubmit={handlePasswordChange}
+              className="space-y-6"
             >
               {changePwdMsg.text && (
-                <div className={`p-3 rounded-md ${changePwdMsg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{changePwdMsg.text}</div>
+                <div className={`p-4 rounded-lg ${changePwdMsg.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                  {changePwdMsg.text}
+                </div>
               )}
+              
               <div>
-                <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Current Password</label>
+                <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Current Password</label>
+                <div className="relative">
                 <input
-                  type="password"
+                    type={showCurrentPassword ? "text" : "password"}
                   value={changePwd.currentPassword}
                   onChange={e => setChangePwd({ ...changePwd, currentPassword: e.target.value })}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500`}
+                    className={`w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 transition pr-12`}
+                    placeholder="Enter current password"
                   required
                 />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    tabIndex={-1}
+                  >
+                    {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>New Password</label>
+                  <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>New Password</label>
+                  <div className="relative">
                 <input
-                  type="password"
+                      type={showNewPassword ? "text" : "password"}
                   value={changePwd.newPassword}
                   onChange={e => setChangePwd({ ...changePwd, newPassword: e.target.value })}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500`}
+                      className={`w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 transition pr-12`}
+                      placeholder="Enter new password"
                   required
                 />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      tabIndex={-1}
+                    >
+                      {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
               </div>
+                
               <div>
-                <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Confirm New Password</label>
+                  <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Confirm New Password</label>
+                  <div className="relative">
                 <input
-                  type="password"
+                      type={showConfirmPassword ? "text" : "password"}
                   value={changePwd.confirmNewPassword}
                   onChange={e => setChangePwd({ ...changePwd, confirmNewPassword: e.target.value })}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500`}
+                      className={`w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 transition pr-12`}
+                      placeholder="Confirm new password"
                   required
                 />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      tabIndex={-1}
+                    >
+                      {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
               </div>
+              
+              <div className="flex items-end">
+                <div className="w-full bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-800 mb-2">Password Requirements</h4>
+                  <ul className="text-sm text-blue-700 space-y-1">
+                    <li>• At least 8 characters</li>
+                    <li>• Mix of letters and numbers</li>
+                    <li>• Include special characters</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="flex gap-4 pt-4">
               <button
                 type="submit"
                 disabled={changePwdLoading}
-                className={`w-full py-2 px-4 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition ${changePwdLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                {changePwdLoading ? 'Changing...' : 'Change Password'}
+                  className={`flex-1 py-3 ${changePwdLoading ? 'bg-[#a06d2a]' : 'bg-[#C88B3D]'} text-white font-semibold rounded-xl ${changePwdLoading ? '' : 'hover:bg-[#a06d2a]'} transition shadow-md flex items-center justify-center`}
+                >
+                  {changePwdLoading ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                      </svg>
+                      Changing Password...
+                    </>
+                  ) : (
+                    'Change Password'
+                  )}
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => {
+                    setChangePwd({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+                    setChangePwdMsg({ type: '', text: '' });
+                  }}
+                  className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition border border-gray-300"
+                >
+                  Clear Form
               </button>
+              </div>
             </form>
           </div>
 
