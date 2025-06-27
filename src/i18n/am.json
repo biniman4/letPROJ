@@ -102,5 +102,17 @@
     "commentPlaceholder": "አስተያየት ያክሉ...",
     "cancel": "ሰርዝ",
     "contentType": "የይዘት አይነት"
+  },
+  "sidebar": {
+    "dashboard": "ዳሽቦርድ",
+    "newLetter": "አዲስ ደብዳቤ",
+    "inbox": "የገቢ መልዕክት ሳጥን",
+    "sent": "የወጪ መልዕክት",
+    "archive": "ማህደር",
+    "notifications": "ማሳወቂያዎች",
+    "users": "ተጠቃሚዎች",
+    "settings": "ቅንብሮች",
+    "adminPanel": "አድሚን ፓነል",
+    "letterFlow": "ደብዳቤ ፍሎው"
   }
 }

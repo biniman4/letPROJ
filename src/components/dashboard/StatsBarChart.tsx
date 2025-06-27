@@ -1,5 +1,6 @@
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
+import { useLanguage } from '../pages/LanguageContext';
 
 const STATUS_COLORS: Record<string, string> = {
   sent: "#3b82f6", // blue-500
@@ -13,6 +14,21 @@ const STATUS_COLORS: Record<string, string> = {
 
 export function StatsBarChart({ data }: { data: { name: string; value: number }[] }) {
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
+  const { t } = useLanguage();
+
+  // Helper to translate status labels
+  function translateStatus(status: string): string {
+    const statusMap: Record<string, string> = {
+      sent: t.dashboard.statusSent || 'sent',
+      pending: t.dashboard.statusPending || 'pending',
+      rejected: t.dashboard.statusRejected || 'rejected',
+      delivered: t.dashboard.statusDelivered || 'delivered',
+      read: t.dashboard.statusRead || 'read',
+      approved: t.dashboard.approved || 'approved',
+      draft: t.dashboard.draft || 'draft',
+    };
+    return statusMap[status] || status;
+  }
 
   return (
     <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
@@ -20,12 +36,12 @@ export function StatsBarChart({ data }: { data: { name: string; value: number }[
         className="font-semibold mb-2 text-2xl bg-gradient-to-r from-[#b97b2a] via-[#cfae7b] to-[#cfc7b7] text-transparent bg-clip-text transition-all duration-200 hover:underline hover:text-3xl cursor-pointer"
         tabIndex={0}
       >
-        Letters by Status
+        {t.dashboard.lettersByStatus || "Letters by Status"}
       </h3>
       <ResponsiveContainer width="100%" height={250}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
+          <XAxis dataKey="name" tickFormatter={translateStatus} angle={20} textAnchor="start" interval={0} height={50} />
           <YAxis allowDecimals={false} />
           <Tooltip />
           <Bar

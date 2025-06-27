@@ -3,6 +3,7 @@ import { StatsBarChart } from "../dashboard/StatsBarChart";
 import { StatsPieChart } from "../dashboard/StatsPieChart";
 import { StatsLineChart } from "../dashboard/StatsLineChart";
 import LoadingSpinner from "../common/LoadingSpinner";
+import { useLanguage } from "./LanguageContext";
 
 const CACHE_KEY = "dashboardStats";
 const CACHE_TIME = 5 * 60 * 1000; // 5 minutes
@@ -12,6 +13,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const { t } = useLanguage();
 
   // Helper to get cached data
   const getCachedStats = () => {
@@ -101,10 +103,10 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-col items-center">
           <h2 className="text-4xl font-extrabold bg-gradient-to-r from-[#b97b2a] via-[#cfae7b] to-[#cfc7b7] text-transparent bg-clip-text drop-shadow-md">
-            Dashboard
+            {t.dashboard.dashboard || "Dashboard"}
           </h2>
           <p className="text-lg text-[#BFBFBF] font-medium">
-            Welcome to your analytics dashboard
+            {t.dashboard.analyticsWelcome || "Welcome to your analytics dashboard"}
           </p>
         </div>
         <button
@@ -112,32 +114,38 @@ const Dashboard = () => {
           disabled={refreshing}
           className="mb-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50"
         >
-          {refreshing ? "Refreshing..." : "Refresh Stats"}
+          {refreshing ? (t.dashboard.refreshing || "Refreshing...") : (t.dashboard.refreshStats || "Refresh Stats")}
         </button>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+          <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center transition-transform duration-200 hover:scale-105 hover:shadow-2xl cursor-pointer">
             <span className="text-3xl font-bold text-[#6366f1]">
               {stats.userCount}
             </span>
-            <span className="text-gray-500 mt-2">Total Users</span>
+            <span className="text-gray-500 mt-2">{t.dashboard.totalUsers || "Total Users"}</span>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+          <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center transition-transform duration-200 hover:scale-105 hover:shadow-2xl cursor-pointer">
             <span className="text-3xl font-bold text-[#10b981]">
               {stats.letterCount}
             </span>
-            <span className="text-gray-500 mt-2">Total Letters</span>
+            <span className="text-gray-500 mt-2">{t.dashboard.totalLetters || "Total Letters"}</span>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+          <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center transition-transform duration-200 hover:scale-105 hover:shadow-2xl cursor-pointer">
             <span className="text-3xl font-bold text-[#f59e42]">
               {stats.departmentCount}
             </span>
-            <span className="text-gray-500 mt-2">Departments</span>
+            <span className="text-gray-500 mt-2">{t.dashboard.departments || "Departments"}</span>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <StatsBarChart data={barData} />
-          <StatsPieChart data={pieData} />
-          <StatsLineChart data={lineData} />
+          <div className="transition-transform duration-200 hover:scale-105 hover:shadow-2xl cursor-pointer">
+            <StatsBarChart data={barData} />
+          </div>
+          <div className="transition-transform duration-200 hover:scale-105 hover:shadow-2xl cursor-pointer">
+            <StatsPieChart data={pieData} />
+          </div>
+          <div className="transition-transform duration-200 hover:scale-105 hover:shadow-2xl cursor-pointer">
+            <StatsLineChart data={lineData} />
+          </div>
         </div>
       </div>
     </div>

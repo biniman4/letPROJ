@@ -594,7 +594,7 @@ const Sent: React.FC = () => {
           </h1>
         </div>
         <p className="text-lg text-gray-500 font-medium">
-          Easily track and manage all your sent correspondence
+          {t.sent.manageSent || "Easily track and manage all your sent correspondence"}
         </p>
       </div>
 

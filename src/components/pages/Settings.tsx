@@ -237,12 +237,12 @@ const Settings = () => {
                   <h4 className={`text-sm font-medium ${
                     theme === "dark" ? "text-gray-100" : "text-gray-900"
                   }`}>
-                    Profile Picture
+                    {t.settings.profile.profilePicture || "Profile Picture"}
                   </h4>
                   <p className={`text-xs ${
                     theme === "dark" ? "text-gray-400" : "text-gray-500"
                   }`}>
-                    Click the camera icon to change your profile picture
+                    {t.settings.profile.profilePictureHint || "Click the camera icon to change your profile picture"}
                   </p>
                 </div>
               </div>
