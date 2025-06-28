@@ -205,7 +205,18 @@ const NewLetter = () => {
       setDepartment("");
       setRecipient("");
       setAttachment(null);
-      toast.success("Letter sent successfully!");
+
+      // Check if the letter is pending approval (high/urgent priority)
+      const isHighPriority = ["high", "urgent"].includes(letterData.priority);
+      if (isHighPriority) {
+        toast.success(
+          `High priority letter submitted successfully! It is now pending admin approval and will be sent once approved.`,
+          { autoClose: 5000 }
+        );
+      } else {
+        toast.success("Letter sent successfully!");
+      }
+
       if (refresh) refresh(); // Force Sent page to refresh
       reset();
       // Force refresh users and departments
@@ -380,6 +391,25 @@ const NewLetter = () => {
                   </label>
                 ))}
               </div>
+
+              {/* Admin Approval Notice for High/Urgent Priority */}
+              {["high", "urgent"].includes(letterData.priority) && (
+                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <span className="text-yellow-600 text-lg">⏳</span>
+                    <div>
+                      <p className="text-sm font-medium text-yellow-800">
+                        Admin Approval Required
+                      </p>
+                      <p className="text-xs text-yellow-700 mt-1">
+                        {letterData.priority === "urgent"
+                          ? "Urgent priority letters require admin approval before being sent. This ensures proper oversight of time-sensitive communications."
+                          : "High priority letters require admin approval before being sent. This ensures proper oversight of important communications."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Content */}
@@ -517,12 +547,20 @@ const NewLetter = () => {
                         iconClassName="!text-xl !w-5 !h-5"
                       />
                     </span>
-                    <span className="text-base font-semibold">Sending...</span>
+                    <span className="text-base font-semibold">
+                      {["high", "urgent"].includes(letterData.priority)
+                        ? "Submitting..."
+                        : "Sending..."}
+                    </span>
                   </span>
                 ) : (
                   <>
                     <SendIcon className="w-5 h-5" />
-                    <span>{t.send[lang]}</span>
+                    <span>
+                      {["high", "urgent"].includes(letterData.priority)
+                        ? "Submit for Approval"
+                        : t.send[lang]}
+                    </span>
                   </>
                 )}
               </button>

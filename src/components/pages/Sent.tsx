@@ -413,8 +413,77 @@ const Sent: React.FC = () => {
       title: t.sent.statusColumn,
       dataIndex: "status",
       key: "status",
-      render: (status: string) =>
-        status.charAt(0).toUpperCase() + status.slice(1),
+      render: (status: string, record: Letter) => {
+        const getStatusClass = (status: string) => {
+          switch (status) {
+            case "pending":
+              return "bg-yellow-100 text-yellow-800 border border-yellow-300";
+            case "sent":
+              return "bg-green-100 text-green-800 border border-green-300";
+            case "delivered":
+              return "bg-blue-100 text-blue-800 border border-blue-300";
+            case "read":
+              return "bg-purple-100 text-purple-800 border border-purple-300";
+            case "rejected":
+              return "bg-red-100 text-red-800 border border-red-300";
+            default:
+              return "bg-gray-100 text-gray-800 border border-gray-300";
+          }
+        };
+
+        const getStatusIcon = (status: string) => {
+          switch (status) {
+            case "pending":
+              return "⏳";
+            case "sent":
+              return "✅";
+            case "delivered":
+              return "📨";
+            case "read":
+              return "👁️";
+            case "rejected":
+              return "❌";
+            default:
+              return "📄";
+          }
+        };
+
+        const getStatusText = (status: string) => {
+          switch (status) {
+            case "pending":
+              return "Pending Approval";
+            case "sent":
+              return "Sent";
+            case "delivered":
+              return "Delivered";
+            case "read":
+              return "Read";
+            case "rejected":
+              return "Rejected";
+            default:
+              return status.charAt(0).toUpperCase() + status.slice(1);
+          }
+        };
+
+        return (
+          <div className="flex items-center gap-2">
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusClass(
+                status
+              )}`}
+            >
+              {getStatusIcon(status)} {getStatusText(status)}
+            </span>
+            {status === "pending" &&
+              record.priority &&
+              ["high", "urgent"].includes(record.priority) && (
+                <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-1 rounded border border-yellow-200">
+                  Admin Review Required
+                </span>
+              )}
+          </div>
+        );
+      },
     },
     {
       title: t.sent.priorityColumn,
@@ -594,9 +663,43 @@ const Sent: React.FC = () => {
           </h1>
         </div>
         <p className="text-lg text-gray-500 font-medium">
-          {t.sent.manageSent || "Easily track and manage all your sent correspondence"}
+          {t.sent.manageSent ||
+            "Easily track and manage all your sent correspondence"}
         </p>
       </div>
+
+      {/* Pending Letters Notification Banner */}
+      {letters.filter((letter) => letter.status === "pending").length > 0 && (
+        <div className="mb-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0">
+              <span className="inline-flex items-center justify-center w-8 h-8 bg-yellow-100 rounded-full">
+                <span className="text-yellow-600 text-lg">⏳</span>
+              </span>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-yellow-800">
+                Pending Approval Letters
+              </h3>
+              <p className="text-sm text-yellow-700 mt-1">
+                You have{" "}
+                {letters.filter((letter) => letter.status === "pending").length}{" "}
+                letter(s) with high/urgent priority waiting for admin approval.
+                These letters will be sent once approved by an administrator.
+              </p>
+            </div>
+            <div className="flex-shrink-0">
+              <Button
+                type="link"
+                className="text-yellow-700 hover:text-yellow-800 font-medium"
+                onClick={() => setStatusFilter("pending")}
+              >
+                View Pending Letters →
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8 justify-between">
         <div className="flex gap-4 w-full md:w-auto">
@@ -681,8 +784,19 @@ const Sent: React.FC = () => {
               {currentLetters.map((letter) => (
                 <div
                   key={letter._id}
-                  className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300 border-t-4 border-[#003F5D] hover:border-[#C88B3D] relative group"
+                  className={`bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300 border-t-4 relative group ${
+                    letter.status === "pending"
+                      ? "border-yellow-500 hover:border-yellow-600 bg-gradient-to-br from-yellow-50 to-orange-50"
+                      : "border-[#003F5D] hover:border-[#C88B3D]"
+                  }`}
                 >
+                  {/* Pending Badge */}
+                  {letter.status === "pending" && (
+                    <div className="absolute -top-3 -right-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg animate-pulse border-2 border-white">
+                      ⏳ Pending Approval
+                    </div>
+                  )}
+
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-lg font-bold text-[#003F5D] group-hover:text-[#C88B3D] transition-colors duration-300">
                       {letter.subject}
@@ -772,13 +886,36 @@ const Sent: React.FC = () => {
               {currentLetters.map((letter) => (
                 <div
                   key={letter._id}
-                  className="group bg-white rounded-xl shadow-lg p-4 hover:shadow-2xl hover:bg-blue-50 transform hover:-translate-y-1 transition-all duration-300 border-l-4 border-[#003F5D] hover:border-[#C88B3D] flex items-center justify-between gap-4 cursor-pointer"
+                  className={`group bg-white rounded-xl shadow-lg p-4 hover:shadow-2xl hover:bg-blue-50 transform hover:-translate-y-1 transition-all duration-300 border-l-4 flex items-center justify-between gap-4 cursor-pointer relative ${
+                    letter.status === "pending"
+                      ? "border-yellow-500 hover:bg-yellow-50 bg-gradient-to-r from-yellow-50 to-orange-50"
+                      : "border-[#003F5D] hover:border-[#C88B3D]"
+                  }`}
                 >
+                  {/* Pending Badge for List View */}
+                  {letter.status === "pending" && (
+                    <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg animate-pulse border border-white">
+                      ⏳ Pending
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-4 flex-grow">
-                    <MailOutlined className="text-2xl text-[#003F5D]" />
+                    <MailOutlined
+                      className={`text-2xl ${
+                        letter.status === "pending"
+                          ? "text-yellow-600"
+                          : "text-[#003F5D]"
+                      }`}
+                    />
                     <div className="flex-grow">
                       <div className="flex items-center gap-4">
-                        <span className="font-bold text-lg text-[#003F5D] group-hover:text-[#C88B3D] transition-colors duration-300">
+                        <span
+                          className={`font-bold text-lg transition-colors duration-300 ${
+                            letter.status === "pending"
+                              ? "text-yellow-800 group-hover:text-yellow-900"
+                              : "text-[#003F5D] group-hover:text-[#C88B3D]"
+                          }`}
+                        >
                           {letter.subject}
                         </span>
                         <span

@@ -504,10 +504,10 @@ export const getSentLetters = async (req, res) => {
       return res.status(400).json({ error: "User email is required" });
     }
 
-    // Filter letters by the current user's email and sent status
+    // Filter letters by the current user's email and include both sent and pending status
     const sentLetters = await Letter.find({
       fromEmail: userEmail,
-      status: "sent",
+      status: { $in: ["sent", "pending"] },
     }).sort({
       createdAt: -1,
     });
