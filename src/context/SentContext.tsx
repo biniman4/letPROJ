@@ -20,6 +20,8 @@ export interface Letter {
   attachments: Attachment[];
   content: string;
   fromName: string;
+  rejectionReason?: string;
+  rejectedAt?: string;
 }
 
 interface SentContextType {

@@ -12,6 +12,7 @@ import {
   getPendingLetters,
   checkNewLetters,
   forwardLetter,
+  rejectLetter,
 } from "../controllers/letterController.js";
 
 const router = express.Router();
@@ -52,6 +53,7 @@ router.get("/view/:letterId/:filename", viewFile);
 router.post("/status", updateLetterStatus);
 router.delete("/:id", deleteLetter);
 router.post("/approve", approveLetter);
+router.post("/reject", rejectLetter);
 router.get("/pending", getPendingLetters);
 router.get("/check-new", checkNewLetters);
 router.post("/forward", forwardLetter);

@@ -252,10 +252,7 @@ const LetterManagement: React.FC<{
     return matchesSearch && matchesDepartment;
   });
 
-  if (loadingLetters)
-    return (
-      <LoadingSpinner message="Loading letters..." />
-    );
+  if (loadingLetters) return <LoadingSpinner message="Loading letters..." />;
 
   return (
     <div className="w-full flex flex-col h-full bg-gray-50">

@@ -64,6 +64,12 @@ const Sent: React.FC = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
+  const [viewedRejections, setViewedRejections] = useState<Set<string>>(
+    new Set()
+  );
+  const [expandedRejections, setExpandedRejections] = useState<Set<string>>(
+    new Set()
+  );
 
   // Get current user from localStorage
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -653,6 +659,41 @@ const Sent: React.FC = () => {
     setAttachment(null);
   };
 
+  // Helper function to handle rejection reason display
+  const handleRejectionClick = (letterId: string) => {
+    setViewedRejections((prev) => new Set([...prev, letterId]));
+    setExpandedRejections((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(letterId)) {
+        newSet.delete(letterId); // Collapse if already expanded
+      } else {
+        newSet.add(letterId); // Expand if collapsed
+      }
+      return newSet;
+    });
+  };
+
+  // Helper function to check if rejection reason should be truncated (for display purposes only)
+  const shouldTruncateRejection = (reason: string) => {
+    return reason.length > 80; // Lower threshold for better UX
+  };
+
+  // Helper function to get truncated rejection reason
+  const getTruncatedRejection = (reason: string) => {
+    return reason.length > 80 ? reason.substring(0, 80) + "..." : reason;
+  };
+
+  // Helper function to check if rejection banner should be shown
+  const shouldShowRejectionBanner = () => {
+    const rejectedLetters = letters.filter(
+      (letter) => letter.status === "rejected"
+    );
+    return (
+      rejectedLetters.length > 0 &&
+      rejectedLetters.some((letter) => !viewedRejections.has(letter._id))
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6">
       <div className="flex flex-col items-center mb-10">
@@ -667,39 +708,6 @@ const Sent: React.FC = () => {
             "Easily track and manage all your sent correspondence"}
         </p>
       </div>
-
-      {/* Pending Letters Notification Banner */}
-      {letters.filter((letter) => letter.status === "pending").length > 0 && (
-        <div className="mb-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="flex-shrink-0">
-              <span className="inline-flex items-center justify-center w-8 h-8 bg-yellow-100 rounded-full">
-                <span className="text-yellow-600 text-lg">⏳</span>
-              </span>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-sm font-semibold text-yellow-800">
-                Pending Approval Letters
-              </h3>
-              <p className="text-sm text-yellow-700 mt-1">
-                You have{" "}
-                {letters.filter((letter) => letter.status === "pending").length}{" "}
-                letter(s) with high/urgent priority waiting for admin approval.
-                These letters will be sent once approved by an administrator.
-              </p>
-            </div>
-            <div className="flex-shrink-0">
-              <Button
-                type="link"
-                className="text-yellow-700 hover:text-yellow-800 font-medium"
-                onClick={() => setStatusFilter("pending")}
-              >
-                View Pending Letters →
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8 justify-between">
         <div className="flex gap-4 w-full md:w-auto">
@@ -787,6 +795,8 @@ const Sent: React.FC = () => {
                   className={`bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300 border-t-4 relative group ${
                     letter.status === "pending"
                       ? "border-yellow-500 hover:border-yellow-600 bg-gradient-to-br from-yellow-50 to-orange-50"
+                      : letter.status === "rejected"
+                      ? "border-red-500 hover:border-red-600 bg-gradient-to-br from-red-50 to-pink-50"
                       : "border-[#003F5D] hover:border-[#C88B3D]"
                   }`}
                 >
@@ -794,6 +804,13 @@ const Sent: React.FC = () => {
                   {letter.status === "pending" && (
                     <div className="absolute -top-3 -right-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg animate-pulse border-2 border-white">
                       ⏳ Pending Approval
+                    </div>
+                  )}
+
+                  {/* Rejected Badge */}
+                  {letter.status === "rejected" && (
+                    <div className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg border-2 border-white">
+                      ❌ Rejected
                     </div>
                   )}
 
@@ -830,6 +847,74 @@ const Sent: React.FC = () => {
                   <div className="mb-3 text-[#003F5D] line-clamp-2">
                     {letter.content}
                   </div>
+
+                  {/* Rejection Reason Display */}
+                  {letter.status === "rejected" && letter.rejectionReason && (
+                    <div
+                      className={`mb-3 p-3 border rounded-lg transition-all duration-300 ${
+                        expandedRejections.has(letter._id)
+                          ? "bg-gradient-to-r from-red-50 to-pink-50 border-red-300 shadow-lg"
+                          : "bg-red-100 border-red-200 hover:bg-red-150"
+                      }`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <span
+                          className={`text-lg transition-transform duration-300 ${
+                            expandedRejections.has(letter._id)
+                              ? "text-red-600 rotate-12"
+                              : "text-red-600"
+                          }`}
+                        >
+                          ❌
+                        </span>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm font-semibold text-red-800">
+                              Rejection Reason
+                            </p>
+                            <span className="text-xs text-red-500 font-medium">
+                              {expandedRejections.has(letter._id)
+                                ? "Expanded"
+                                : "Click to expand"}
+                            </span>
+                          </div>
+                          <div
+                            className={`text-xs text-red-700 cursor-pointer p-2 rounded-lg transition-all duration-300 ${
+                              expandedRejections.has(letter._id)
+                                ? "bg-white border border-red-200 shadow-sm hover:shadow-md"
+                                : "hover:bg-red-200 hover:shadow-sm"
+                            }`}
+                            onClick={() => handleRejectionClick(letter._id)}
+                          >
+                            {expandedRejections.has(letter._id) ? (
+                              <div className="space-y-2">
+                                <p className="leading-relaxed">
+                                  {letter.rejectionReason}
+                                </p>
+                                <div className="flex items-center justify-between pt-1 border-t border-red-100">
+                                  <span className="text-xs text-red-500">
+                                    Click to collapse
+                                  </span>
+                                  <span className="text-xs text-red-400">
+                                    {letter.rejectionReason.length} chars
+                                  </span>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-between">
+                                <span>
+                                  {getTruncatedRejection(
+                                    letter.rejectionReason
+                                  )}
+                                </span>
+                                <span className="text-red-500 ml-1">→</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex gap-2 mb-2">
                     {letter.attachments && letter.attachments.length > 0 ? (
                       letter.attachments.map((attachment, idx) => (
@@ -889,6 +974,8 @@ const Sent: React.FC = () => {
                   className={`group bg-white rounded-xl shadow-lg p-4 hover:shadow-2xl hover:bg-blue-50 transform hover:-translate-y-1 transition-all duration-300 border-l-4 flex items-center justify-between gap-4 cursor-pointer relative ${
                     letter.status === "pending"
                       ? "border-yellow-500 hover:bg-yellow-50 bg-gradient-to-r from-yellow-50 to-orange-50"
+                      : letter.status === "rejected"
+                      ? "border-red-500 hover:bg-red-50 bg-gradient-to-r from-red-50 to-pink-50"
                       : "border-[#003F5D] hover:border-[#C88B3D]"
                   }`}
                 >
@@ -899,11 +986,20 @@ const Sent: React.FC = () => {
                     </div>
                   )}
 
+                  {/* Rejected Badge */}
+                  {letter.status === "rejected" && (
+                    <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg border border-white">
+                      ❌ Rejected
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-4 flex-grow">
                     <MailOutlined
                       className={`text-2xl ${
                         letter.status === "pending"
                           ? "text-yellow-600"
+                          : letter.status === "rejected"
+                          ? "text-red-600"
                           : "text-[#003F5D]"
                       }`}
                     />
@@ -913,6 +1009,8 @@ const Sent: React.FC = () => {
                           className={`font-bold text-lg transition-colors duration-300 ${
                             letter.status === "pending"
                               ? "text-yellow-800 group-hover:text-yellow-900"
+                              : letter.status === "rejected"
+                              ? "text-red-800 group-hover:text-red-900"
                               : "text-[#003F5D] group-hover:text-[#C88B3D]"
                           }`}
                         >
@@ -932,6 +1030,62 @@ const Sent: React.FC = () => {
                         Dept:{" "}
                         <span className="font-medium">{letter.department}</span>
                       </p>
+
+                      {/* Rejection Reason for List View */}
+                      {letter.status === "rejected" &&
+                        letter.rejectionReason && (
+                          <div
+                            className={`mt-2 p-2 border rounded-lg transition-all duration-300 ${
+                              expandedRejections.has(letter._id)
+                                ? "bg-gradient-to-r from-red-50 to-pink-50 border-red-300 shadow-sm"
+                                : "bg-red-100 border-red-200 hover:bg-red-150"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-red-700 font-medium text-xs">
+                                Rejection Reason
+                              </span>
+                              <span className="text-xs text-red-500 font-medium">
+                                {expandedRejections.has(letter._id)
+                                  ? "Expanded"
+                                  : "Click to expand"}
+                              </span>
+                            </div>
+                            <div
+                              className={`text-xs text-red-600 cursor-pointer p-2 rounded transition-all duration-300 ${
+                                expandedRejections.has(letter._id)
+                                  ? "bg-white border border-red-200 shadow-sm hover:shadow-md"
+                                  : "hover:bg-red-200 hover:shadow-sm"
+                              }`}
+                              onClick={() => handleRejectionClick(letter._id)}
+                            >
+                              {expandedRejections.has(letter._id) ? (
+                                <div className="space-y-2">
+                                  <p className="leading-relaxed">
+                                    {letter.rejectionReason}
+                                  </p>
+                                  <div className="flex items-center justify-between pt-1 border-t border-red-100">
+                                    <span className="text-xs text-red-500">
+                                      Click to collapse
+                                    </span>
+                                    <span className="text-xs text-red-400">
+                                      {letter.rejectionReason.length} chars
+                                    </span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-between">
+                                  <span>
+                                    {getTruncatedRejection(
+                                      letter.rejectionReason
+                                    )}
+                                  </span>
+                                  <span className="text-red-500 ml-1">→</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                     </div>
                   </div>
                   <div className="flex flex-col items-end justify-between">
