@@ -794,3 +794,44 @@ export const forwardLetter = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// REJECT LETTER (admin)
+export const rejectLetter = async (req, res) => {
+  try {
+    const { letterId, rejectionReason } = req.body;
+    
+    if (!letterId) {
+      return res.status(400).json({ error: "Letter ID is required" });
+    }
+
+    const letter = await Letter.findById(letterId);
+    if (!letter) {
+      return res.status(404).json({ error: "Letter not found" });
+    }
+
+    // Update letter status to rejected
+    letter.status = "rejected";
+    letter.rejectionReason = rejectionReason || "No reason provided";
+    letter.rejectedAt = new Date();
+    await letter.save();
+
+    // Create notification for the original sender
+    const notification = new Notification({
+      recipient: letter.from,
+      type: "new_letter",
+      title: "Letter Rejected",
+      message: `Your letter "${letter.subject}" has been rejected. Reason: ${letter.rejectionReason}`,
+      relatedLetter: letter._id,
+      priority: "high",
+    });
+    await notification.save();
+
+    res.status(200).json({ 
+      message: "Letter rejected successfully", 
+      letter 
+    });
+  } catch (error) {
+    console.error("Error in rejectLetter:", error);
+    res.status(500).json({ error: error.message });
+  }
+};

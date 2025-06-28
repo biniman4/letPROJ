@@ -74,6 +74,8 @@ const LetterManagement: React.FC<{
   const [actionLoading, setActionLoading] = useState<{
     [key: string]: string | null;
   }>({}); // { [letterId]: 'approve'|'reject'|'delete'|null }
+  const [rejectLoading, setRejectLoading] = useState(false);
+  const [rejectError, setRejectError] = useState("");
 
   useEffect(() => {
     setLoadingLetters(true);
@@ -180,15 +182,19 @@ const LetterManagement: React.FC<{
   };
 
   const handleDeleteLetter = (id: string) => {
-    setActionLoading((prev) => ({ ...prev, [id]: "delete" }));
-    setShowAdminApprovalDialog(id);
+    setShowDeleteDialog(id);
   };
 
   const handleAdminApproval = async (id: string) => {
     setActionLoading((prev) => ({ ...prev, [id]: "delete" }));
     try {
       await axios.delete(`http://localhost:5000/api/letters/${id}`);
+
+      // Update all relevant state variables
       setLetters((prev) => prev.filter((letter) => letter._id !== id));
+      setPendingLetters((prev) => prev.filter((letter) => letter._id !== id));
+      setRejectedLetters((prev) => prev.filter((letter) => letter._id !== id));
+
       setSuccessMsg(`Letter ${id} deleted successfully!`);
       setTimeout(() => setSuccessMsg(""), 2000);
       setShowAdminApprovalDialog(null);
@@ -196,6 +202,28 @@ const LetterManagement: React.FC<{
       setSuccessMsg(`Failed to delete letter ${id}. Please try again.`);
       setTimeout(() => setSuccessMsg(""), 2000);
       setShowAdminApprovalDialog(null);
+    }
+    setActionLoading((prev) => ({ ...prev, [id]: null }));
+  };
+
+  // Direct delete function for non-admin users
+  const handleDirectDelete = async (id: string) => {
+    setActionLoading((prev) => ({ ...prev, [id]: "delete" }));
+    try {
+      await axios.delete(`http://localhost:5000/api/letters/${id}`);
+
+      // Update all relevant state variables
+      setLetters((prev) => prev.filter((letter) => letter._id !== id));
+      setPendingLetters((prev) => prev.filter((letter) => letter._id !== id));
+      setRejectedLetters((prev) => prev.filter((letter) => letter._id !== id));
+
+      setSuccessMsg(`Letter ${id} deleted successfully!`);
+      setTimeout(() => setSuccessMsg(""), 2000);
+      setShowDeleteDialog(null);
+    } catch (error) {
+      setSuccessMsg(`Failed to delete letter ${id}. Please try again.`);
+      setTimeout(() => setSuccessMsg(""), 2000);
+      setShowDeleteDialog(null);
     }
     setActionLoading((prev) => ({ ...prev, [id]: null }));
   };
@@ -236,6 +264,83 @@ const LetterManagement: React.FC<{
       setShowRejectModal(null);
     }
     setActionLoading((prev) => ({ ...prev, [id]: null }));
+  };
+
+  // New simplified reject function for the modal
+  const handleRejectLetter = async () => {
+    if (!showRejectModal) return;
+    setRejectLoading(true);
+    setRejectError("");
+    try {
+      // Use the new reject endpoint
+      await axios.post("http://localhost:5000/api/letters/reject", {
+        letterId: showRejectModal._id,
+        rejectionReason: rejectComment,
+      });
+
+      setShowRejectModal(null);
+      setRejectComment("");
+      setSuccessMsg("Letter rejected successfully!");
+      setTimeout(() => setSuccessMsg(""), 3000);
+
+      // Show enhanced notification
+      setRejectNotification({
+        show: true,
+        message: "Letter has been successfully rejected and notification sent to the sender.",
+        letterSubject: showRejectModal.subject,
+      });
+      setTimeout(
+        () =>
+          setRejectNotification({
+            show: false,
+            message: "",
+            letterSubject: "",
+          }),
+        5000
+      );
+
+      // Update UI state
+      setPendingLetters((prev) =>
+        prev.filter((l) => l._id !== showRejectModal._id)
+      );
+      setLetters((prev) =>
+        prev.map((l) =>
+          l._id === showRejectModal._id
+            ? { ...l, status: "rejected", rejectionReason: rejectComment }
+            : l
+        )
+      );
+      setRejectedLetters((prev) => [
+        ...prev,
+        { ...showRejectModal, status: "rejected", rejectionReason: rejectComment }
+      ]);
+
+      // Refetch letters to ensure UI is updated
+      try {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const userEmail = user.email;
+        const adminAll = isAdmin ? "&all=true" : "";
+        const response = await axios.get(
+          `http://localhost:5000/api/letters?userEmail=${encodeURIComponent(
+            userEmail
+          )}${adminAll}`
+        );
+        setLetters(response.data);
+        const rejected = response.data.filter(
+          (letter: Letter) => letter.status === "rejected"
+        );
+        setRejectedLetters(rejected);
+      } catch (error) {
+        console.error("Error refetching letters:", error);
+      }
+    } catch (error) {
+      setRejectError("Failed to reject letter. Please try again.");
+      setSuccessMsg("Failed to reject letter. Please try again.");
+      setTimeout(() => setSuccessMsg(""), 2000);
+      console.error("Error rejecting letter:", error);
+    } finally {
+      setRejectLoading(false);
+    }
   };
 
   // Chronological sort (newest first)
@@ -304,11 +409,10 @@ const LetterManagement: React.FC<{
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div
-            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg ${
-              activeFilter === "pending"
-                ? "bg-yellow-100 border-yellow-400 shadow-lg"
-                : "bg-yellow-50 border-yellow-200 hover:bg-yellow-100"
-            }`}
+            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg ${activeFilter === "pending"
+              ? "bg-yellow-100 border-yellow-400 shadow-lg"
+              : "bg-yellow-50 border-yellow-200 hover:bg-yellow-100"
+              }`}
             onClick={() => setActiveFilter("pending")}
           >
             <div className="flex items-center">
@@ -339,11 +443,10 @@ const LetterManagement: React.FC<{
           </div>
 
           <div
-            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg ${
-              activeFilter === "rejected"
-                ? "bg-red-100 border-red-400 shadow-lg"
-                : "bg-red-50 border-red-200 hover:bg-red-100"
-            }`}
+            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg ${activeFilter === "rejected"
+              ? "bg-red-100 border-red-400 shadow-lg"
+              : "bg-red-50 border-red-200 hover:bg-red-100"
+              }`}
             onClick={() => setActiveFilter("rejected")}
           >
             <div className="flex items-center">
@@ -377,11 +480,10 @@ const LetterManagement: React.FC<{
           </div>
 
           <div
-            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg ${
-              activeFilter === "all"
-                ? "bg-blue-100 border-blue-400 shadow-lg"
-                : "bg-blue-50 border-blue-200 hover:bg-blue-100"
-            }`}
+            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg ${activeFilter === "all"
+              ? "bg-blue-100 border-blue-400 shadow-lg"
+              : "bg-blue-50 border-blue-200 hover:bg-blue-100"
+              }`}
             onClick={() => setActiveFilter("all")}
           >
             <div className="flex items-center">
@@ -420,11 +522,10 @@ const LetterManagement: React.FC<{
             <div className="flex items-center">
               <span className="text-sm text-gray-600 mr-2">Showing:</span>
               <span
-                className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                  activeFilter === "pending"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : "bg-red-100 text-red-800"
-                }`}
+                className={`px-3 py-1 rounded-full text-sm font-semibold ${activeFilter === "pending"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-red-100 text-red-800"
+                  }`}
               >
                 {activeFilter === "pending"
                   ? "Pending Letters"
@@ -502,11 +603,10 @@ const LetterManagement: React.FC<{
                         {letter.subject}
                       </h4>
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-bold ${
-                          letter.priority === "urgent"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-orange-100 text-orange-800"
-                        }`}
+                        className={`px-2 py-1 rounded-full text-xs font-bold ${letter.priority === "urgent"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-orange-100 text-orange-800"
+                          }`}
                       >
                         {letter.priority}
                       </span>
@@ -736,6 +836,17 @@ const LetterManagement: React.FC<{
                         >
                           <Eye className="w-4 h-4" /> View Content
                         </button>
+                        <button
+                          className="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-60"
+                          onClick={() => handleDeleteLetter(letter._id)}
+                          disabled={actionLoading[letter._id] === "delete"}
+                        >
+                          {actionLoading[letter._id] === "delete" ? (
+                            <Loader2 className="animate-spin w-4 h-4" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -829,19 +940,18 @@ const LetterManagement: React.FC<{
                         {letter.subject}
                       </h4>
                       <span
-                        className={`px-3 py-1 text-xs rounded-full font-semibold whitespace-nowrap ${
-                          letter.status === "approved"
-                            ? "bg-green-100 text-green-800"
-                            : letter.status === "sent"
+                        className={`px-3 py-1 text-xs rounded-full font-semibold whitespace-nowrap ${letter.status === "approved"
+                          ? "bg-green-100 text-green-800"
+                          : letter.status === "sent"
                             ? "bg-blue-100 text-blue-800"
                             : letter.status === "rejected"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
+                              ? "bg-red-100 text-red-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
                       >
                         {letter.status
                           ? letter.status.charAt(0).toUpperCase() +
-                            letter.status.slice(1)
+                          letter.status.slice(1)
                           : "Pending"}
                       </span>
                     </div>
@@ -968,13 +1078,12 @@ const LetterManagement: React.FC<{
                 <div>
                   <strong>Priority:</strong>{" "}
                   <span
-                    className={`font-bold ${
-                      openLetter.priority === "urgent"
-                        ? "text-red-600"
-                        : openLetter.priority === "high"
+                    className={`font-bold ${openLetter.priority === "urgent"
+                      ? "text-red-600"
+                      : openLetter.priority === "high"
                         ? "text-orange-600"
                         : "text-blue-600"
-                    }`}
+                      }`}
                   >
                     {openLetter.priority}
                   </span>
@@ -994,18 +1103,16 @@ const LetterManagement: React.FC<{
                             className="flex items-center space-x-2 text-sm"
                           >
                             <a
-                              href={`http://localhost:5000/api/letters/download/${
-                                openLetter._id
-                              }/${encodeURIComponent(file.filename)}`}
+                              href={`http://localhost:5000/api/letters/download/${openLetter._id
+                                }/${encodeURIComponent(file.filename)}`}
                               className="text-blue-600 hover:text-blue-800 underline"
                               download={file.filename}
                             >
                               Download
                             </a>
                             <a
-                              href={`http://localhost:5000/api/letters/view/${
-                                openLetter._id
-                              }/${encodeURIComponent(file.filename)}`}
+                              href={`http://localhost:5000/api/letters/view/${openLetter._id
+                                }/${encodeURIComponent(file.filename)}`}
                               className="text-green-600 hover:text-green-800 underline"
                               target="_blank"
                               rel="noopener noreferrer"
@@ -1098,7 +1205,7 @@ const LetterManagement: React.FC<{
               </button>
               <button
                 className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                onClick={() => handleDeleteLetter(showDeleteDialog)}
+                onClick={() => handleDirectDelete(showDeleteDialog)}
               >
                 Delete
               </button>
@@ -1191,6 +1298,9 @@ const LetterManagement: React.FC<{
                 rows={4}
               />
             </div>
+            {rejectError && (
+              <div className="text-red-600 text-sm mb-2">{rejectError}</div>
+            )}
             <div className="flex justify-end gap-3">
               <button
                 className="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -1203,119 +1313,8 @@ const LetterManagement: React.FC<{
               </button>
               <button
                 className="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-400"
-                disabled={!rejectComment.trim()}
-                onClick={async () => {
-                  if (!showRejectModal) return;
-
-                  try {
-                    const user = JSON.parse(
-                      localStorage.getItem("user") || "{}"
-                    );
-                    const userEmail = user.email;
-                    const adminAll = isAdmin ? "&all=true" : "";
-                    const formData = new FormData();
-                    formData.append(
-                      "subject",
-                      `Rejected letter: ${showRejectModal.subject}`
-                    );
-                    formData.append("from", "admin@system.local"); // Admin email
-                    formData.append(
-                      "to",
-                      showRejectModal.fromName ||
-                        showRejectModal.fromEmail ||
-                        ""
-                    );
-                    formData.append(
-                      "department",
-                      showRejectModal.department || ""
-                    );
-                    formData.append(
-                      "priority",
-                      showRejectModal.priority || "normal"
-                    );
-                    formData.append(
-                      "content",
-                      rejectComment
-                        ? `${rejectComment}\n\n--- Rejected Letter ---\n\n${
-                            showRejectModal.content || ""
-                          }`
-                        : `--- Rejected Letter ---\n\n${
-                            showRejectModal.content || ""
-                          }`
-                    );
-                    formData.append("ccEmployees", JSON.stringify({}));
-                    formData.append("cc", JSON.stringify([]));
-
-                    await axios.post(
-                      "http://localhost:5000/api/letters",
-                      formData,
-                      {
-                        headers: {
-                          "Content-Type": "multipart/form-data",
-                        },
-                      }
-                    );
-
-                    // Update the original letter status to rejected
-                    await axios.post(
-                      "http://localhost:5000/api/letters/status",
-                      {
-                        letterId: showRejectModal._id,
-                        status: "rejected",
-                      }
-                    );
-
-                    setShowRejectModal(null);
-                    setRejectComment("");
-                    setSuccessMsg("Rejected and forwarded back successfully!");
-                    setTimeout(() => setSuccessMsg(""), 3000);
-
-                    // Show enhanced notification
-                    setRejectNotification({
-                      show: true,
-                      message:
-                        "Letter has been successfully rejected and forwarded back to the sender with your comments.",
-                      letterSubject: showRejectModal.subject,
-                    });
-                    setTimeout(
-                      () =>
-                        setRejectNotification({
-                          show: false,
-                          message: "",
-                          letterSubject: "",
-                        }),
-                      5000
-                    );
-
-                    // Move letter from pending to rejected category instead of removing
-                    setPendingLetters((prev) =>
-                      prev.filter((l) => l._id !== showRejectModal._id)
-                    );
-                    setLetters((prev) =>
-                      prev.map((l) =>
-                        l._id === showRejectModal._id
-                          ? { ...l, status: "rejected" }
-                          : l
-                      )
-                    );
-
-                    // Refetch letters to ensure UI is updated
-                    try {
-                      const response = await axios.get(
-                        `http://localhost:5000/api/letters?userEmail=${encodeURIComponent(
-                          userEmail
-                        )}${adminAll}`
-                      );
-                      setLetters(response.data);
-                    } catch (error) {
-                      console.error("Error refetching letters:", error);
-                    }
-                  } catch (error) {
-                    console.error("Error rejecting letter:", error);
-                    setSuccessMsg("Failed to reject letter. Please try again.");
-                    setTimeout(() => setSuccessMsg(""), 2000);
-                  }
-                }}
+                disabled={!rejectComment.trim() || rejectLoading}
+                onClick={handleRejectLetter}
               >
                 Reject & Forward
               </button>
