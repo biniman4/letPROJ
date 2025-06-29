@@ -778,57 +778,57 @@ export const getPendingLetters = async (req, res) => {
 };
 
 // ADMIN: Reject a pending letter
-export const rejectLetter = async (req, res) => {
-  try {
-    const { letterId, rejectionReason } = req.body;
+// export const rejectLetter = async (req, res) => {
+//   try {
+//     const { letterId, rejectionReason } = req.body;
 
-    if (!letterId) {
-      return res.status(400).json({ error: "Letter ID is required" });
-    }
+//     if (!letterId) {
+//       return res.status(400).json({ error: "Letter ID is required" });
+//     }
 
-    if (!rejectionReason || rejectionReason.trim() === "") {
-      return res.status(400).json({ error: "Rejection reason is required" });
-    }
+//     if (!rejectionReason || rejectionReason.trim() === "") {
+//       return res.status(400).json({ error: "Rejection reason is required" });
+//     }
 
-    const letter = await Letter.findById(letterId);
-    if (!letter) {
-      return res.status(404).json({ error: "Letter not found" });
-    }
+//     const letter = await Letter.findById(letterId);
+//     if (!letter) {
+//       return res.status(404).json({ error: "Letter not found" });
+//     }
 
-    if (letter.status !== "pending") {
-      return res.status(400).json({ error: "Letter is not pending approval" });
-    }
+//     if (letter.status !== "pending") {
+//       return res.status(400).json({ error: "Letter is not pending approval" });
+//     }
 
-    // Update letter status to rejected and add rejection details
-    letter.status = "rejected";
-    letter.rejectionReason = rejectionReason.trim();
-    letter.rejectedAt = new Date();
+//     // Update letter status to rejected and add rejection details
+//     letter.status = "rejected";
+//     letter.rejectionReason = rejectionReason.trim();
+//     letter.rejectedAt = new Date();
 
-    await letter.save();
+//     await letter.save();
 
-    // Create notification for the sender about the rejection
-    const notification = new Notification({
-      recipient: letter.from,
-      type: "letter_rejected",
-      title: "Letter Rejected",
-      message: `Your letter "${letter.subject}" has been rejected by admin. Reason: ${rejectionReason}`,
-      relatedLetter: letter._id,
-      priority: "high",
-    });
-    await notification.save();
+//     // Create notification for the sender about the rejection
+//     const notification = new Notification({
+//       recipient: letter.from,
+//       type: "letter_rejected",
+//       title: "Letter Rejected",
+//       message: `Your letter "${letter.subject}" has been rejected by admin. Reason: ${rejectionReason}`,
+//       relatedLetter: letter._id,
+//       priority: "high",
+//     });
+//     await notification.save();
 
-    console.log(`Letter ${letterId} rejected with reason: ${rejectionReason}`);
+//     console.log(`Letter ${letterId} rejected with reason: ${rejectionReason}`);
 
-    res.status(200).json({
-      message: "Letter rejected successfully",
-      letter,
-      notification: "Rejection notification sent to sender",
-    });
-  } catch (error) {
-    console.error("Error in rejectLetter:", error);
-    res.status(500).json({ error: error.message });
-  }
-};
+//     res.status(200).json({
+//       message: "Letter rejected successfully",
+//       letter,
+//       notification: "Rejection notification sent to sender",
+//     });
+//   } catch (error) {
+//     console.error("Error in rejectLetter:", error);
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 
 // Check for new letters
 export const checkNewLetters = async (req, res) => {
@@ -895,12 +895,11 @@ export const forwardLetter = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 // REJECT LETTER (admin)
 export const rejectLetter = async (req, res) => {
   try {
     const { letterId, rejectionReason } = req.body;
-    
+
     if (!letterId) {
       return res.status(400).json({ error: "Letter ID is required" });
     }
@@ -927,9 +926,9 @@ export const rejectLetter = async (req, res) => {
     });
     await notification.save();
 
-    res.status(200).json({ 
-      message: "Letter rejected successfully", 
-      letter 
+    res.status(200).json({
+      message: "Letter rejected successfully",
+      letter,
     });
   } catch (error) {
     console.error("Error in rejectLetter:", error);
