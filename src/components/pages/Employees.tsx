@@ -129,16 +129,14 @@ const Employees: React.FC<EmployeesProps> = ({ letterData, setLetterData }) => {
     <div className="mb-6">
       <div className="flex items-center gap-2 mb-2">
         <label className="block text-sm font-medium text-gray-700">
-          CC (Carbon Copy)
+          {t.employees.ccLabel}
         </label>
         <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-          Confidential
+          {t.employees.confidential}
         </span>
       </div>
       <p className="text-xs text-gray-500 mb-3">
-        Selected employees will receive a confidential copy of this letter via
-        email. The email will include forwarding restrictions and
-        confidentiality notices.
+        {t.employees.ccDescription}
       </p>
 
       {/* Main Category Dropdown */}

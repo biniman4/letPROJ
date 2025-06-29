@@ -130,7 +130,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
       if (user.role === "admin") navigate("/admin");
       else navigate("/dashboard");
     } catch (error: any) {
-      setLoginError("Invalid credentials");
+      setLoginError(t.login.invalidCredentials);
     }
   };
 
@@ -142,7 +142,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFBFF]">
-      <PublicNavbar lang={lang} onLanguageChange={setLang} />
+      <PublicNavbar />
       <main className="flex-grow">
         <div className="relative h-screen bg-gradient-to-b from-[#F5F8FF] via-[#FAFBFF] to-white">
           {/* Left side water drops */}
@@ -313,7 +313,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
                 </svg>
-                {lang === "am" ? "የስርዓቱ አጠቃቀም" : "System Demo"}
+                {t.home.systemDemo}
               </motion.div>
               <motion.h2
                 initial={{ opacity: 0, y: 20 }}
@@ -322,7 +322,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 transition={{ delay: 0.1 }}
                 className="text-3xl sm:text-4xl font-extrabold text-main-text sm:text-5xl hover:text-hover-gold transition-colors duration-200"
               >
-                {lang === "am" ? "ስርዓቱን እንዴት እንደሚጠቀሙ" : "See How It Works"}
+                {t.home.seeHowItWorks}
               </motion.h2>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -331,10 +331,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 transition={{ delay: 0.2 }}
                 className="mt-4 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto"
               >
-                {lang === "am" 
-                  ? "የስርዓታችንን አጠቃቀም ይመልከቱ እና ለድርጅትዎ የሚያመጡትን ጥቅሞች ይወቁ"
-                  : "Watch our system in action and discover the benefits it brings to your organization"
-                }
+                {t.home.videoDescription}
               </motion.p>
             </div>
 
@@ -358,7 +355,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                       playsInline
                     >
                       <source src="/demo-video.mp4" type="video/mp4" />
-                      {lang === "am" ? "የብራውዘርዎ ቪዲዮ አይደገፍም" : "Your browser does not support the video tag."}
+                      {t.home.browserNotSupported}
                     </video>
                   </div>
                   
@@ -381,13 +378,13 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                     <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
                     </svg>
-                    <span>2:45 {lang === "am" ? "ደቂቃ" : "min"}</span>
+                    <span>2:45 {t.home.minutes}</span>
                   </div>
                   <div className="flex items-center">
                     <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>{lang === "am" ? "HD ጥራት" : "HD Quality"}</span>
+                    <span>{t.home.hdQuality}</span>
                   </div>
                 </div>
               </motion.div>
@@ -402,38 +399,30 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
               >
                 <div>
                   <h3 className="text-2xl font-bold text-main-text mb-6">
-                    {lang === "am" ? "የስርዓቱ ጥቅሞች" : "System Benefits"}
+                    {t.home.systemBenefits}
                   </h3>
                   
                   <div className="space-y-6">
                     {[
                       {
                         icon: "🚀",
-                        title: lang === "am" ? "ፈጣን እና ቀልጣፋ" : "Fast & Efficient",
-                        description: lang === "am" 
-                          ? "ደብዳበዎችን በፍጹም ፍጥነት ያስተዳድሩ እና ያስገቡ"
-                          : "Manage and submit letters with lightning speed and efficiency"
+                        title: t.home.fastEfficient,
+                        description: t.home.fastEfficientDesc
                       },
                       {
                         icon: "🔒",
-                        title: lang === "am" ? "ደህንነቱ የተጠበቀ" : "Secure & Reliable",
-                        description: lang === "am"
-                          ? "ደብዳበዎች በደህንነት ይቀመጣሉ እና ይጠበቃሉ"
-                          : "Your letters are stored securely and protected at all times"
+                        title: t.home.secureReliable,
+                        description: t.home.secureReliableDesc
                       },
                       {
                         icon: "📊",
-                        title: lang === "am" ? "የተሻሻለ ቁጥጥር" : "Better Tracking",
-                        description: lang === "am"
-                          ? "የደብዳበዎችን ሁኔታ በቀጥታ ይከታተሉ"
-                          : "Track the status of your letters in real-time"
+                        title: t.home.betterTracking,
+                        description: t.home.betterTrackingDesc
                       },
                       {
                         icon: "👥",
-                        title: lang === "am" ? "የተሻሻለ ትብብር" : "Enhanced Collaboration",
-                        description: lang === "am"
-                          ? "ከቡድን አባላት ጋር በቀላሉ ያብቁ"
-                          : "Collaborate seamlessly with team members"
+                        title: t.home.enhancedCollaboration,
+                        description: t.home.enhancedCollaborationDesc
                       }
                     ].map((benefit, index) => (
                       <motion.div
@@ -475,7 +464,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                     <svg className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
                     </svg>
-                    {lang === "am" ? "አሁን ጀምሩ" : "Get Started Now"}
+                    {t.home.getStartedNow}
                   </button>
                 </motion.div>
               </motion.div>
@@ -496,9 +485,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 viewport={{ once: true }}
                 className="text-3xl sm:text-4xl font-extrabold text-main-text sm:text-5xl hover:text-hover-gold transition-colors duration-200"
               >
-                {lang === "am"
-                  ? "የሙያተኛ አገልግሎቶቻችን"
-                  : "Our Professional Services"}
+                {t.home.professionalServices}
               </motion.h2>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -507,9 +494,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 transition={{ delay: 0.2 }}
                 className="mt-3 sm:mt-4 text-lg sm:text-xl text-gray-500 px-4 sm:px-0"
               >
-                {lang === "am"
-                  ? "ለSSGI የግንኙነት ፍላጎቶች የተለዩ መፍትሄዎች"
-                  : "Specialized solutions for SSGI's communication needs"}
+                {t.home.servicesDescription}
               </motion.p>
             </div>
             <div className="mt-12 sm:mt-16 md:mt-20 grid grid-cols-1 gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -580,7 +565,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
         }}
       >
         <h2 className="text-3xl font-bold text-center text-teal-700 mb-6">
-          Log In to Your Account
+          {t.login.modalTitle}
         </h2>
         {loginError && (
           <p className="text-red-600 bg-red-100 p-3 rounded text-center mb-4">
@@ -593,7 +578,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
               htmlFor="email"
               className="block text-gray-700 text-sm font-medium mb-1"
             >
-              Email Address
+              {t.login.emailLabel}
             </label>
             <input
               type="email"
@@ -604,7 +589,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 setCredentials({ ...credentials, email: e.target.value })
               }
               className="w-full px-4 py-2 rounded-lg bg-gray-100 text-gray-800 border border-gray-300 focus:ring-teal-400 focus:border-teal-400"
-              placeholder="john@example.com"
+              placeholder={t.login.emailPlaceholder}
               required
             />
           </div>
@@ -613,7 +598,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
               htmlFor="password"
               className="block text-gray-700 text-sm font-medium mb-1"
             >
-              Password
+              {t.login.passwordLabel}
             </label>
             <input
               type="password"
@@ -624,7 +609,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
                 setCredentials({ ...credentials, password: e.target.value })
               }
               className="w-full px-4 py-2 rounded-lg bg-gray-100 text-gray-800 border border-gray-300 focus:ring-teal-400 focus:border-teal-400"
-              placeholder="••••••••"
+              placeholder={t.login.passwordPlaceholder}
               required
             />
           </div>
@@ -632,15 +617,15 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
             type="submit"
             className="w-full py-3 bg-teal-600 text-white font-semibold rounded-xl hover:bg-teal-700 transition shadow-md"
           >
-            Log In
+            {t.login.loginButton}
           </button>
           <p className="text-center text-gray-600 text-sm mt-4">
-            Don't have an account?{" "}
+            {t.login.noAccount}{" "}
             <Link
               to="/signup"
               className="underline text-teal-600 hover:text-teal-800 transition"
             >
-              Sign up
+              {t.login.signUp}
             </Link>
           </p>
           <p className="text-center text-gray-600 text-sm mt-2">
@@ -648,7 +633,7 @@ const Home = ({ onLogin }: { onLogin: () => void }): JSX.Element => {
               to="/forgot-password"
               className="underline text-blue-600 hover:text-blue-800 transition"
             >
-              Forgot Password?
+              {t.login.forgotPassword}
             </Link>
           </p>
         </form>

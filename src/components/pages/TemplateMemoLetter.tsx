@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useLanguage } from "./LanguageContext";
+import { EthDateTime } from "ethiopian-calendar-date-converter";
 
 // Example departments (replace with API call if needed)
 
@@ -50,6 +52,7 @@ const TemplateMemoLetter = ({
   const [userName, setUserName] = useState("");
   const [userDepartment, setUserDepartment] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
+  const { t, lang } = useLanguage();
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -69,6 +72,14 @@ const TemplateMemoLetter = ({
       user.department && user.department !== "undefined" ? user.department : ""
     );
   }, []);
+
+  // Helper to get Ethiopian date string
+  const getEthiopianDate = (dateStr?: string) => {
+    const dateObj = dateStr ? new Date(dateStr) : new Date();
+    const ethDate = EthDateTime.fromEuropeanDate(dateObj);
+    // Format: DD/MM/YYYY (Ethiopian)
+    return `${String(ethDate.date).padStart(2, "0")}/${String(ethDate.month).padStart(2, "0")}/${ethDate.year}`;
+  };
 
   return (
     <div
@@ -126,10 +137,12 @@ const TemplateMemoLetter = ({
                 <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zm0-13H5V6h14v1z" />
               </svg>
             </span>
-            {date || getFormattedUTCDate()}
+            {lang === "am"
+              ? getEthiopianDate(date)
+              : date || getFormattedUTCDate()}
           </div>
           <div className="text-[11px] sm:text-xs md:text-sm text-gray-600">
-            Date
+            {t.memo.date}
           </div>
         </div>
       </div>
@@ -137,7 +150,7 @@ const TemplateMemoLetter = ({
       {/* SUBJECT LABEL */}
       <div className="px-2 xs:px-4 sm:px-8 mt-2 mb-1">
         <div className="font-semibold text-lg">
-          <span className="text-gray-600">Subject: </span>
+          <span className="text-gray-600">{t.memo.subject}: </span>
           <span className="text-gray-900">{subject}</span>
         </div>
       </div>

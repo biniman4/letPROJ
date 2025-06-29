@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { UserPlus, Home, Users, Mail, Settings } from "lucide-react";
 import UserManagement from "./UserManagement";
 import LetterManagement from "./LetterManagement";
+import { useLanguage } from "../../components/pages/LanguageContext";
 
 const AdminPanel = () => {
   const [successMsg, setSuccessMsg] = useState("");
@@ -10,6 +11,7 @@ const AdminPanel = () => {
   const navigate = useNavigate();
   const buttonStyle =
     "flex items-center gap-2 px-5 py-2 rounded-lg font-semibold shadow bg-blue-600 text-white hover:bg-blue-700 transition-all duration-150";
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6">
@@ -17,7 +19,7 @@ const AdminPanel = () => {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
           <h2 className="text-3xl font-extrabold text-gray-800 tracking-tight">
-            Admin Panel
+            {t.adminPanel.title}
           </h2>
           <div className="flex gap-3">
             <button
@@ -27,13 +29,13 @@ const AdminPanel = () => {
               }
               onClick={() => navigate("/admin/create-user")}
             >
-              <UserPlus className="w-5 h-5" /> Create User
+              <UserPlus className="w-5 h-5" /> {t.adminPanel.createUser}
             </button>
             <button
               className="flex items-center gap-2 px-5 py-2 rounded-lg font-semibold shadow bg-gray-600 text-white hover:bg-gray-700 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-400"
               onClick={() => navigate("/")}
             >
-              <Home className="w-5 h-5" /> Home
+              <Home className="w-5 h-5" /> {t.adminPanel.home}
             </button>
           </div>
         </div>
@@ -57,7 +59,7 @@ const AdminPanel = () => {
                     : "text-gray-600 hover:bg-gray-300 hover:text-gray-800"
                 }`}
             >
-              <Users className="w-5 h-5" /> Users
+              <Users className="w-5 h-5" /> {t.adminPanel.users}
             </button>
             <button
               onClick={() => setActiveTab("letters")}
@@ -68,7 +70,7 @@ const AdminPanel = () => {
                     : "text-gray-600 hover:bg-gray-300 hover:text-gray-800"
                 }`}
             >
-              <Mail className="w-5 h-5" /> Letters
+              <Mail className="w-5 h-5" /> {t.adminPanel.letters}
             </button>
           </div>
         </div>

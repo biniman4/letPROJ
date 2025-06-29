@@ -17,6 +17,7 @@ import "react-responsive-modal/styles.css";
 import TemplateMemoLetter from "./TemplateMemoLetter";
 import DepartmentSelector from "./DepartmentSelector";
 import LoadingSpinner from "../common/LoadingSpinner";
+import { useLanguage } from "./LanguageContext";
 
 const getLetterSentDate = (dateString: string) => {
   const d = new Date(dateString);
@@ -48,6 +49,7 @@ const LetterManagement: React.FC<{
   setSuccessMsg: (msg: string) => void;
   isAdmin?: boolean;
 }> = ({ setSuccessMsg, isAdmin }) => {
+  const { t } = useLanguage();
   const [letters, setLetters] = useState<Letter[]>([]);
   const [pendingLetters, setPendingLetters] = useState<Letter[]>([]);
   const [rejectedLetters, setRejectedLetters] = useState<Letter[]>([]);
@@ -364,11 +366,10 @@ const LetterManagement: React.FC<{
       {/* Header Section */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Letter Management
+          {t.letterManagement.title}
         </h2>
         <p className="text-gray-600">
-          Manage and approve pending letters, review rejected letters, and
-          oversee all correspondence
+          {t.letterManagement.subtitle}
         </p>
       </div>
 
@@ -430,7 +431,7 @@ const LetterManagement: React.FC<{
               </div>
               <div>
                 <p className="text-sm font-medium text-yellow-800">
-                  Pending Approval
+                  {t.letterManagement.pendingApproval}
                 </p>
                 <p className="text-2xl font-bold text-yellow-900">
                   {pendingLetters.length}
@@ -464,7 +465,7 @@ const LetterManagement: React.FC<{
               </div>
               <div>
                 <p className="text-sm font-medium text-red-800">
-                  Rejected Letters
+                  {t.letterManagement.rejectedLetters}
                 </p>
                 <p className="text-2xl font-bold text-red-900">
                   {
@@ -501,7 +502,7 @@ const LetterManagement: React.FC<{
               </div>
               <div>
                 <p className="text-sm font-medium text-blue-800">
-                  Total Letters
+                  {t.letterManagement.totalLetters}
                 </p>
                 <p className="text-2xl font-bold text-blue-900">
                   {letters.length}
@@ -517,7 +518,7 @@ const LetterManagement: React.FC<{
         <div className="bg-white border-b border-gray-200 px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <span className="text-sm text-gray-600 mr-2">Showing:</span>
+              <span className="text-sm text-gray-600 mr-2">{t.letterManagement.showing}</span>
               <span
                 className={`px-3 py-1 rounded-full text-sm font-semibold ${activeFilter === "pending"
                   ? "bg-yellow-100 text-yellow-800"
@@ -525,8 +526,8 @@ const LetterManagement: React.FC<{
                   }`}
               >
                 {activeFilter === "pending"
-                  ? "Pending Letters"
-                  : "Rejected Letters"}
+                  ? t.letterManagement.pendingLetters
+                  : t.letterManagement.rejectedLetters}
               </span>
             </div>
             <button
@@ -546,7 +547,7 @@ const LetterManagement: React.FC<{
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                 />
               </svg>
-              Show All Letters
+              {t.letterManagement.showAllLetters}
             </button>
           </div>
         </div>
@@ -577,15 +578,15 @@ const LetterManagement: React.FC<{
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-yellow-800">
-                      Pending High/Urgent Letters
+                      {t.letterManagement.pendingHighUrgent}
                     </h3>
                     <p className="text-yellow-600 text-sm">
-                      Require admin approval before sending
+                      {t.letterManagement.requireAdminApproval}
                     </p>
                   </div>
                 </div>
                 <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                  {pendingLetters.length} pending
+                  {pendingLetters.length} {t.letterManagement.pending}
                 </span>
               </div>
 
@@ -625,7 +626,7 @@ const LetterManagement: React.FC<{
                           />
                         </svg>
                         <span>
-                          <strong>From:</strong>{" "}
+                          <strong>{t.letterManagement.from}</strong>{" "}
                           {letter.fromName || letter.fromEmail}
                         </span>
                       </div>
@@ -644,7 +645,7 @@ const LetterManagement: React.FC<{
                           />
                         </svg>
                         <span>
-                          <strong>To:</strong> {letter.to || letter.toEmail}
+                          <strong>{t.letterManagement.to}</strong> {letter.to || letter.toEmail}
                         </span>
                       </div>
                       <div className="flex items-center">
@@ -662,7 +663,7 @@ const LetterManagement: React.FC<{
                           />
                         </svg>
                         <span>
-                          <strong>Date:</strong>{" "}
+                          <strong>{t.letterManagement.date}</strong>{" "}
                           {getLetterSentDate(letter.createdAt)}
                         </span>
                       </div>
@@ -674,7 +675,7 @@ const LetterManagement: React.FC<{
                           className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors flex items-center justify-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                           onClick={() => handleDetailLetter(letter)}
                         >
-                          <Eye className="w-4 h-4" /> View
+                          <Eye className="w-4 h-4" /> {t.letterManagement.view}
                         </button>
                         <button
                           className="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg shadow hover:bg-green-700 transition-colors flex items-center justify-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-60"
@@ -686,7 +687,7 @@ const LetterManagement: React.FC<{
                           ) : (
                             <Check className="w-4 h-4" />
                           )}{" "}
-                          Approve
+                          {t.letterManagement.approve}
                         </button>
                       </div>
                       <button
@@ -702,7 +703,7 @@ const LetterManagement: React.FC<{
                         ) : (
                           <X className="w-4 h-4" />
                         )}{" "}
-                        Reject
+                        {t.letterManagement.reject}
                       </button>
                     </div>
                   </div>
@@ -734,19 +735,15 @@ const LetterManagement: React.FC<{
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-red-800">
-                      Rejected Letters
+                      {t.letterManagement.rejectedLetters}
                     </h3>
                     <p className="text-red-600 text-sm">
-                      Letters that were rejected and sent back to sender
+                      {t.letterManagement.rejectedSubtitle}
                     </p>
                   </div>
                 </div>
                 <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                  {
-                    letters.filter((letter) => letter.status === "rejected")
-                      .length
-                  }{" "}
-                  rejected
+                  {letters.filter((letter) => letter.status === "rejected").length} {t.letterManagement.rejected}
                 </span>
               </div>
 
@@ -763,7 +760,7 @@ const LetterManagement: React.FC<{
                           {letter.subject}
                         </h4>
                         <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-bold">
-                          rejected
+                          {t.letterManagement.rejected}
                         </span>
                       </div>
 
@@ -783,7 +780,7 @@ const LetterManagement: React.FC<{
                             />
                           </svg>
                           <span>
-                            <strong>From:</strong>{" "}
+                            <strong>{t.letterManagement.from}</strong>{" "}
                             {letter.fromName || letter.fromEmail}
                           </span>
                         </div>
@@ -802,7 +799,7 @@ const LetterManagement: React.FC<{
                             />
                           </svg>
                           <span>
-                            <strong>To:</strong> {letter.to || letter.toEmail}
+                            <strong>{t.letterManagement.to}</strong> {letter.to || letter.toEmail}
                           </span>
                         </div>
                         <div className="flex items-center">
@@ -820,7 +817,7 @@ const LetterManagement: React.FC<{
                             />
                           </svg>
                           <span>
-                            <strong>Date:</strong>{" "}
+                            <strong>{t.letterManagement.date}</strong>{" "}
                             {getLetterSentDate(letter.createdAt)}
                           </span>
                         </div>
@@ -831,7 +828,7 @@ const LetterManagement: React.FC<{
                           className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                           onClick={() => handleDetailLetter(letter)}
                         >
-                          <Eye className="w-4 h-4" /> View Content
+                          <Eye className="w-4 h-4" /> {t.letterManagement.viewContent}
                         </button>
                         <button
                           className="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-60"
@@ -873,10 +870,10 @@ const LetterManagement: React.FC<{
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-gray-800">
-                    All Letters
+                    {t.letterManagement.allLetters}
                   </h3>
                   <p className="text-gray-600 text-sm">
-                    Complete overview of all correspondence
+                    {t.letterManagement.allLettersSubtitle}
                   </p>
                 </div>
               </div>
@@ -894,13 +891,13 @@ const LetterManagement: React.FC<{
                     type="text"
                     value={letterSearch}
                     onChange={(e) => setLetterSearch(e.target.value)}
-                    placeholder="Search by subject..."
+                    placeholder={t.letterManagement.searchBySubject}
                     className="ml-3 bg-transparent border-none outline-none w-full text-base"
                   />
                 </div>
                 <span className="text-gray-600 text-base font-medium whitespace-nowrap bg-white px-4 py-3 rounded-lg border border-gray-300">
-                  {filteredLetters.length} letter
-                  {filteredLetters.length !== 1 ? "s" : ""}
+                  {filteredLetters.length} {t.letterManagement.letter}
+                  {filteredLetters.length !== 1 ? t.letterManagement.letters : ""}
                 </span>
               </div>
             </div>
@@ -1056,24 +1053,27 @@ const LetterManagement: React.FC<{
           {!viewMode ? (
             <div className="p-6 max-h-[80vh] overflow-y-auto">
               <h3 className="text-xl font-bold text-gray-800 mb-4">
-                Letter Details
+                {t.letterManagement.letterDetails}
               </h3>
               <div className="space-y-3 text-gray-700">
                 <div>
-                  <strong>Subject:</strong> {openLetter.subject}
+                  <strong>{t.letterManagement.subject}</strong> {openLetter.subject}
                 </div>
                 <div>
-                  <strong>To:</strong> {openLetter.to || openLetter.toEmail}
+                  <strong>{t.letterManagement.to}</strong> {openLetter.to || openLetter.toEmail}
                 </div>
                 <div>
-                  <strong>From:</strong>{" "}
-                  {openLetter.fromName || openLetter.fromEmail}
+                  <strong>{t.letterManagement.from}</strong> {openLetter.fromName || openLetter.fromEmail}
                 </div>
                 <div>
-                  <strong>Department:</strong> {openLetter.department}
+                  <strong>{t.letterManagement.department}</strong> {(openLetter.department || "")
+                    .split(' > ')
+                    .map((dep: string) => t.departments[dep.trim() as keyof typeof t.departments] || dep.trim())
+                    .join(' > ')
+                  }
                 </div>
                 <div>
-                  <strong>Priority:</strong>{" "}
+                  <strong>{t.letterManagement.priority}</strong>
                   <span
                     className={`font-bold ${openLetter.priority === "urgent"
                       ? "text-red-600"
@@ -1082,17 +1082,16 @@ const LetterManagement: React.FC<{
                         : "text-blue-600"
                       }`}
                   >
-                    {openLetter.priority}
+                    {t.letterManagement.priorityValues[openLetter.priority as keyof typeof t.letterManagement.priorityValues] || openLetter.priority}
                   </span>
                 </div>
                 <div>
-                  <strong>Date:</strong>{" "}
-                  {getLetterSentDate(openLetter.createdAt)}
+                  <strong>{t.letterManagement.date}</strong> {getLetterSentDate(openLetter.createdAt)}
                 </div>
                 {openLetter.attachments &&
                   openLetter.attachments.length > 0 && (
                     <div>
-                      <strong>Attachments:</strong>
+                      <strong>{t.letterManagement.attachments}</strong>
                       <ul className="mt-2 space-y-1">
                         {openLetter.attachments.map((file, idx) => (
                           <li
@@ -1105,7 +1104,7 @@ const LetterManagement: React.FC<{
                               className="text-blue-600 hover:text-blue-800 underline"
                               download={file.filename}
                             >
-                              Download
+                              {t.letterManagement.download}
                             </a>
                             <a
                               href={`http://localhost:5000/api/letters/view/${openLetter._id
@@ -1114,7 +1113,7 @@ const LetterManagement: React.FC<{
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              View
+                              {t.letterManagement.view}
                             </a>
                             <span className="text-gray-700">
                               {file.filename}
@@ -1130,7 +1129,7 @@ const LetterManagement: React.FC<{
                   onClick={() => setViewMode(true)}
                   className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
-                  <Eye className="w-4 h-4" /> View Full Content
+                  <Eye className="w-4 h-4" /> {t.letterManagement.viewFullContent}
                 </button>
                 <button
                   onClick={() => {
@@ -1139,7 +1138,7 @@ const LetterManagement: React.FC<{
                   }}
                   className="bg-gray-600 text-white px-6 py-3 rounded-lg shadow hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
-                  Close
+                  {t.letterManagement.close}
                 </button>
               </div>
             </div>

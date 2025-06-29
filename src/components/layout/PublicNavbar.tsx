@@ -4,17 +4,9 @@ import { GlobeIcon } from "lucide-react";
 import { SupportedLang } from "../pages/LanguageContext";
 import { useLanguage } from "../../components/pages/LanguageContext";
 
-interface PublicNavbarProps {
-  lang?: SupportedLang;
-  onLanguageChange?: (lang: SupportedLang) => void;
-}
-
-export const PublicNavbar = ({
-  lang = SupportedLang.Am,
-  onLanguageChange,
-}: PublicNavbarProps) => {
+export const PublicNavbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { t } = useLanguage();
+  const { lang, setLang, t } = useLanguage();
 
   // Handle scroll effect
   useEffect(() => {
@@ -43,7 +35,7 @@ export const PublicNavbar = ({
                   className="h-8 w-auto"
                 />
                 <span className="text-xl font-semibold text-[#4169E1]">
-                  LetterFlow
+                  {t.sidebar.letterFlow}
                 </span>
               </Link>
             </div>
@@ -54,19 +46,19 @@ export const PublicNavbar = ({
                 href="#features"
                 className="text-gray-600 hover:text-gray-900 font-medium"
               >
-                Features
+                {t.home.featuresHeading}
               </a>
               <a
                 href="#services"
                 className="text-gray-600 hover:text-gray-900 font-medium"
               >
-                Services
+                {t.home.servicesHeading}
               </a>
               <a
                 href="#video-demo"
                 className="text-gray-600 hover:text-gray-900 font-medium"
               >
-                See How It Works
+                {t.home.seeHowItWorksNav}
               </a>
               <a
                 href="https://docs.google.com/forms/d/14KkSeXLDL_0OJ8KXSjnYIHGHWpBq4pTqjUFERxrOH94/edit"
@@ -74,17 +66,17 @@ export const PublicNavbar = ({
                 rel="noopener noreferrer"
                 className="bg-[#C88B3D] text-white px-4 py-2 rounded-lg hover:bg-[#a06d2a] transition-colors duration-200 font-medium"
               >
-                Apply Form
+                {t.home.applyForm}
               </a>
             </div>
 
             {/* Language Switch */}
             <button
-              onClick={() => onLanguageChange?.(lang === SupportedLang.Am ? SupportedLang.En : SupportedLang.Am)}
+              onClick={() => setLang(lang === SupportedLang.Am ? SupportedLang.En : SupportedLang.Am)}
               className="flex items-center px-3 py-1 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors duration-200 text-sm font-medium"
             >
               <GlobeIcon className="w-4 h-4 mr-1.5" />
-              {lang === SupportedLang.Am ? "Switch to English" : "ወደ አማርኛ ቀይር"}
+              {lang === SupportedLang.Am ? t.home.switchToEnglish : t.home.switchToAmharic}
             </button>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React from "react";
 import { MailOutlined } from "@ant-design/icons";
+import { useLanguage } from "../../components/pages/LanguageContext";
 
 interface LoadingSpinnerProps {
   message?: string;
@@ -7,9 +8,10 @@ interface LoadingSpinnerProps {
 }
 
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
-  message = "Loading your messages...",
+  message,
   iconClassName,
 }) => {
+  const { t } = useLanguage();
   return (
     <div className="flex flex-col items-center justify-center min-h-[300px] w-full">
       <div className="relative mb-4">
@@ -26,13 +28,11 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           !
         </span>
       </div>
-      {message && (
-        <div className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#003F5D] via-[#C88B3D] to-[#BFBFBF] mb-2 animate-pulse">
-          {message}
-        </div>
-      )}
+      <div className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#003F5D] via-[#C88B3D] to-[#BFBFBF] mb-2 animate-pulse">
+        {message || t.loading.letters}
+      </div>
       <div className="text-[#BFBFBF] text-sm italic">
-        Please wait a moment...
+        {t.loading.pleaseWait}
       </div>
     </div>
   );

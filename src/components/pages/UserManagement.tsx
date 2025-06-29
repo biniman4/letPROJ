@@ -9,6 +9,7 @@ import axios from "axios";
 import { Edit, Trash2, Save, X, Search, Loader2 } from "lucide-react";
 import DepartmentSelector from "./DepartmentSelector";
 import LoadingSpinner from "../common/LoadingSpinner";
+import { useLanguage } from "../../components/pages/LanguageContext";
 
 interface User {
   _id: string;
@@ -44,6 +45,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
   const [actionLoading, setActionLoading] = useState<{
     [key: string]: string | null;
   }>({}); // { [userId]: 'edit'|'delete'|'save'|null }
+
+  const { t } = useLanguage();
 
   // Debounced search value for responsive filtering
   const debouncedSearch = useDebounce(userSearch, 200);
@@ -166,7 +169,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
             <Search className="w-5 h-5 text-gray-500" />
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder={t.userManagement.searchPlaceholder}
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
               className="ml-2 bg-transparent border-none outline-none w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -174,7 +177,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
           </div>
           {/* User Count */}
           <span className="text-gray-500 text-base font-medium whitespace-nowrap">
-            {filteredUsers.length} user{filteredUsers.length !== 1 ? "s" : ""}
+            {t.userManagement.userCount.replace("{count}", filteredUsers.length.toString())}
           </span>
         </div>
       </div>
@@ -260,13 +263,13 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
                         className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
                       />
                       <h3 className="text-lg font-semibold text-gray-800">
-                        {user.name}
+                        {user.name === "Admin" ? t.userManagement.admin : user.name}
                       </h3>
                     </div>
                     <div className="grid grid-cols-1 gap-2 text-sm">
                       <div>
                         <span className="text-gray-600 inline-block mr-2">
-                          Email:
+                          {t.userManagement.emailLabel}
                         </span>
                         <p className="text-gray-800 inline-block">
                           {user.email}
@@ -274,7 +277,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
                       </div>
                       <div>
                         <span className="text-gray-600 inline-block mr-2">
-                          Phone:
+                          {t.userManagement.phoneLabel}
                         </span>
                         <p className="text-gray-800 inline-block">
                           {user.phone || "N/A"}
@@ -282,10 +285,14 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
                       </div>
                       <div>
                         <span className="text-gray-600 inline-block mr-2">
-                          Department:
+                          {t.userManagement.departmentLabel}
                         </span>
                         <p className="text-gray-800 inline-block">
-                          {user.departmentOrSector}
+                          {(user.departmentOrSector || "")
+                            .split(' > ')
+                            .map((dep: string, idx: number) => t.departments[dep.trim() as keyof typeof t.departments] || dep.trim())
+                            .join(' > ')
+                          }
                         </p>
                       </div>
                     </div>
@@ -296,7 +303,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
                         disabled={!!actionLoading[user._id]}
                       >
                         <Edit className="w-4 h-4" />
-                        Edit
+                        {t.userManagement.edit}
                       </button>
                       <button
                         onClick={() => handleDeleteUser(user._id)}
@@ -304,7 +311,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
                         disabled={!!actionLoading[user._id]}
                       >
                         <Trash2 className="w-4 h-4" />
-                        Delete
+                        {t.userManagement.delete}
                       </button>
                     </div>
                   </div>

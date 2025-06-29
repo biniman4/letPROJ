@@ -141,19 +141,19 @@ const Inbox = () => {
       case "urgent":
         return (
           <span className="px-2 py-0.5 text-xs font-bold bg-red-100 text-red-600 rounded-full">
-            Urgent
+            {t.letterManagement.priorityValues.urgent}
           </span>
         );
       case "high":
         return (
           <span className="px-2 py-0.5 text-xs font-bold bg-yellow-100 text-yellow-600 rounded-full">
-            High
+            {t.letterManagement.priorityValues.high}
           </span>
         );
       case "normal":
         return (
           <span className="px-2 py-0.5 text-xs font-bold bg-green-100 text-green-600 rounded-full">
-            Normal
+            {t.letterManagement.priorityValues.normal}
           </span>
         );
       default:
@@ -343,85 +343,72 @@ const Inbox = () => {
     ]
   );
 
-  // Memoize the letter list item component
-  const LetterListItem = useMemo(() => {
-    return React.memo(
-      ({
-        letter,
-        onOpen,
-        onStarToggle,
-        isActive,
-      }: {
-        letter: Letter;
-        onOpen: (letter: Letter) => void;
-        onStarToggle: (letter: Letter, e: React.MouseEvent) => void;
-        isActive: boolean;
-      }) => {
-        const isUnread = letter.unread;
-        return (
-          <div
-            className={`flex items-center p-3 cursor-pointer border-l-4 ${
-              isActive
-                ? "border-[#C88B3D] bg-yellow-50/80 shadow-md scale-[1.01]"
-                : isUnread
-                ? "border-blue-500 bg-blue-50/70"
-                : "border-transparent"
-            } hover:bg-gray-100 transition-all duration-200 group`}
-            onClick={() => onOpen(letter)}
-            style={{
-              transition: "box-shadow 0.2s, background 0.2s, transform 0.1s",
-            }}
-          >
-            <div className="flex items-center gap-4 w-48 shrink-0">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onStarToggle(letter, e);
-                }}
-                className={`text-xl ${
-                  letter.starred ? "text-yellow-400" : "text-gray-300"
-                } hover:text-yellow-400 transition-colors`}
-              >
-                <StarIcon
-                  fill={letter.starred ? "currentColor" : "none"}
-                  className="w-5 h-5"
-                />
-              </button>
-              <span
-                className={`font-semibold truncate ${
-                  isUnread ? "text-gray-800" : "text-gray-600"
-                }`}
-              >
-                {letter.fromName}
-              </span>
-            </div>
-            <div className="flex-grow min-w-0 mx-4">
-              <span
-                className={`font-semibold truncate ${
-                  isUnread ? "text-gray-900" : "text-gray-700"
-                }`}
-              >
-                {letter.subject}
-              </span>
-            </div>
-            <div className="flex items-center justify-end gap-4 w-48 shrink-0 ml-auto">
-              {getPriorityBadge(letter.priority)}
-              {letter.attachments && letter.attachments.length > 0 && (
-                <FaPaperclip className="text-gray-400" />
-              )}
-              <span
-                className={`text-sm font-medium whitespace-nowrap ${
-                  isUnread ? "text-blue-600" : "text-gray-500"
-                }`}
-              >
-                {new Date(letter.createdAt).toLocaleDateString()}
-              </span>
-            </div>
+  // Remove React.memo from LetterListItem to ensure reactivity to language changes
+  const LetterListItem =
+    ({ letter, onOpen, onStarToggle, isActive }: { letter: Letter; onOpen: (letter: Letter) => void; onStarToggle: (letter: Letter, e: React.MouseEvent) => void; isActive: boolean; }) => {
+      const isUnread = letter.unread;
+      return (
+        <div
+          className={`flex items-center p-3 cursor-pointer border-l-4 ${
+            isActive
+              ? "border-[#C88B3D] bg-yellow-50/80 shadow-md scale-[1.01]"
+              : isUnread
+              ? "border-blue-500 bg-blue-50/70"
+              : "border-transparent"
+          } hover:bg-gray-100 transition-all duration-200 group`}
+          onClick={() => onOpen(letter)}
+          style={{
+            transition: "box-shadow 0.2s, background 0.2s, transform 0.1s",
+          }}
+        >
+          <div className="flex items-center gap-4 w-48 shrink-0">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onStarToggle(letter, e);
+              }}
+              className={`text-xl ${
+                letter.starred ? "text-yellow-400" : "text-gray-300"
+              } hover:text-yellow-400 transition-colors`}
+            >
+              <StarIcon
+                fill={letter.starred ? "currentColor" : "none"}
+                className="w-5 h-5"
+              />
+            </button>
+            <span
+              className={`font-semibold truncate ${
+                isUnread ? "text-gray-800" : "text-gray-600"
+              }`}
+            >
+              {letter.fromName}
+            </span>
           </div>
-        );
-      }
-    );
-  }, []);
+          <div className="flex-grow min-w-0 mx-4">
+            <span
+              className={`font-semibold truncate ${
+                isUnread ? "text-gray-900" : "text-gray-700"
+              }`}
+            >
+              {letter.subject}
+            </span>
+          </div>
+          <div className="flex items-center justify-end gap-4 w-48 shrink-0 ml-auto">
+            {getPriorityBadge(letter.priority)}
+            {letter.attachments && letter.attachments.length > 0 && (
+              <FaPaperclip className="text-gray-400" />
+            )}
+            <span
+              className={`text-sm font-medium whitespace-nowrap ${
+                isUnread ? "text-blue-600" : "text-gray-500"
+              }`}
+            >
+              {new Date(letter.createdAt).toLocaleDateString()}
+            </span>
+          </div>
+        </div>
+      );
+    };
 
   // Memoize pagination handlers
   const handleNextPage = useCallback(() => {
@@ -1086,10 +1073,14 @@ const Inbox = () => {
                   </div>
                   <div className="bg-gray-100/70 rounded-lg p-3">
                     <div className="text-xs text-gray-500 font-semibold mb-1">
-                      {t.inbox.department}
+                      {t.inbox.departmentLabel}
                     </div>
                     <div className="text-gray-800 font-semibold text-sm truncate">
-                      {openLetter.department}
+                      {(openLetter.department || "")
+                        .split(' > ')
+                        .map((dep: string) => t.departments[dep.trim() as keyof typeof t.departments] || dep.trim())
+                        .join(' > ')
+                      }
                     </div>
                   </div>
                   <div className="bg-gray-100/70 rounded-lg p-3">
@@ -1103,7 +1094,7 @@ const Inbox = () => {
                 </div>
                 <div className="mb-4">
                   <div className="text-xs text-gray-500 font-semibold mb-2">
-                    Content
+                    {t.inbox.contentLabel}
                   </div>
                   <div className="bg-blue-50/50 border-l-4 border-blue-400 rounded-md p-4 text-gray-800 whitespace-pre-line text-sm shadow-inner">
                     {openLetter.content}
@@ -1470,4 +1461,4 @@ const Inbox = () => {
   );
 };
 
-export default React.memo(Inbox);
+export default Inbox;

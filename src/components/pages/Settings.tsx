@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { SettingsIcon, Bell, Moon, Sun, Mail, User, Camera, Eye, EyeOff } from "lucide-react";
 import { useNotifications } from "../../context/NotificationContext";
 import { useTheme } from "../../context/ThemeContext";
-import { useLanguage } from "./LanguageContext";
+import { useLanguage, SupportedLang } from "./LanguageContext";
 import axios from "axios";
 
 interface UserProfile {
@@ -14,10 +14,22 @@ interface UserProfile {
   profileImage?: string;
 }
 
+function LanguageSwitcher() {
+  const { lang, setLang, t } = useLanguage();
+  return (
+    <button
+      onClick={() => setLang(lang === SupportedLang.Am ? SupportedLang.En : SupportedLang.Am)}
+      className="px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
+    >
+      {lang === SupportedLang.Am ? t.home.switchToEnglish : t.home.switchToAmharic}
+    </button>
+  );
+}
+
 const Settings = () => {
   const { unreadNotifications } = useNotifications();
   const { theme, toggleTheme } = useTheme();
-  const { t } = useLanguage();
+  const { t: langT } = useLanguage();
   const [userProfile, setUserProfile] = useState<UserProfile>({
     _id: "",
     name: "",
@@ -113,7 +125,7 @@ const Settings = () => {
     } catch (error: any) {
       setMessage({
         type: "error",
-        text: error.response?.data?.message || "Failed to upload profile picture",
+        text: error.response?.data?.message || langT.settings.profile.failedToUploadProfilePicture,
       });
     } finally {
       setIsLoading(false);
@@ -141,11 +153,11 @@ const Settings = () => {
       // Dispatch custom event to notify other components
       window.dispatchEvent(new Event('userDataUpdated'));
 
-      setMessage({ type: "success", text: t.settings.profile.saveChanges });
+      setMessage({ type: "success", text: langT.settings.profile.saveChanges });
     } catch (error: any) {
       setMessage({
         type: "error",
-        text: error.response?.data?.message || t.settings.profile.errorUpdating,
+        text: error.response?.data?.message || langT.settings.profile.errorUpdating,
       });
     } finally {
       setIsLoading(false);
@@ -189,14 +201,14 @@ const Settings = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-col items-center">
           <h2 className="text-4xl font-extrabold bg-gradient-to-r from-[#b97b2a] via-[#cfae7b] to-[#cfc7b7] text-transparent bg-clip-text drop-shadow-md">
-            {t.settings.title}
+            {langT.settings.title}
           </h2>
           <p
             className={`text-lg font-medium ${
               theme === "dark" ? "text-gray-400" : "text-[#BFBFBF]"
             }`}
           >
-            {t.settings.profile.title}
+            {langT.settings.profile.title}
           </p>
         </div>
 
@@ -220,7 +232,7 @@ const Settings = () => {
                   theme === "dark" ? "text-gray-100" : "text-gray-900"
                 }`}
               >
-                {t.settings.profile.title}
+                {langT.settings.profile.title}
               </h3>
             </div>
 
@@ -264,12 +276,12 @@ const Settings = () => {
                   <h4 className={`text-sm font-medium ${
                     theme === "dark" ? "text-gray-100" : "text-gray-900"
                   }`}>
-                    {t.settings.profile.profilePicture || "Profile Picture"}
+                    {langT.settings.profile.profilePicture || "Profile Picture"}
                   </h4>
                   <p className={`text-xs ${
                     theme === "dark" ? "text-gray-400" : "text-gray-500"
                   }`}>
-                    {t.settings.profile.profilePictureHint || "Click the camera icon to change your profile picture"}
+                    {langT.settings.profile.profilePictureHint || "Click the camera icon to change your profile picture"}
                   </p>
                 </div>
               </div>
@@ -286,7 +298,7 @@ const Settings = () => {
               {/* Profile picture upload section */}
               {userProfile.profileImage && userProfile.profileImage !== (JSON.parse(localStorage.getItem("user") || "{}").profileImage || null) && (
                 <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">New Profile Picture</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">{langT.settings.profile.newProfilePicture}</h4>
                   <div className="flex items-center space-x-3">
                     <img
                       src={userProfile.profileImage}
@@ -302,7 +314,7 @@ const Settings = () => {
                           isLoading ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                       >
-                        {isLoading ? "Uploading..." : "Upload"}
+                        {isLoading ? langT.settings.profile.uploading : langT.settings.profile.upload}
                       </button>
                       <button
                         type="button"
@@ -315,7 +327,7 @@ const Settings = () => {
                         }}
                         className="bg-gray-300 text-gray-700 px-3 py-1 rounded-md text-sm hover:bg-gray-400"
                       >
-                        Cancel
+                        {langT.settings.profile.cancel}
                       </button>
                     </div>
                   </div>
@@ -328,7 +340,7 @@ const Settings = () => {
                     theme === "dark" ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
-                  {t.settings.profile.name}
+                  {langT.settings.profile.name}
                 </label>
                 <input
                   type="text"
@@ -348,7 +360,7 @@ const Settings = () => {
                     theme === "dark" ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
-                  {t.settings.profile.email}
+                  {langT.settings.profile.email}
                 </label>
                 <input
                   type="email"
@@ -368,7 +380,7 @@ const Settings = () => {
                     theme === "dark" ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
-                  {t.settings.profile.phone}
+                  {langT.settings.profile.phone}
                 </label>
                 <input
                   type="tel"
@@ -387,7 +399,7 @@ const Settings = () => {
                     theme === "dark" ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
-                  {t.settings.profile.department}
+                  {langT.settings.profile.department}
                 </label>
                 <div
                   className={`mt-1 block w-full rounded-md shadow-sm px-3 py-2 ${
@@ -400,7 +412,7 @@ const Settings = () => {
                   {userProfile.departmentOrSector ? (
                     <span className="text-base">{userProfile.departmentOrSector}</span>
                   ) : (
-                    <span className="text-gray-400 text-base">Not set</span>
+                    <span className="text-gray-400 text-base">{langT.settings.profile.notSet}</span>
                   )}
                 </div>
               </div>
@@ -412,15 +424,15 @@ const Settings = () => {
                 } text-white font-semibold hover:bg-[#a06d2a] transition shadow-md ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 {isLoading
-                  ? t.settings.profile.saving
-                  : t.settings.profile.saveChanges}
+                  ? langT.settings.profile.saving
+                  : langT.settings.profile.saveChanges}
               </button>
             </form>
           </div>
 
           {/* Change Password Section */}
-          <div className={`rounded-lg border p-6 mt-8 transition-colors duration-300 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-            <h3 className={`text-lg font-semibold mb-6 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>Change Password</h3>
+          <div className={`rounded-lg border p-6 mt-8 transition-colors duration-300 transition-transform duration-200 hover:shadow-lg hover:scale-[1.02] ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+            <h3 className={`text-lg font-semibold mb-6 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>{langT.settings.password.title}</h3>
             <form
               onSubmit={handlePasswordChange}
               className="space-y-6"
@@ -432,14 +444,14 @@ const Settings = () => {
               )}
               
               <div>
-                <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Current Password</label>
+                <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{langT.settings.password.current}</label>
                 <div className="relative">
                 <input
                     type={showCurrentPassword ? "text" : "password"}
                   value={changePwd.currentPassword}
                   onChange={e => setChangePwd({ ...changePwd, currentPassword: e.target.value })}
                     className={`w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 transition pr-12`}
-                    placeholder="Enter current password"
+                    placeholder={langT.settings.password.currentPlaceholder}
                   required
                 />
                   <button
@@ -455,14 +467,14 @@ const Settings = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                  <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>New Password</label>
+                  <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{langT.settings.password.new}</label>
                   <div className="relative">
                 <input
                       type={showNewPassword ? "text" : "password"}
                   value={changePwd.newPassword}
                   onChange={e => setChangePwd({ ...changePwd, newPassword: e.target.value })}
                       className={`w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 transition pr-12`}
-                      placeholder="Enter new password"
+                      placeholder={langT.settings.password.newPlaceholder}
                   required
                 />
                     <button
@@ -477,14 +489,14 @@ const Settings = () => {
               </div>
                 
               <div>
-                  <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>Confirm New Password</label>
+                  <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{langT.settings.password.confirm}</label>
                   <div className="relative">
                 <input
                       type={showConfirmPassword ? "text" : "password"}
                   value={changePwd.confirmNewPassword}
                   onChange={e => setChangePwd({ ...changePwd, confirmNewPassword: e.target.value })}
                       className={`w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 transition pr-12`}
-                      placeholder="Confirm new password"
+                      placeholder={langT.settings.password.confirmPlaceholder}
                   required
                 />
                     <button
@@ -501,11 +513,11 @@ const Settings = () => {
               
               <div className="flex items-end">
                 <div className="w-full bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-medium text-blue-800 mb-2">Password Requirements</h4>
+                  <h4 className="font-medium text-blue-800 mb-2">{langT.settings.password.requirementsTitle}</h4>
                   <ul className="text-sm text-blue-700 space-y-1">
-                    <li>• At least 8 characters</li>
-                    <li>• Mix of letters and numbers</li>
-                    <li>• Include special characters</li>
+                    <li>{langT.settings.password.requirement1}</li>
+                    <li>{langT.settings.password.requirement2}</li>
+                    <li>{langT.settings.password.requirement3}</li>
                   </ul>
                 </div>
               </div>
@@ -522,10 +534,10 @@ const Settings = () => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                       </svg>
-                      Changing Password...
+                      {langT.settings.password.changing}
                     </>
                   ) : (
-                    'Change Password'
+                    langT.settings.password.changeButton
                   )}
                 </button>
                 
@@ -537,7 +549,7 @@ const Settings = () => {
                   }}
                   className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition border border-gray-300"
                 >
-                  Clear Form
+                  {langT.settings.password.clearButton}
               </button>
               </div>
             </form>
@@ -562,7 +574,7 @@ const Settings = () => {
                   theme === "dark" ? "text-gray-100" : "text-gray-900"
                 }`}
               >
-                {t.settings.notifications.title}
+                {langT.settings.notifications.title}
               </h3>
             </div>
             <div className="space-y-4">
@@ -573,14 +585,14 @@ const Settings = () => {
                       theme === "dark" ? "text-gray-100" : "text-gray-900"
                     }`}
                   >
-                    {t.settings.notifications.emailNotifications}
+                    {langT.settings.notifications.emailNotifications}
                   </h4>
                   <p
                     className={`text-sm ${
                       theme === "dark" ? "text-gray-400" : "text-gray-500"
                     }`}
                   >
-                    {t.settings.notifications.emailNotificationsDesc}
+                    {langT.settings.notifications.emailNotificationsDesc}
                   </p>
                 </div>
                 <button
@@ -609,14 +621,14 @@ const Settings = () => {
                       theme === "dark" ? "text-gray-100" : "text-gray-900"
                     }`}
                   >
-                    {t.settings.notifications.notificationSound}
+                    {langT.settings.notifications.notificationSound}
                   </h4>
                   <p
                     className={`text-sm ${
                       theme === "dark" ? "text-gray-400" : "text-gray-500"
                     }`}
                   >
-                    {t.settings.notifications.notificationSoundDesc}
+                    {langT.settings.notifications.notificationSoundDesc}
                   </p>
                 </div>
                 <button
@@ -660,7 +672,7 @@ const Settings = () => {
                   theme === "dark" ? "text-gray-100" : "text-gray-900"
                 }`}
               >
-                {t.settings.appearance.title}
+                {langT.settings.appearance.title}
               </h3>
             </div>
             <div className="flex items-center justify-between">
@@ -670,7 +682,7 @@ const Settings = () => {
                     theme === "dark" ? "text-gray-100" : "text-gray-900"
                   }`}
                 >
-                  {t.settings.appearance.theme}
+                  {langT.settings.appearance.theme}
                 </h4>
                 <p
                   className={`text-sm ${
@@ -678,8 +690,8 @@ const Settings = () => {
                   }`}
                 >
                   {theme === "dark"
-                    ? t.settings.appearance.dark
-                    : t.settings.appearance.light}
+                    ? langT.settings.appearance.dark
+                    : langT.settings.appearance.light}
                 </p>
               </div>
               <button
@@ -694,6 +706,26 @@ const Settings = () => {
                   }`}
                 />
               </button>
+            </div>
+            {/* Language Switch Button */}
+            <div className="flex items-center justify-between mt-6">
+              <div>
+                <h4
+                  className={`text-sm font-medium ${
+                    theme === "dark" ? "text-gray-100" : "text-gray-900"
+                  }`}
+                >
+                  {langT.settings.appearance.language}
+                </h4>
+                <p
+                  className={`text-sm ${
+                    theme === "dark" ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
+                  {langT.settings.appearance.english} / {langT.settings.appearance.amharic}
+                </p>
+              </div>
+              <LanguageSwitcher />
             </div>
           </div>
         </div>

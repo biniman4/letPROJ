@@ -22,6 +22,79 @@
   "feature6": "ትንታኔ እና ትርጉም",
   "featureDesc6": "በሰነዶች መረጃ ላይ ጥቅም ያለ ትንታኔ ያግኙ።",
 
+  "home": {
+    "title": "ደብዳቤ ፍሎው",
+    "subtitle": "የመገናኛ ሂደትዎን ያቀላጥፉ",
+    "description": "የSSGI ሁሉንም ኦፊሴላዊ መገናኛዎችን በውጤታማነት እና በደህንነት ለመያዝ የተዘጋጀ ሁለገብ የደብዳቤ አስተዳደር ስርዓት።",
+    "login": "ጀምር",
+    "featuresHeading": "የስርዓቱ ጥቅሞች",
+    "featuresSub": "ደብዳቤዎችን በውጤታማ ሁኔታ ለማስተዳደር የሚያስፈልገው ሁሉ",
+    "ctaTitle": "የመገናኛ ሂደትዎን ለመለወጥ ዝግጁ ነዎት?",
+    "ctaSubtitle": "የSSGI ዲጂታል ለውጥ ዛሬ ይቀላቀሉ",
+    "seeHowItWorksNav": "እንዴት እንደሚሰራ ይመልከቱ",
+    "servicesHeading": "አገልግሎቶች",
+    "systemDemo": "የስርዓቱ አጠቃቀም",
+    "seeHowItWorks": "ስርዓቱን እንዴት እንደሚጠቀሙ",
+    "videoDescription": "የስርዓታችንን አጠቃቀም ይመልከቱ እና ለድርጅትዎ የሚያመጡትን ጥቅሞች ይወቁ",
+    "browserNotSupported": "የብራውዘርዎ ቪዲዮ አይደገፍም",
+    "minutes": "ደቂቃ",
+    "hdQuality": "HD ጥራት",
+    "systemBenefits": "የስርዓቱ ጥቅሞች",
+    "fastEfficient": "ፈጣን እና ቀልጣፋ",
+    "fastEfficientDesc": "ደብዳበዎችን በፍጹም ፍጥነት ያስተዳድሩ እና ያስገቡ",
+    "secureReliable": "ደህንነቱ የተጠበቀ",
+    "secureReliableDesc": "ደብዳበዎች በደህንነት ይቀመጣሉ እና ይጠበቃሉ",
+    "betterTracking": "የተሻሻለ ቁጥጥር",
+    "betterTrackingDesc": "የደብዳበዎችን ሁኔታ በቀጥታ ይከታተሉ",
+    "enhancedCollaboration": "የተሻሻለ ትብብር",
+    "enhancedCollaborationDesc": "ከቡድን አባላት ጋር በቀላሉ ያብቁ",
+    "getStartedNow": "አሁን ጀምሩ",
+    "professionalServices": "የሙያተኛ አገልግሎቶቻችን",
+    "servicesDescription": "ለSSGI የግንኙነት ፍላጎቶች የተለዩ መፍትሄዎች"
+  },
+
+  "features": [
+    {
+      "name": "ዘመናዊ የሰነድ አስተዳደር",
+      "description": "የስራ መገናኛዎችን በቀላሉ ያስተዳድሩ እና ያዘጋጁ።"
+    },
+    {
+      "name": "በእውነት የጊዜ መከታተያ",
+      "description": "የደብዳቤዎችን እና የሰነዶችን ሁኔታ በእውነት የጊዜ ያስተውሉ።"
+    },
+    {
+      "name": "የላቀ ደህንነት",
+      "description": "የስራ ደረጃ ደህንነት ያለው ስርዓት።"
+    },
+    {
+      "name": "ኃይለኛ ፍለጋ",
+      "description": "ማንኛውንም ሰነድ በፍጥነት ያግኙ።"
+    },
+    {
+      "name": "ማስኬያ ስራዎች",
+      "description": "የማጽደቅ ሂደቶችን ያቀላጥፉ።"
+    },
+    {
+      "name": "ትንታኔ እና ትርጉም",
+      "description": "በሰነዶች መረጃ ላይ ጥቅም ያለ ትንታኔ ያግኙ።"
+    }
+  ],
+
+  "services": [
+    {
+      "name": "የደብዳቤ አስተዳደር",
+      "description": "ሁለገብ የደብዳቤ ፍጠር፣ አርትዕ እና አስተዳደር መሳሪያዎች።"
+    },
+    {
+      "name": "የሰነድ ማዘጋጀት",
+      "description": "የላቀ የሰነድ ማዘጋጀት ከብዙ ቅርጸቶች ጋር።"
+    },
+    {
+      "name": "የመገናኛ ማዕከል",
+      "description": "ለሁሉም SSGI መምሪያዎች የተዘጋጀ የመገናኛ መድረክ።"
+    }
+  ],
+
   "sent": {
     "title": "የተላኩ ደብዳቤዎች",
     "newLetterButton": "አዲስ ደብዳቤ",
@@ -114,5 +187,23 @@
     "settings": "ቅንብሮች",
     "adminPanel": "አድሚን ፓነል",
     "letterFlow": "ደብዳቤ ፍሎው"
+  },
+  "settings": {
+    "password": {
+      "title": "የይለፍ ቃል ቀይር",
+      "current": "አሁን ያለው የይለፍ ቃል",
+      "currentPlaceholder": "አሁኑን የይለፍ ቃል ያስገቡ",
+      "new": "አዲስ የይለፍ ቃል",
+      "newPlaceholder": "አዲስ የይለፍ ቃል ያስገቡ",
+      "confirm": "የይለፍ ቃል ያረጋግጡ",
+      "confirmPlaceholder": "አዲስ የይለፍ ቃል ያረጋግጡ",
+      "requirementsTitle": "የይለፍ ቃል መስፈርቶች",
+      "requirement1": "• ቢያንስ 8 ቁምፊዎች",
+      "requirement2": "• የፊደልና ቁጥር ቅርጸት ይዟል",
+      "requirement3": "• ልዩ ባህሪያት ያካትታል",
+      "changing": "የይለፍ ቃል በመቀየር ላይ...",
+      "changeButton": "የይለፍ ቃል ቀይር",
+      "clearButton": "ቅጽ አጽዳ"
+    }
   }
 }
