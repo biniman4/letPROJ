@@ -180,11 +180,18 @@ const Signup = () => {
               placeholder={t.signup.phoneNumberPlaceholder}
             />
             <div className="w-full">
+              <label className={`block mb-1 text-sm font-medium ${!formData.departmentOrSector && error ? 'text-red-600' : 'text-gray-700'}`}
+                htmlFor="departmentOrSector">
+                {t.sent.departmentLabel} <span className="text-red-500">*</span>
+              </label>
               <DepartmentSelector
                 onChange={(val) =>
                   setFormData((prev) => ({ ...prev, departmentOrSector: val }))
                 }
               />
+              {!formData.departmentOrSector && error && (
+                <div className="text-xs text-red-600 mt-1">{t.sent.departmentRequired}</div>
+              )}
             </div>
           </div>
           
@@ -230,20 +237,10 @@ const Signup = () => {
           <div className="flex flex-col md:flex-row gap-4 pt-4">
             <button
               type="submit"
-              disabled={isSubmitting}
-              className={`flex-1 py-3 ${isSubmitting ? 'bg-[#a06d2a]' : 'bg-[#C88B3D]'} text-white font-semibold rounded-xl ${isSubmitting ? '' : 'hover:bg-[#a06d2a]'} transition shadow-md flex items-center justify-center`}
+              className={`w-full py-3 px-6 rounded-lg font-semibold text-white transition bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 ${isSubmitting || !formData.departmentOrSector ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={isSubmitting || !formData.departmentOrSector}
             >
-              {isSubmitting ? (
-                <>
-                  <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                  </svg>
-                  Creating Account...
-                </>
-              ) : (
-                t.signup.signUpButton
-              )}
+              {isSubmitting ? t.signup.signUpButton + '...' : t.signup.signUpButton}
             </button>
             <button
               type="button"

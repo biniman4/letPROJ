@@ -161,12 +161,14 @@ const NewLetter = () => {
           if (key === "ccEmployees") {
             formData.append("ccEmployees", JSON.stringify(value));
             console.log("Adding CC data to FormData:", JSON.stringify(value));
-          } else if (key !== "attachments") {
+          } else if (key !== "attachments" && key !== "from") {
             formData.append(key, value as string);
           }
         });
         formData.append("from", currentUserId);
         formData.append("attachment", attachment);
+
+        console.log("FormData before sending:", Array.from(formData.entries()));
 
         response = await axios.post(
           "http://localhost:5000/api/letters",

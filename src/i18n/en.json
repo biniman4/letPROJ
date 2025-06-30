@@ -22,7 +22,7 @@
   "featureDesc6": "Gain valuable insights into your document workflows.",
 
   "sent": {
-    "title": "Sent Letters",
+    "title": "Letters",
     "newLetterButton": "New Letter",
     "searchPlaceholder": "Search letters...",
     "allStatus": "All Status",
@@ -112,64 +112,16 @@
     "ctaTitle": "Ready to Transform Your Communication?",
     "ctaSubtitle": "Join SSGI's digital transformation today",
     "seeHowItWorksNav": "See How It Works",
-    "servicesHeading": "Services",
-    "systemDemo": "System Demo",
-    "seeHowItWorks": "See How It Works",
-    "videoDescription": "Watch our system in action and discover the benefits it brings to your organization",
-    "browserNotSupported": "Your browser does not support the video tag.",
-    "minutes": "min",
-    "hdQuality": "HD Quality",
-    "systemBenefits": "System Benefits",
-    "fastEfficient": "Fast & Efficient",
-    "fastEfficientDesc": "Manage and submit letters with lightning speed and efficiency",
-    "secureReliable": "Secure & Reliable",
-    "secureReliableDesc": "Your letters are stored securely and protected at all times",
-    "betterTracking": "Better Tracking",
-    "betterTrackingDesc": "Track the status of your letters in real-time",
-    "enhancedCollaboration": "Enhanced Collaboration",
-    "enhancedCollaborationDesc": "Collaborate seamlessly with team members",
-    "getStartedNow": "Get Started Now",
-    "professionalServices": "Our Professional Services",
-    "servicesDescription": "Specialized solutions for SSGI's communication needs"
+    "servicesHeading": "Services"
   },
-  "features": [
-    {
-      "name": "Smart Document Management",
-      "description": "Efficiently organize and manage all your business correspondence in one place."
-    },
-    {
-      "name": "Real-time Tracking",
-      "description": "Track the status of your letters and documents in real-time."
-    },
-    {
-      "name": "Advanced Security",
-      "description": "Enterprise-grade security to keep your sensitive documents safe."
-    },
-    {
-      "name": "Powerful Search",
-      "description": "Find any document instantly with our advanced search capabilities."
-    },
-    {
-      "name": "Automated Workflows",
-      "description": "Streamline your approval processes with automated workflows."
-    },
-    {
-      "name": "Analytics & Insights",
-      "description": "Gain valuable insights into your document workflows."
-    }
-  ],
-  "services": [
-    {
-      "name": "Letter Management",
-      "description": "Comprehensive letter creation, editing, and management tools."
-    },
-    {
-      "name": "Document Processing",
-      "description": "Advanced document processing with support for multiple formats."
-    },
-    {
-      "name": "Communication Hub",
-      "description": "Centralized communication platform for all SSGI departments."
-    }
-  ]
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "adminPanel": "Admin Panel"
+  },
+  "roles": {
+    "user": "User",
+    "admin": "Admin",
+    "label": "User Role"
+  }
 }

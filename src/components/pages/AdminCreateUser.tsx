@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { UserPlus, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
 import DepartmentSelector from "./DepartmentSelector";
+import { useLanguage } from "./LanguageContext";
 
 const AdminCreateUser = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -38,7 +40,7 @@ const AdminCreateUser = () => {
       !formData.phone.trim() ||
       !formData.departmentOrSector.trim()
     ) {
-      setError("Please fill in all required fields");
+      setError(t.signup?.fillAllFields || "Please fill in all required fields");
       setIsSubmitting(false);
       return;
     }
@@ -48,12 +50,10 @@ const AdminCreateUser = () => {
         "http://localhost:5000/api/users/admin/create-user",
         formData
       );
-      
       setSuccess(
-        `User created successfully! A welcome email with temporary password has been sent to ${formData.email}`
+        t.signup?.registrationSuccessful ||
+          `User created successfully! A welcome email with temporary password has been sent to ${formData.email}`
       );
-      
-      // Reset form
       setFormData({
         name: "",
         email: "",
@@ -63,8 +63,9 @@ const AdminCreateUser = () => {
       });
     } catch (err: any) {
       setError(
-        err.response?.data?.message || 
-        err.response?.data?.error || 
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        t.signup?.registrationFailed ||
         "Failed to create user. Please try again."
       );
     } finally {
@@ -82,14 +83,16 @@ const AdminCreateUser = () => {
             className="flex items-center gap-2 text-teal-700 hover:text-teal-800 mb-4 transition"
           >
             <ArrowLeft size={20} />
-            Back to Admin Panel
+            {t.sidebar?.adminPanel || "Back to Admin Panel"}
           </button>
           <div className="flex items-center gap-3 mb-2">
             <UserPlus className="w-8 h-8 text-teal-700" />
-            <h1 className="text-3xl font-bold text-gray-800">Create New User</h1>
+            <h1 className="text-3xl font-bold text-gray-800">
+              {t.signup?.signUpButton || "Create New User"}
+            </h1>
           </div>
           <p className="text-gray-600">
-            Create a new user account. They will receive a welcome email with temporary login credentials.
+            {t.signup?.subtitle || "Create a new user account. They will receive a welcome email with temporary login credentials."}
           </p>
         </div>
 
@@ -115,14 +118,14 @@ const AdminCreateUser = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name *
+                  {t.signup?.fullNameLabel || "Full Name"} *
                 </label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="Enter full name"
+                  placeholder={t.signup?.fullNamePlaceholder || "Enter full name"}
                   className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
                   required
                 />
@@ -130,14 +133,14 @@ const AdminCreateUser = () => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
+                  {t.signup?.emailLabel || "Email Address"} *
                 </label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="Enter email address"
+                  placeholder={t.signup?.emailPlaceholder || "Enter email address"}
                   className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
                   required
                 />
@@ -148,14 +151,14 @@ const AdminCreateUser = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number *
+                  {t.signup?.phoneNumberLabel || "Phone Number"} *
                 </label>
                 <input
                   type="tel"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="Enter phone number"
+                  placeholder={t.signup?.phoneNumberPlaceholder || "Enter phone number"}
                   className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
                   required
                 />
@@ -163,7 +166,7 @@ const AdminCreateUser = () => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Department/Sector *
+                  {t.sent?.departmentLabel || "Department/Sector"} *
                 </label>
                 <DepartmentSelector
                   onChange={(val) =>
@@ -176,7 +179,7 @@ const AdminCreateUser = () => {
             {/* Role */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                User Role
+                {t.roles?.label || "User Role"}
               </label>
               <select
                 name="role"
@@ -184,14 +187,16 @@ const AdminCreateUser = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
               >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
+                <option value="user">{t.roles?.user || "User"}</option>
+                <option value="admin">{t.roles?.admin || "Admin"}</option>
               </select>
             </div>
 
             {/* Info Box */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-medium text-blue-800 mb-2">What happens next?</h3>
+              <h3 className="font-medium text-blue-800 mb-2">
+                {"What happens next?"}
+              </h3>
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>• User account will be created with a temporary password</li>
                 <li>• Welcome email will be sent with login credentials</li>
@@ -200,37 +205,13 @@ const AdminCreateUser = () => {
               </ul>
             </div>
 
-            {/* Submit Button */}
-            <div className="flex gap-4 pt-4">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className={`flex-1 py-3 ${isSubmitting ? 'bg-[#a06d2a]' : 'bg-[#C88B3D]'} text-white font-semibold rounded-xl ${isSubmitting ? '' : 'hover:bg-[#a06d2a]'} transition shadow-md flex items-center justify-center`}
-              >
-                {isSubmitting ? (
-                  <>
-                    <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                    </svg>
-                    Creating User...
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="w-5 h-5 mr-2" />
-                    Create User Account
-                  </>
-                )}
-              </button>
-              
-              <button
-                type="button"
-                onClick={() => navigate("/admin")}
-                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition border border-gray-300"
-              >
-                Cancel
-              </button>
-            </div>
+            <button
+              type="submit"
+              className={`w-full py-3 px-6 rounded-lg font-semibold text-white transition bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (t.signup?.signUpButton || "Create User") + "..." : t.signup?.signUpButton || "Create User"}
+            </button>
           </form>
         </div>
       </div>

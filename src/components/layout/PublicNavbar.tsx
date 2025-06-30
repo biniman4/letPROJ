@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { GlobeIcon } from "lucide-react";
-import { SupportedLang } from "../pages/LanguageContext";
-import { useLanguage } from "../../components/pages/LanguageContext";
+import { useLanguage, SupportedLang } from "../pages/LanguageContext";
 
 export const PublicNavbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);

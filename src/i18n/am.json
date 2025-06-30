@@ -96,7 +96,7 @@
   ],
 
   "sent": {
-    "title": "የተላኩ ደብዳቤዎች",
+    "title": "ደብዳቤዎች",
     "newLetterButton": "አዲስ ደብዳቤ",
     "searchPlaceholder": "ደብዳቤዎችን ይፈልጉ...",
     "allStatus": "ሁሉም ሁኔታ",
@@ -188,22 +188,9 @@
     "adminPanel": "አድሚን ፓነል",
     "letterFlow": "ደብዳቤ ፍሎው"
   },
-  "settings": {
-    "password": {
-      "title": "የይለፍ ቃል ቀይር",
-      "current": "አሁን ያለው የይለፍ ቃል",
-      "currentPlaceholder": "አሁኑን የይለፍ ቃል ያስገቡ",
-      "new": "አዲስ የይለፍ ቃል",
-      "newPlaceholder": "አዲስ የይለፍ ቃል ያስገቡ",
-      "confirm": "የይለፍ ቃል ያረጋግጡ",
-      "confirmPlaceholder": "አዲስ የይለፍ ቃል ያረጋግጡ",
-      "requirementsTitle": "የይለፍ ቃል መስፈርቶች",
-      "requirement1": "• ቢያንስ 8 ቁምፊዎች",
-      "requirement2": "• የፊደልና ቁጥር ቅርጸት ይዟል",
-      "requirement3": "• ልዩ ባህሪያት ያካትታል",
-      "changing": "የይለፍ ቃል በመቀየር ላይ...",
-      "changeButton": "የይለፍ ቃል ቀይር",
-      "clearButton": "ቅጽ አጽዳ"
-    }
+  "roles": {
+    "user": "ተጠቃሚ",
+    "admin": "አስተዳዳሪ",
+    "label": "የተጠቃሚ ሚና"
   }
 }

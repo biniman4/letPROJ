@@ -2,6 +2,7 @@ import React, { useState, forwardRef, useImperativeHandle } from "react";
 import { useLanguage } from "./LanguageContext";
 
 type DepartmentOption = {
+  id: string;
   label: string;
   subDepartments?: DepartmentOption[];
 };
@@ -18,72 +19,55 @@ const DepartmentSelector = forwardRef<
 
   const departments: DepartmentOption[] = t.departmentSelector.departments;
 
-  const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
-  const [selectedSubSubCategory, setSelectedSubSubCategory] =
-    useState<string>("");
+  const [selectedMainId, setSelectedMainId] = useState<string>("");
+  const [selectedSubId, setSelectedSubId] = useState<string>("");
+  const [selectedSubSubId, setSelectedSubSubId] = useState<string>("");
 
   useImperativeHandle(ref, () => ({
     reset: () => {
-      setSelectedMainCategory("");
-      setSelectedSubCategory("");
-      setSelectedSubSubCategory("");
+      setSelectedMainId("");
+      setSelectedSubId("");
+      setSelectedSubSubId("");
     },
   }));
 
-  const flattenedDepartments = React.useMemo(() => {
-    const flatten = (
-      options: DepartmentOption[],
-      parentLabel = ""
-    ): { label: string; value: string }[] => {
-      let result: { label: string; value: string }[] = [];
-      options.forEach((opt) => {
-        const currentLabel = opt.label;
-        const fullLabel = parentLabel
-          ? `${parentLabel} > ${currentLabel}`
-          : currentLabel;
-        result.push({ label: currentLabel, value: fullLabel });
-        if (opt.subDepartments) {
-          result = result.concat(flatten(opt.subDepartments, fullLabel));
-        }
-      });
-      return result;
-    };
-    return flatten(departments);
-  }, [departments]);
+  const selectedMain = departments.find((dept) => dept.id === selectedMainId);
+  const subCategories = selectedMain?.subDepartments || [];
+  const selectedSub = subCategories.find((sub) => sub.id === selectedSubId);
+  const subSubCategories = selectedSub?.subDepartments || [];
+  const selectedSubSub = subSubCategories.find((subSub) => subSub.id === selectedSubSubId);
+
+  const getFullIdPath = () => {
+    return [selectedMainId, selectedSubId, selectedSubSubId].filter(Boolean).join(" > ");
+  };
+
+  const getFullLabelPath = () => {
+    return [selectedMain?.label, selectedSub?.label, selectedSubSub?.label].filter(Boolean).join(" > ");
+  };
 
   const handleMainCategoryChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    setSelectedMainCategory(event.target.value);
-    setSelectedSubCategory("");
-    setSelectedSubSubCategory("");
-    onChange(event.target.value);
+    setSelectedMainId(event.target.value);
+    setSelectedSubId("");
+    setSelectedSubSubId("");
+    setTimeout(() => onChange(event.target.value), 0);
   };
 
   const handleSubCategoryChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    setSelectedSubCategory(event.target.value);
-    setSelectedSubSubCategory("");
-    onChange(`${selectedMainCategory} > ${event.target.value}`);
+    setSelectedSubId(event.target.value);
+    setSelectedSubSubId("");
+    setTimeout(() => onChange([selectedMainId, event.target.value].filter(Boolean).join(" > ")), 0);
   };
 
   const handleSubSubCategoryChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    setSelectedSubSubCategory(event.target.value);
-    onChange(
-      `${selectedMainCategory} > ${selectedSubCategory} > ${event.target.value}`
-    );
+    setSelectedSubSubId(event.target.value);
+    setTimeout(() => onChange(getFullIdPath()), 0);
   };
-
-  const subCategories =
-    departments.find((dept) => dept.label === selectedMainCategory)
-      ?.subDepartments || [];
-  const subSubCategories =
-    subCategories.find((sub) => sub.label === selectedSubCategory)
-      ?.subDepartments || [];
 
   return (
     <div>
@@ -92,12 +76,12 @@ const DepartmentSelector = forwardRef<
       </label>
       <select
         className="border border-gray-300 rounded-lg px-3 py-2 w-full bg-white focus:ring-2 focus:ring-blue-200 mb-2"
-        value={selectedMainCategory}
+        value={selectedMainId}
         onChange={handleMainCategoryChange}
       >
         <option value="">{t.departmentSelector.selectMainCategory}</option>
         {departments.map((dept) => (
-          <option key={dept.label} value={dept.label}>
+          <option key={dept.id} value={dept.id}>
             {dept.label}
           </option>
         ))}
@@ -110,12 +94,12 @@ const DepartmentSelector = forwardRef<
           </label>
           <select
             className="border border-gray-300 rounded-lg px-3 py-2 w-full bg-white focus:ring-2 focus:ring-blue-200 mb-2"
-            value={selectedSubCategory}
+            value={selectedSubId}
             onChange={handleSubCategoryChange}
           >
             <option value="">{t.departmentSelector.selectSubCategory}</option>
             {subCategories.map((sub) => (
-              <option key={sub.label} value={sub.label}>
+              <option key={sub.id} value={sub.id}>
                 {sub.label}
               </option>
             ))}
@@ -130,14 +114,14 @@ const DepartmentSelector = forwardRef<
           </label>
           <select
             className="border border-gray-300 rounded-lg px-3 py-2 w-full bg-white focus:ring-2 focus:ring-blue-200 mb-2"
-            value={selectedSubSubCategory}
+            value={selectedSubSubId}
             onChange={handleSubSubCategoryChange}
           >
             <option value="">
               {t.departmentSelector.selectSubSubCategory}
             </option>
             {subSubCategories.map((subSub) => (
-              <option key={subSub.label} value={subSub.label}>
+              <option key={subSub.id} value={subSub.id}>
                 {subSub.label}
               </option>
             ))}
@@ -145,23 +129,12 @@ const DepartmentSelector = forwardRef<
         </>
       )}
 
-      {showBreadcrumb &&
-        (selectedMainCategory ||
-          selectedSubCategory ||
-          selectedSubSubCategory) && (
-          <div style={{ marginTop: "20px", color: "green" }}>
-            {t.departmentSelector.selectedCategory}:{" "}
-            <strong>
-              {[
-                selectedMainCategory,
-                selectedSubCategory,
-                selectedSubSubCategory,
-              ]
-                .filter(Boolean)
-                .join(" > ")}
-            </strong>
-          </div>
-        )}
+      {showBreadcrumb && getFullLabelPath() && (
+        <div style={{ marginTop: "20px", color: "green" }}>
+          {t.departmentSelector.selectedCategory}:{" "}
+          <strong>{getFullLabelPath()}</strong>
+        </div>
+      )}
     </div>
   );
 });
