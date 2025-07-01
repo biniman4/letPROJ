@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Eye, EyeOff, Check, X as XIcon } from "lucide-react";
+import logo from "../../img icon/logo.png";
 
 const MIN_LENGTH = 8;
 
@@ -91,6 +92,9 @@ const ResetPassword: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md border border-gray-200">
+        <div className="flex justify-center mb-4">
+          <img src={logo} alt="Logo" className="h-16" />
+        </div>
         <h2 className="text-3xl font-extrabold bg-gradient-to-r from-[#b97b2a] via-[#cfae7b] to-[#cfc7b7] text-transparent bg-clip-text drop-shadow-md text-center mb-2">
           Reset your password
         </h2>
@@ -183,6 +187,24 @@ const ResetPassword: React.FC = () => {
         </form>
         {message && <p className="text-green-600 mt-4 text-center">{message}</p>}
         {error && <p className="text-red-600 mt-4 text-center">{error}</p>}
+        <div className="flex justify-between mt-6 gap-4">
+          <button
+            type="button"
+            className="w-1/2 py-2 rounded-full text-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors border border-gray-300"
+            onClick={() => { setPassword(""); setConfirm(""); setError(""); setMessage(""); }}
+            disabled={loading}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="w-1/2 py-2 rounded-full text-lg font-semibold text-white bg-[#b97b2a] hover:bg-[#a86d22] transition-colors border border-[#b97b2a]"
+            onClick={() => navigate("/")}
+            disabled={loading}
+          >
+            Go Home
+          </button>
+        </div>
       </div>
     </div>
   );

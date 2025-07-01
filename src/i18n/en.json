@@ -119,9 +119,88 @@
     "users": "Users",
     "adminPanel": "Admin Panel"
   },
+  "header": {
+    "profile": "Profile",
+    "settings": "Settings",
+    "signOut": "Sign Out"
+  },
   "roles": {
     "user": "User",
     "admin": "Admin",
     "label": "User Role"
+  },
+  "userManagement": {
+    "searchPlaceholder": "Search users...",
+    "userCount": "{count} users",
+    "emailLabel": "Email:",
+    "phoneLabel": "Phone:",
+    "departmentLabel": "Department:",
+    "edit": "Edit",
+    "delete": "Delete",
+    "admin": "Admin"
+  },
+  "departments": {
+    "Space Science": "Space Science",
+    "Geospatial": "Geospatial",
+    "Research": "Research",
+    "Administration": "Administration",
+    "IT": "IT",
+    "Finance": "Finance",
+    "HR": "HR"
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "View and manage your profile information",
+    "loading": "Loading profile...",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "department": "Department/Sector",
+    "notSet": "Not set",
+    "editProfile": "Edit Profile",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "changeProfilePicture": "Change profile picture",
+    "newProfilePicture": "New Profile Picture",
+    "upload": "Upload",
+    "uploading": "Uploading...",
+    "profilePictureUpdated": "Profile picture updated successfully!",
+    "profileUpdated": "Profile updated successfully!",
+    "failedToUpload": "Failed to upload profile picture",
+    "failedToUpdate": "Failed to update profile",
+    "selectValidImage": "Please select a valid image file",
+    "imageSizeLimit": "Image size should be less than 5MB",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "passwordChanged": "Password changed successfully!",
+    "failedToChangePassword": "Failed to change password",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "currentPasswordRequired": "Current password is required",
+    "newPasswordRequired": "New password is required",
+    "confirmPasswordRequired": "Please confirm your new password"
+  },
+  "footer": {
+    "about": "About",
+    "instituteOverview": "Institute Overview",
+    "missionVision": "Mission & Vision",
+    "contactUs": "Contact Us",
+    "resources": "Resources",
+    "ourServices": "Our Services",
+    "documentation": "Documentation",
+    "faqs": "FAQs",
+    "legal": "Legal",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfUse": "Terms of Use",
+    "location": "Location",
+    "instituteName": "Institute Name",
+    "address": "123 Main St, City",
+    "website": "Visit our website",
+    "copyright": "All rights reserved."
+  },
+  "loading": {
+    "pleaseWait": "Please wait..."
   }
 }

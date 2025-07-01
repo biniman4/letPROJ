@@ -12,7 +12,6 @@ const AdminPanel = () => {
   const { t } = useLanguage();
   const buttonStyle =
     "flex items-center gap-2 px-5 py-2 rounded-lg font-semibold shadow bg-blue-600 text-white hover:bg-blue-700 transition-all duration-150";
-  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6">

@@ -257,8 +257,7 @@ const translations = {
     // Inbox translations
     inbox: {
       title: "የገቢ መልዕክት ሳጥን",
-      manageLetters: "የገቢ መልዕክቶችን ያስተዳድሩ",
-      searchPlaceholder: "ደብዳቤዎችን ፈልግ...",
+      searchPlaceholder: "በየገቢ ሳጥን ይፈልጉ...",
       filterButton: "አጣራ",
       filterOptions: {
         all: "ሁሉም",
@@ -266,60 +265,13 @@ const translations = {
         starred: "በኮከብ ምልክት የተደረጉ",
         urgent: "አደገኛ",
         seen: "የተዩ",
-        rejected: "ውድቅ ተደርጓል",
+        rejected: "ውድቅ ተደርጓል"
       },
-      loadingLetters: "ደብዳቤዎች በመጫን ላይ...",
-      noLettersFound: "ምንም ደብዳቤዎች አልተገኙም",
-      refreshing: "በዳግም መጫን ላይ...",
-      refresh: "ዳግም ጫን",
-      showing: "የሚታዩ",
-      to: "እስከ",
-      of: "ከ",
-      letters: "ደብዳቤዎች",
-      previous: "ቀዳሚ",
-      next: "ቀጣይ",
-      subject: "ርዕስ",
-      recipient: "ተቀባይ",
+      noLetters: "ማንኛውም መልዕክት የለም።",
       from: "ከ",
-      department: "ክፍል",
-      priority: "ቅድመ ተራ",
+      subject: "ርዕስ",
       date: "ቀን",
-      backButton: "ተመለስ",
-      forwardButton: "ወደፊት ላክ",
-      addComment: "አስተያየት አክል",
-      addCommentPlaceholder: "አስተያየትዎን ያስገቡ...",
-      loadingUsers: "ተጠቃሚዎች በመጫን ላይ...",
-      additionalRecipients: "ተጨማሪ ተቀባዮች",
-      errorFetchingUsers: "ተጠቃሚዎችን ማምጣት ላይ ስህተት ተፈጥሯል",
-      errorUpdatingStatus: "Error updating letter status",
-      letterStarred: (subject: string) => `Letter "${subject}" starred`,
-      letterUnstarred: (subject: string) => `Letter "${subject}" unstarred`,
-      errorTogglingStar: "Error toggling star status",
-      forwardedMessage: "Forwarded Message",
-      messageForwarded: "Message forwarded to",
-      failedToForward: "Failed to forward message",
-      attachments: "Attachments",
-      download: "Download",
-      view: "View",
-      viewButton: "ደብዳቤ አሳይ",
-      forwardLetter: "Forward Letter",
-      printButton: "Print",
-      selectEmployee: "Select Employee",
-      cancel: "Cancel",
-      closeButton: "Close",
-      downloadButton: "Download",
-      previewNotAvailable: "Preview not available",
-      downloadToView: "Please download to view this file",
-      errorDownloadingFile: "Error downloading file",
-      errorViewingFile: "Error viewing file",
-      downloadSuccess: "ፋይሉ በተሳካ ሁኔታ ወርዷል",
-      loading: "በመጫን ላይ...",
-      forwarding: "በመላክ ላይ...",
-      contentType: "የፋይሉ አይነት",
-      letterRejected: "ደብዳቤ ውድቅ ተደርጓል",
-      rejectionReason: "ምክንያት",
-      departmentLabel: "መደብ",
-      contentLabel: "ይዘት",
+      viewButton: "መልዕክት አሳይ"
     },
     // Sent translations
     sent: {
@@ -508,6 +460,29 @@ const translations = {
       admin: "አስተዳዳሪ",
       label: "የተጠቃሚ ሚና"
     },
+    loading: {
+      pleaseWait: "እባክዎ ይጠብቁ...",
+      letters: "ደብዳቤዎችን በመጫን ላይ..."
+    },
+    // Memo translations
+    memo: {
+      date: "ቀን",
+      subject: "ርዕስ"
+    },
+    // Employees translations
+    employees: {
+      ccLabel: "ተጨማሪ ቅጂ",
+      confidential: "ሚስጥራዊ",
+      ccDescription: "ወደ ተጨማሪ ቅጂ ለማስገባት ሰራተኞችን ይምረጡ"
+    },
+    // Letter Management translations
+    letterManagement: {
+      priorityValues: {
+        urgent: "አደገኛ",
+        high: "ከፍተኛ",
+        normal: "መደበኛ"
+      }
+    },
   },
   en: {
     // Home Page translations
@@ -610,7 +585,7 @@ const translations = {
       users: "Users",
       settings: "Settings",
       adminPanel: "Admin Panel",
-      letterFlow: "LetterFlow",
+      letterFlow: "LetterFlow"
     },
     // Login translations
     login: {
@@ -760,8 +735,7 @@ const translations = {
     // Inbox translations
     inbox: {
       title: "Inbox",
-      manageLetters: "Manage your incoming letters",
-      searchPlaceholder: "Search letters...",
+      searchPlaceholder: "Search in inbox...",
       filterButton: "Filter",
       filterOptions: {
         all: "All",
@@ -769,60 +743,13 @@ const translations = {
         starred: "Starred",
         urgent: "Urgent",
         seen: "Seen",
-        rejected: "Rejected",
+        rejected: "Rejected"
       },
-      loadingLetters: "Loading letters...",
-      noLettersFound: "No letters found",
-      refreshing: "Refreshing...",
-      refresh: "Refresh",
-      showing: "Showing",
-      to: "to",
-      of: "of",
-      letters: "letters",
-      previous: "Previous",
-      next: "Next",
-      subject: "Subject",
-      recipient: "Recipient",
+      noLetters: "Your inbox is empty.",
       from: "From",
-      department: "Department",
-      priority: "Priority",
+      subject: "Subject",
       date: "Date",
-      backButton: "Back",
-      forwardButton: "Forward",
-      addComment: "Add Comment",
-      addCommentPlaceholder: "Enter your comment...",
-      loadingUsers: "Loading users...",
-      additionalRecipients: "Additional Recipients",
-      errorFetchingUsers: "Error fetching users",
-      errorUpdatingStatus: "Error updating letter status",
-      letterStarred: (subject: string) => `Letter "${subject}" starred`,
-      letterUnstarred: (subject: string) => `Letter "${subject}" unstarred`,
-      errorTogglingStar: "Error toggling star status",
-      forwardedMessage: "Forwarded Message",
-      messageForwarded: "Message forwarded to",
-      failedToForward: "Failed to forward message",
-      attachments: "Attachments",
-      download: "Download",
-      view: "View",
-      viewButton: "View Letter",
-      forwardLetter: "Forward Letter",
-      printButton: "Print",
-      selectEmployee: "Select Employee",
-      cancel: "Cancel",
-      closeButton: "Close",
-      downloadButton: "Download",
-      previewNotAvailable: "Preview not available",
-      downloadToView: "Please download to view this file",
-      errorDownloadingFile: "Error downloading file",
-      errorViewingFile: "Error viewing file",
-      downloadSuccess: "File downloaded successfully",
-      loading: "Loading...",
-      forwarding: "Forwarding...",
-      contentType: "File type",
-      letterRejected: "Letter Rejected",
-      rejectionReason: "Reason",
-      departmentLabel: "Department",
-      contentLabel: "Content",
+      viewButton: "View Letter"
     },
     // Sent translations
     sent: {
@@ -1010,6 +937,29 @@ const translations = {
       user: "User",
       admin: "Admin",
       label: "User Role"
+    },
+    loading: {
+      pleaseWait: "Please wait...",
+      letters: "Loading letters..."
+    },
+    // Memo translations
+    memo: {
+      date: "Date",
+      subject: "Subject"
+    },
+    // Employees translations
+    employees: {
+      ccLabel: "CC",
+      confidential: "Confidential",
+      ccDescription: "Select employees to CC (carbon copy)"
+    },
+    // Letter Management translations
+    letterManagement: {
+      priorityValues: {
+        urgent: "Urgent",
+        high: "High",
+        normal: "Normal"
+      }
     },
   },
 };

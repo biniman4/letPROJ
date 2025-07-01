@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { User, Mail, Phone, Building, Camera, Upload, Eye, EyeOff } from "lucide-react";
 import axios from "axios";
+import { useLanguage } from "./LanguageContext";
 
 const Profile = () => {
+  const { t } = useLanguage();
   const [user, setUser] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -73,13 +75,13 @@ const Profile = () => {
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        setMessage({ type: "error", text: "Please select a valid image file" });
+        setMessage({ type: "error", text: (t as any).profile?.selectValidImage || "Please select a valid image file" });
         return;
       }
       
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        setMessage({ type: "error", text: "Image size should be less than 5MB" });
+        setMessage({ type: "error", text: (t as any).profile?.imageSizeLimit || "Image size should be less than 5MB" });
         return;
       }
 
@@ -113,7 +115,7 @@ const Profile = () => {
       const updatedUser = { ...user, profileImage: response.data.profileImage };
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
-      setMessage({ type: "success", text: "Profile picture updated successfully!" });
+      setMessage({ type: "success", text: (t as any).profile?.profilePictureUpdated || "Profile picture updated successfully!" });
       
       // Dispatch custom event to notify other components
       window.dispatchEvent(new Event('userDataUpdated'));
@@ -125,7 +127,7 @@ const Profile = () => {
     } catch (error: any) {
       setMessage({
         type: "error",
-        text: error.response?.data?.message || "Failed to upload profile picture",
+        text: error.response?.data?.message || (t as any).profile?.failedToUpload || "Failed to upload profile picture",
       });
     } finally {
       setUploadingImage(false);
@@ -144,7 +146,7 @@ const Profile = () => {
       );
       localStorage.setItem("user", JSON.stringify(response.data));
       setUser(response.data);
-      setMessage({ type: "success", text: "Profile updated successfully!" });
+      setMessage({ type: "success", text: (t as any).profile?.profileUpdated || "Profile updated successfully!" });
       setIsEditing(false);
       
       // Dispatch custom event to notify other components
@@ -152,7 +154,7 @@ const Profile = () => {
     } catch (error: any) {
       setMessage({
         type: "error",
-        text: error.response?.data?.message || "Failed to update profile",
+        text: error.response?.data?.message || (t as any).profile?.failedToUpdate || "Failed to update profile",
       });
     } finally {
       setIsLoading(false);
@@ -162,7 +164,7 @@ const Profile = () => {
   if (!user) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-gray-500">Loading profile...</div>
+        <div className="text-gray-500">{(t as any).profile?.loading || "Loading profile..."}</div>
       </div>
     );
   }
@@ -170,9 +172,9 @@ const Profile = () => {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800">Profile</h2>
+        <h2 className="text-2xl font-semibold text-gray-800">{(t as any).profile?.title || "Profile"}</h2>
         <p className="text-gray-600">
-          View and manage your profile information
+          {(t as any).profile?.subtitle || "View and manage your profile information"}
         </p>
       </div>
 
@@ -201,7 +203,7 @@ const Profile = () => {
             <button
               onClick={() => fileInputRef.current?.click()}
               className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors"
-              title="Change profile picture"
+              title={(t as any).profile?.changeProfilePicture || "Change profile picture"}
             >
               <Camera className="h-4 w-4" />
             </button>
@@ -224,7 +226,7 @@ const Profile = () => {
         {/* Profile picture upload section */}
         {profileImage && profileImage !== (user.profileImage || null) && (
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">New Profile Picture</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">{(t as any).profile?.newProfilePicture || "New Profile Picture"}</h4>
             <div className="flex items-center space-x-4">
               <img
                 src={profileImage}
@@ -239,7 +241,7 @@ const Profile = () => {
                     uploadingImage ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                 >
-                  {uploadingImage ? "Uploading..." : "Upload"}
+                  {uploadingImage ? (t as any).profile?.uploading || "Uploading..." : (t as any).profile?.upload || "Upload"}
                 </button>
                 <button
                   onClick={() => {
@@ -250,7 +252,7 @@ const Profile = () => {
                   }}
                   className="bg-gray-300 text-gray-700 px-3 py-1 rounded-md text-sm hover:bg-gray-400"
                 >
-                  Cancel
+                  {(t as any).profile?.cancel || "Cancel"}
                 </button>
               </div>
             </div>
@@ -261,7 +263,7 @@ const Profile = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Name
+                {(t as any).profile?.name || "Name"}
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -280,7 +282,7 @@ const Profile = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Email
+                {(t as any).profile?.email || "Email"}
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -299,7 +301,7 @@ const Profile = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Phone
+                {(t as any).profile?.phone || "Phone"}
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -317,7 +319,7 @@ const Profile = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Department/Sector
+                {(t as any).profile?.department || "Department/Sector"}
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -351,14 +353,14 @@ const Profile = () => {
                   isLoading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
-                {isLoading ? "Saving..." : "Save Changes"}
+                {isLoading ? (t as any).profile?.saving || "Saving..." : (t as any).profile?.saveChanges || "Save Changes"}
               </button>
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
                 className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200"
               >
-                Cancel
+                {(t as any).profile?.cancel || "Cancel"}
               </button>
             </div>
           </form>
@@ -366,23 +368,23 @@ const Profile = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h4 className="text-sm font-medium text-gray-500">Name</h4>
+                <h4 className="text-sm font-medium text-gray-500">{(t as any).profile?.name || "Name"}</h4>
                 <p className="mt-1 text-gray-900">{user.name}</p>
               </div>
               <div>
-                <h4 className="text-sm font-medium text-gray-500">Email</h4>
+                <h4 className="text-sm font-medium text-gray-500">{(t as any).profile?.email || "Email"}</h4>
                 <p className="mt-1 text-gray-900">{user.email}</p>
               </div>
               <div>
-                <h4 className="text-sm font-medium text-gray-500">Phone</h4>
-                <p className="mt-1 text-gray-900">{user.phone || "Not set"}</p>
+                <h4 className="text-sm font-medium text-gray-500">{(t as any).profile?.phone || "Phone"}</h4>
+                <p className="mt-1 text-gray-900">{user.phone || (t as any).profile?.notSet || "Not set"}</p>
               </div>
               <div>
                 <h4 className="text-sm font-medium text-gray-500">
-                  Department/Sector
+                  {(t as any).profile?.department || "Department/Sector"}
                 </h4>
                 <p className="mt-1 text-gray-900">
-                  {user.departmentOrSector || "Not set"}
+                  {user.departmentOrSector || (t as any).profile?.notSet || "Not set"}
                 </p>
               </div>
             </div>
@@ -391,7 +393,7 @@ const Profile = () => {
               onClick={() => setIsEditing(true)}
               className="mt-4 bg-[#C88B3D] text-white px-4 py-2 rounded-md hover:bg-[#a06d2a] transition shadow-md"
             >
-              Edit Profile
+              {(t as any).profile?.editProfile || "Edit Profile"}
             </button>
           </div>
         )}

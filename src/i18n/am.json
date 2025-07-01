@@ -188,9 +188,67 @@
     "adminPanel": "አድሚን ፓነል",
     "letterFlow": "ደብዳቤ ፍሎው"
   },
+  "header": {
+    "profile": "መገለጫ",
+    "settings": "ቅንብሮች",
+    "signOut": "ውጣ"
+  },
   "roles": {
     "user": "ተጠቃሚ",
     "admin": "አስተዳዳሪ",
     "label": "የተጠቃሚ ሚና"
+  },
+  "userManagement": {
+    "searchPlaceholder": "ተጠቃሚዎችን ይፈልጉ...",
+    "userCount": "{count} ተጠቃሚዎች",
+    "emailLabel": "ኢሜይል:",
+    "phoneLabel": "ስልክ:",
+    "departmentLabel": "መምሪያ:",
+    "edit": "አርትዕ",
+    "delete": "ሰርዝ",
+    "admin": "አስተዳዳሪ"
+  },
+  "departments": {
+    "Space Science": "የጠፈር ሳይንስ",
+    "Geospatial": "ጂኦስፓሻል",
+    "Research": "ምርምር",
+    "Administration": "አስተዳደር",
+    "IT": "የመረጃ ቴክኖሎጂ",
+    "Finance": "ፋይናንስ",
+    "HR": "የሰው ሀብት"
+  },
+  "profile": {
+    "title": "መገለጫ",
+    "subtitle": "የመገለጫ መረጃዎን ይመልከቱ እና ያስተዳድሩ",
+    "loading": "መገለጫ በመጫን ላይ...",
+    "name": "ስም",
+    "email": "ኢሜይል",
+    "phone": "ስልክ",
+    "department": "መምሪያ/ሴክተር",
+    "notSet": "ያልተዘጋጀ",
+    "editProfile": "መገለጫ አርትዕ",
+    "saveChanges": "ለውጦችን አስቀምጥ",
+    "saving": "በመቀመጥ ላይ...",
+    "cancel": "ሰርዝ",
+    "changeProfilePicture": "የመገለጫ ስዕል ቀይር",
+    "newProfilePicture": "አዲስ የመገለጫ ስዕል",
+    "upload": "ጫን",
+    "uploading": "በመጫን ላይ...",
+    "profilePictureUpdated": "የመገለጫ ስዕል በተሳካ ሁኔታ ተዘምኗል!",
+    "profileUpdated": "መገለጫ በተሳካ ሁኔታ ተዘምኗል!",
+    "failedToUpload": "የመገለጫ ስዕል መጫን አልተሳካም",
+    "failedToUpdate": "መገለጫ መዘምን አልተሳካም",
+    "selectValidImage": "እባክዎ ትክክለኛ የስዕል ፋይል ይምረጡ",
+    "imageSizeLimit": "የስዕል መጠን ከ 5MB ያነስ መሆን አለበት",
+    "changePassword": "የይለፍ ቃል ቀይር",
+    "currentPassword": "አሁን ያለው የይለፍ ቃል",
+    "newPassword": "አዲስ የይለፍ ቃል",
+    "confirmNewPassword": "አዲሱን የይለፍ ቃል ያረጋግጡ",
+    "passwordChanged": "የይለፍ ቃል በተሳካ ሁኔታ ተቀይሯል!",
+    "failedToChangePassword": "የይለፍ ቃል መቀየር አልተሳካም",
+    "passwordsDoNotMatch": "የይለፍ ቃሎች አይጣጣሙም",
+    "currentPasswordRequired": "አሁን ያለው የይለፍ ቃል ያስፈልጋል",
+    "newPasswordRequired": "አዲስ የይለፍ ቃል ያስፈልጋል",
+    "confirmPasswordRequired": "እባክዎ አዲሱን የይለፍ ቃልዎን ያረጋግጡ"
   }
 }

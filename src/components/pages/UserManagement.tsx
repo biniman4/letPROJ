@@ -169,7 +169,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
             <Search className="w-5 h-5 text-gray-500" />
             <input
               type="text"
-              placeholder={t.userManagement.searchPlaceholder}
+              placeholder={(t as any).userManagement?.searchPlaceholder || "Search users..."}
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
               className="ml-2 bg-transparent border-none outline-none w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -177,7 +177,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
           </div>
           {/* User Count */}
           <span className="text-gray-500 text-base font-medium whitespace-nowrap">
-            {t.userManagement.userCount.replace("{count}", filteredUsers.length.toString())}
+            {((t as any).userManagement?.userCount || "{count} users").replace("{count}", filteredUsers.length.toString())}
           </span>
         </div>
       </div>
@@ -263,13 +263,13 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
                         className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
                       />
                       <h3 className="text-lg font-semibold text-gray-800">
-                        {user.name === "Admin" ? t.userManagement.admin : user.name}
+                        {user.name === "Admin" ? t.userManagement?.admin || "Admin" : user.name}
                       </h3>
                     </div>
                     <div className="grid grid-cols-1 gap-2 text-sm">
                       <div>
                         <span className="text-gray-600 inline-block mr-2">
-                          {t.userManagement.emailLabel}
+                          {t.userManagement?.emailLabel || "Email:"}
                         </span>
                         <p className="text-gray-800 inline-block">
                           {user.email}
@@ -277,7 +277,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
                       </div>
                       <div>
                         <span className="text-gray-600 inline-block mr-2">
-                          {t.userManagement.phoneLabel}
+                          {t.userManagement?.phoneLabel || "Phone:"}
                         </span>
                         <p className="text-gray-800 inline-block">
                           {user.phone || "N/A"}
@@ -285,12 +285,12 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
                       </div>
                       <div>
                         <span className="text-gray-600 inline-block mr-2">
-                          {t.userManagement.departmentLabel}
+                          {t.userManagement?.departmentLabel || "Department:"}
                         </span>
                         <p className="text-gray-800 inline-block">
                           {(user.departmentOrSector || "")
                             .split(' > ')
-                            .map((dep: string, idx: number) => t.departments[dep.trim() as keyof typeof t.departments] || dep.trim())
+                            .map((dep: string, idx: number) => t.departments?.[dep.trim() as keyof typeof t.departments] || dep.trim())
                             .join(' > ')
                           }
                         </p>
@@ -303,7 +303,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
                         disabled={!!actionLoading[user._id]}
                       >
                         <Edit className="w-4 h-4" />
-                        {t.userManagement.edit}
+                        {t.userManagement?.edit || "Edit"}
                       </button>
                       <button
                         onClick={() => handleDeleteUser(user._id)}
@@ -311,7 +311,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ setSuccessMsg }) => {
                         disabled={!!actionLoading[user._id]}
                       >
                         <Trash2 className="w-4 h-4" />
-                        {t.userManagement.delete}
+                        {t.userManagement?.delete || "Delete"}
                       </button>
                     </div>
                   </div>

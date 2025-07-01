@@ -80,9 +80,9 @@ const AdminCreateUser = () => {
         <div className="mb-8">
           <button
             onClick={() => navigate("/admin")}
-            className="flex items-center gap-2 text-teal-700 hover:text-teal-800 mb-4 transition"
+            className="mb-4 px-6 py-2 rounded-full bg-[#f5e8d6] text-[#b97b2a] border border-[#b97b2a] text-sm font-semibold shadow-sm hover:bg-[#b97b2a] hover:text-white transition-colors duration-150 flex items-center justify-center gap-2"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={16} />
             {t.sidebar?.adminPanel || "Back to Admin Panel"}
           </button>
           <div className="flex items-center gap-3 mb-2">

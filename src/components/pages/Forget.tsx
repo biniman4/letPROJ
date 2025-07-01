@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import logo from "../../img icon/logo.png";
+import { ArrowLeft } from "lucide-react";
 
 const Forget: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -28,6 +30,9 @@ const Forget: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md border border-gray-200">
+        <div className="flex justify-center mb-4">
+          <img src={logo} alt="Logo" className="h-16" />
+        </div>
         <h2 className="text-3xl font-extrabold bg-gradient-to-r from-[#b97b2a] via-[#cfae7b] to-[#cfc7b7] text-transparent bg-clip-text drop-shadow-md text-center mb-2">
           Forgot Password
         </h2>
@@ -61,9 +66,10 @@ const Forget: React.FC = () => {
         {message && <p className="text-green-600 mt-4 text-center text-sm">{message}</p>}
         {error && <p className="text-red-600 mt-4 text-center text-sm">{error}</p>}
         <button
-          className="mt-4 px-6 py-2 rounded-full bg-[#f5e8d6] text-[#b97b2a] border border-[#b97b2a] text-sm font-semibold shadow-sm hover:bg-[#b97b2a] hover:text-white transition-colors duration-150"
+          className="mt-4 px-6 py-2 rounded-full bg-[#f5e8d6] text-[#b97b2a] border border-[#b97b2a] text-sm font-semibold shadow-sm hover:bg-[#b97b2a] hover:text-white transition-colors duration-150 flex items-center justify-center gap-2"
           onClick={() => navigate("/login")}
         >
+          <ArrowLeft size={16} />
           Back to Login
         </button>
       </div>
