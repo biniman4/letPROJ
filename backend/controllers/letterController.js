@@ -71,10 +71,28 @@ export const createLetter = async (req, res) => {
 
     console.log("CC Emails resolved:", ccEmails);
 
+    // Determine if recipient is high-level
+    const highLevelRoles = [
+      'executive_head',
+      'director_general',
+      'deputy_director_general',
+      'executive_advisor'
+    ];
+    const senderIsRegular = sender.role === 'user';
+    const recipientIsHighLevel = highLevelRoles.includes(recipient.role);
+
     // Only include fields that exist in the schema (NO "reference" field)
     const isHighPriority =
       req.body.priority &&
       ["high", "urgent"].includes(req.body.priority.toLowerCase());
+
+    // If a regular user sends to a high-level user, set status to 'pending'
+    let letterStatus = "sent";
+    if (senderIsRegular && recipientIsHighLevel) {
+      letterStatus = "pending";
+    } else if (isHighPriority) {
+      letterStatus = "pending";
+    }
 
     const letterData = {
       subject: req.body.subject,
@@ -91,7 +109,7 @@ export const createLetter = async (req, res) => {
       ccEmployees: ccEmployees,
       unread: true,
       starred: false,
-      status: isHighPriority ? "pending" : "sent",
+      status: letterStatus,
     };
 
     const letter = new Letter(letterData);
@@ -332,27 +350,44 @@ export const getLetters = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    if (fetchAll && user.role === "admin") {
-      // Admin requests all letters
-      const letters = await Letter.find({}).sort({ createdAt: -1 });
-      console.log(`Admin ${userEmail} fetched ALL letters: ${letters.length}`);
-      return res.status(200).json(letters);
+    const highLevelRoles = [
+      'executive_head',
+      'director_general',
+      'deputy_director_general',
+      'executive_advisor'
+    ];
+    const isHighLevel = highLevelRoles.includes(user.role);
+
+    let letterQuery;
+    if (isHighLevel) {
+      // High-level users: include pending letters addressed to them
+      letterQuery = {
+        $and: [
+          {
+            $or: [
+              { toEmail: userEmail },
+              { isCC: true, toEmail: userEmail },
+            ],
+          },
+          // No status filter: include pending
+        ],
+      };
+    } else {
+      // Regular users: exclude pending
+      letterQuery = {
+        $and: [
+          {
+            $or: [
+              { toEmail: userEmail },
+              { isCC: true, toEmail: userEmail },
+            ],
+          },
+          { status: { $ne: "pending" } },
+        ],
+      };
     }
 
-    console.log("Fetching letters for user:", userEmail);
-    // Find letters where the user is either the recipient or a CC recipient
-    // EXCLUDE pending letters - they should not appear in recipient's inbox until approved
-    const letters = await Letter.find({
-      $and: [
-        {
-          $or: [
-            { toEmail: userEmail }, // Direct recipient
-            { isCC: true, toEmail: userEmail }, // CC recipient
-          ],
-        },
-        { status: { $ne: "pending" } }, // Exclude pending letters
-      ],
-    }).sort({ createdAt: -1 });
+    const letters = await Letter.find(letterQuery).sort({ createdAt: -1 });
 
     console.log(
       `Found ${letters.length} letters for user ${userEmail} (excluding pending letters)`
@@ -483,10 +518,10 @@ export const getSentLetters = async (req, res) => {
       return res.status(400).json({ error: "User email is required" });
     }
 
-    // Filter letters by the current user's email and include sent, pending, and rejected status
+    // Filter letters by the current user's email and include sent, pending, approved, and rejected status
     const sentLetters = await Letter.find({
       fromEmail: userEmail,
-      status: { $in: ["sent", "pending", "rejected"] },
+      status: { $in: ["sent", "pending", "approved", "rejected"] },
     }).sort({
       createdAt: -1,
     });
@@ -748,8 +783,8 @@ By receiving this email, you acknowledge that you understand and will comply wit
     await transporter.sendMail(mailOptions);
     console.log("Approved email sent to:", recipient.email, "CC:", ccEmails);
 
-    // Update the original letter status to sent
-    letter.status = "sent";
+    // Update the original letter status to approved
+    letter.status = "approved";
     await letter.save();
 
     res.status(200).json({

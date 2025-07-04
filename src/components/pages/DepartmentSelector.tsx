@@ -1,5 +1,6 @@
 import React, { useState, forwardRef, useImperativeHandle } from "react";
 import { useLanguage } from "./LanguageContext";
+import { departmentRoles } from "./departmentRoles";
 
 type DepartmentOption = {
   id: string;
@@ -10,11 +11,12 @@ type DepartmentOption = {
 const DepartmentSelector = forwardRef<
   { reset: () => void },
   {
-    onChange: (value: string) => void;
+    onChange: (selection: { main: string; sub: string; subSub: string; fullPath: string; role: string }) => void;
     showBreadcrumb?: boolean;
     showSubDropdowns?: boolean;
+    onRoleChange?: (role: string) => void;
   }
->(({ onChange, showBreadcrumb = true, showSubDropdowns = true }, ref) => {
+>(({ onChange, showBreadcrumb = true, showSubDropdowns = true, onRoleChange }, ref) => {
   const { t, lang } = useLanguage();
 
   const departments: DepartmentOption[] = t.departmentSelector.departments;
@@ -22,6 +24,7 @@ const DepartmentSelector = forwardRef<
   const [selectedMainId, setSelectedMainId] = useState<string>("");
   const [selectedSubId, setSelectedSubId] = useState<string>("");
   const [selectedSubSubId, setSelectedSubSubId] = useState<string>("");
+  const [selectedRole, setSelectedRole] = useState<string>("");
 
   useImperativeHandle(ref, () => ({
     reset: () => {
@@ -51,7 +54,13 @@ const DepartmentSelector = forwardRef<
     setSelectedMainId(event.target.value);
     setSelectedSubId("");
     setSelectedSubSubId("");
-    setTimeout(() => onChange(event.target.value), 0);
+    setTimeout(() => onChange({
+      main: event.target.value,
+      sub: "",
+      subSub: "",
+      fullPath: event.target.value,
+      role: selectedRole
+    }), 0);
   };
 
   const handleSubCategoryChange = (
@@ -59,15 +68,72 @@ const DepartmentSelector = forwardRef<
   ) => {
     setSelectedSubId(event.target.value);
     setSelectedSubSubId("");
-    setTimeout(() => onChange([selectedMainId, event.target.value].filter(Boolean).join(" > ")), 0);
+    setTimeout(() => onChange({
+      main: selectedMainId,
+      sub: event.target.value,
+      subSub: "",
+      fullPath: [selectedMainId, event.target.value].filter(Boolean).join(" > "),
+      role: selectedRole
+    }), 0);
   };
 
   const handleSubSubCategoryChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
     setSelectedSubSubId(event.target.value);
-    setTimeout(() => onChange(getFullIdPath()), 0);
+    setTimeout(() => onChange({
+      main: selectedMainId,
+      sub: selectedSubId,
+      subSub: event.target.value,
+      fullPath: getFullIdPath(),
+      role: selectedRole
+    }), 0);
   };
+
+  const getCurrentLabel = () => {
+    if (selectedSubSubId && selectedSubSub?.label) return selectedSubSub.label;
+    if (selectedSubId && selectedSub?.label) return selectedSub.label;
+    if (selectedMainId && selectedMain?.label) return selectedMain.label;
+    return null;
+  };
+
+  const availableRoles = (() => {
+    const label = getCurrentLabel();
+    // If only Director General is selected (no sub or sub-sub)
+    if (
+      selectedMain?.label === 'Director General' &&
+      !selectedSubId &&
+      !selectedSubSubId
+    ) {
+      return [
+        { role: 'director_general', label: 'Director General' },
+        { role: 'deputy_director_general', label: 'Deputy Director General' },
+        { role: 'executive_advisor', label: 'Executive Advisor' }
+      ];
+    }
+    if (label) {
+      return [
+        { role: 'executive_head', label: `${label} Executive Head` },
+        { role: 'user', label: 'User' }
+      ];
+    }
+    return [];
+  })();
+
+  const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedRole(event.target.value);
+    if (onRoleChange) onRoleChange(event.target.value);
+    onChange({
+      main: selectedMainId,
+      sub: selectedSubId,
+      subSub: selectedSubSubId,
+      fullPath: getFullIdPath(),
+      role: event.target.value
+    });
+  };
+
+  console.log("Selected sub-sub label:", selectedSubSub?.label);
+  console.log("Available roles:", availableRoles);
 
   return (
     <div>
@@ -127,6 +193,26 @@ const DepartmentSelector = forwardRef<
             ))}
           </select>
         </>
+      )}
+
+      {availableRoles.length > 0 && (
+        <div style={{ marginTop: "16px" }}>
+          <label className="block text-gray-700 font-medium mb-1">
+            Role
+          </label>
+          <select
+            className="border border-gray-300 rounded-lg px-3 py-2 w-full bg-white focus:ring-2 focus:ring-blue-200 mb-2"
+            value={selectedRole}
+            onChange={handleRoleChange}
+          >
+            <option value="">Select Role</option>
+            {availableRoles.map((role: { role: string; label: string }) => (
+              <option key={role.role} value={role.role}>
+                {role.label}
+              </option>
+            ))}
+          </select>
+        </div>
       )}
 
       {showBreadcrumb && getFullLabelPath() && (

@@ -19,6 +19,9 @@ import {
   StarIcon,
   Download,
   Eye,
+  Check,
+  X,
+  Trash2,
 } from "lucide-react";
 
 interface Letter {
@@ -35,7 +38,7 @@ interface Letter {
   unread: boolean;
   starred: boolean;
   status?: string;
-  rejectionNote?: string;
+  rejectionReason?: string;
   attachments?: Array<{ filename: string }>;
   // CC fields
   isCC?: boolean;
@@ -121,6 +124,9 @@ const Inbox = () => {
     new Date().toISOString()
   );
   const [hasNewLetters, setHasNewLetters] = useState(false);
+  const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [pendingActionLetter, setPendingActionLetter] = useState<Letter | null>(null);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user.email || "";
@@ -292,7 +298,7 @@ const Inbox = () => {
         updateUnreadLetters(unreadCount);
       } catch (error) {
         console.error("Error updating letter status:", error);
-        toast.error(t.inbox.errorUpdatingStatus);
+        toast.error(t.inbox?.errorUpdatingStatus || "Error updating status.");
       } finally {
         setIsViewLoading(false);
       }
@@ -301,7 +307,7 @@ const Inbox = () => {
       letters,
       updateUnreadLetters,
       updateLetterStatus,
-      t.inbox.errorUpdatingStatus,
+      t.inbox?.errorUpdatingStatus,
     ]
   );
 
@@ -325,21 +331,21 @@ const Inbox = () => {
         }
 
         if (newStarredState) {
-          toast.success(t.inbox.letterStarred(letter.subject));
+          toast.success((t.inbox?.letterStarred && t.inbox.letterStarred(letter.subject)) || `Letter starred: ${letter.subject}`);
         } else {
-          toast.info(t.inbox.letterUnstarred(letter.subject));
+          toast.info((t.inbox?.letterUnstarred && t.inbox.letterUnstarred(letter.subject)) || `Letter unstarred: ${letter.subject}`);
         }
       } catch (error) {
         console.error("Error toggling star:", error);
-        toast.error(t.inbox.errorTogglingStar);
+        toast.error(t.inbox?.errorTogglingStar || "Error toggling star.");
       }
     },
     [
       openLetter,
       updateLetterStatus,
-      t.inbox.letterStarred,
-      t.inbox.letterUnstarred,
-      t.inbox.errorTogglingStar,
+      t.inbox?.letterStarred,
+      t.inbox?.letterUnstarred,
+      t.inbox?.errorTogglingStar,
     ]
   );
 
@@ -452,7 +458,7 @@ const Inbox = () => {
         .then((users) => setDepartmentUsers(users))
         .catch((error) => {
           console.error("Error fetching users:", error);
-          toast.error(t.inbox.errorFetchingUsers);
+          toast.error(t.inbox?.errorFetchingUsers || "Error fetching users.");
           setDepartmentUsers([]);
         })
         .finally(() => {
@@ -465,7 +471,7 @@ const Inbox = () => {
       setSelectedUsers([]);
       setToEmployee("");
     }
-  }, [selectedDepartment, t.inbox.errorFetchingUsers]);
+  }, [selectedDepartment, t.inbox?.errorFetchingUsers]);
 
   // Forward letter logic (send to actual users)
   const handleForwardLetter = async () => {
@@ -560,10 +566,10 @@ const Inbox = () => {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      toast.success(t.inbox.downloadSuccess);
+      toast.success(t.inbox?.downloadSuccess || "Download successful.");
     } catch (error) {
       console.error("Error downloading file:", error);
-      toast.error(t.inbox.errorDownloadingFile);
+      toast.error(t.inbox?.errorDownloadingFile || "Error downloading file.");
     } finally {
       setIsDownloadLoading((prev) => ({ ...prev, [filename]: false }));
     }
@@ -589,7 +595,7 @@ const Inbox = () => {
       setPreviewVisible(true);
     } catch (error) {
       console.error("Error viewing file:", error);
-      toast.error(t.inbox.errorViewingFile);
+      toast.error(t.inbox?.errorViewingFile || "Error viewing file.");
     } finally {
       setIsViewFileLoading((prev) => ({ ...prev, [filename]: false }));
     }
@@ -866,37 +872,76 @@ const Inbox = () => {
     }
   };
 
+  const handleApprove = async (letterId: string) => {
+    try {
+      await axios.post("http://localhost:5000/api/letters/approve", { letterId });
+      toast.success("Letter approved and sent.");
+      fetchLetters();
+    } catch (error) {
+      toast.error("Failed to approve letter.");
+    }
+  };
+
+  const handleReject = (letter: Letter) => {
+    setPendingActionLetter(letter);
+    setRejectionReason("");
+    setRejectionModalOpen(true);
+  };
+
+  const submitRejection = async () => {
+    if (!pendingActionLetter) return;
+    try {
+      await axios.post("http://localhost:5000/api/letters/reject", {
+        letterId: pendingActionLetter._id,
+        rejectionReason,
+      });
+      toast.success("Letter rejected.");
+      setRejectionModalOpen(false);
+      setPendingActionLetter(null);
+      setRejectionReason("");
+      fetchLetters();
+    } catch (error) {
+      toast.error("Failed to reject letter.");
+    }
+  };
+
+  // Privilege logic for inbox filter buttons
+  const highPrivilegeRoles = [
+    'director_general',
+    'deputy_director_general',
+    'executive_advisor'
+  ];
+  const isHighPrivilege =
+    highPrivilegeRoles.includes(user.role) ||
+    user.role === 'executive_head' ||
+    (typeof user.role === 'string' && user.role.endsWith('executive_head'));
+
+  console.log('Current user role:', user.role);
+
+  const inboxButtons = isHighPrivilege
+    ? ['All', 'Unread', 'Starred', 'Urgent', 'Seen', 'Reject', 'Approve']
+    : ['All', 'Unread', 'Starred', 'Urgent', 'Seen'];
+
   return (
     <div className="min-h-screen bg-[#FFFFFF] py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-col items-center">
           <h2 className="text-4xl font-extrabold bg-gradient-to-r from-[#b97b2a] via-[#cfae7b] to-[#cfc7b7] text-transparent bg-clip-text drop-shadow-md">
-            {t.inbox.title}
+            {t.inbox?.title || "Inbox"}
           </h2>
           <p className="text-lg text-[#BFBFBF] font-medium">
-            {t.inbox.manageLetters}
+            {t.inbox?.manageLetters || "Manage your letters."}
           </p>
         </div>
         <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8 justify-between">
-          <div className="flex flex-wrap gap-2 w-full md:w-auto">
-            {[
-              { key: "all", label: t.inbox.filterOptions.all },
-              { key: "unread", label: t.inbox.filterOptions.unread },
-              { key: "starred", label: t.inbox.filterOptions.starred },
-              { key: "urgent", label: t.inbox.filterOptions.urgent },
-              { key: "seen", label: t.inbox.filterOptions.seen },
-              { key: "rejected", label: t.inbox.filterOptions.rejected },
-            ].map((filter) => (
+          <div className="flex gap-2 mb-4">
+            {inboxButtons.map((btn) => (
               <button
-                key={filter.key}
-                onClick={() => setSelectedFilter(filter.key)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-sm border border-blue-100 bg-white hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-400 ${
-                  selectedFilter === filter.key
-                    ? "bg-blue-100 text-blue-700 shadow-md border-blue-300"
-                    : "text-gray-600"
-                }`}
+                key={btn}
+                className={`px-3 py-1 rounded ${selectedFilter === btn.toLowerCase() ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                onClick={() => setSelectedFilter(btn.toLowerCase())}
               >
-                {filter.label}
+                {btn}
               </button>
             ))}
           </div>
@@ -905,7 +950,7 @@ const Inbox = () => {
               <SearchIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               <input
                 type="text"
-                placeholder={t.inbox.searchPlaceholder}
+                placeholder={t.inbox?.searchPlaceholder || "Search letters..."}
                 onChange={(e) => debouncedSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm bg-white"
               />
@@ -937,7 +982,7 @@ const Inbox = () => {
                   />
                 </svg>
               )}
-              {isRefreshing ? t.inbox.refreshing : t.inbox.refresh}
+              {isRefreshing ? t.inbox?.refreshing || "Refreshing..." : t.inbox?.refresh || "Refresh"}
               {hasNewLetters && !isRefreshing && (
                 <span className="ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full">
                   New
@@ -957,39 +1002,152 @@ const Inbox = () => {
                 <FileTextIcon className="w-full h-full" />
               </div>
               <p className="mt-4 text-xl text-gray-500">
-                {t.inbox.noLettersFound}
+                {t.inbox?.noLettersFound || "No letters found."}
               </p>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
+              {isHighPrivilege ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 justify-center">
               {currentLetters.map((letter) => (
-                <LetterListItem
+                    <div
                   key={letter._id}
-                  letter={letter}
-                  onOpen={handleLetterOpen}
-                  onStarToggle={handleStarToggle}
-                  isActive={!!openLetter && openLetter._id === letter._id}
-                />
-              ))}
+                      className="bg-white rounded-2xl shadow-lg max-w-sm mx-auto p-4 mb-6 border-t-4 border-blue-900 flex flex-col gap-2"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="text-xl font-bold text-slate-800 truncate">
+                          {letter.subject}
+                        </h3>
+                        {letter.priority && (
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ml-2 ${letter.priority === 'high' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>
+                            {letter.priority.charAt(0).toUpperCase() + letter.priority.slice(1)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between text-sm text-gray-700 mb-1">
+                        <span className="text-gray-600 text-xs">
+                          From: <span className="font-semibold text-blue-900">{letter.fromName}</span>
+                          <span className="mx-1">|</span>
+                          <span className="font-semibold text-green-800">{letter.department}</span>
+                        </span>
+                        <span>{getLetterSentDate(letter.createdAt)}</span>
+                      </div>
+                      <div className="text-base text-slate-800 mb-1 font-semibold">
+                        <span className="text-gray-600 font-normal mr-1">Subject:</span>{letter.subject}
+                      </div>
+                      <div className="italic text-gray-400 text-sm mb-2">
+                        {letter.attachments && letter.attachments.length > 0 ? null : 'No attachments'}
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          className="flex-1 border border-blue-400 text-blue-600 rounded-lg px-2 py-1 flex items-center justify-center gap-1 hover:bg-blue-50 transition"
+                          title="View"
+                          onClick={() => { setOpenLetter(letter); setViewMode(true); }}
+                        >
+                          <Eye className="w-4 h-4" />
+                          View
+                        </button>
+                        {letter.status === "pending" && (
+                          <>
+                            <button
+                              className="flex-1 border border-green-400 text-green-600 rounded-lg px-2 py-1 flex items-center justify-center gap-1 hover:bg-green-50 transition"
+                              title="Approve"
+                              onClick={() => handleApprove(letter._id)}
+                            >
+                              <Check className="w-4 h-4" />
+                              Approve
+                            </button>
+                            <button
+                              className="flex-1 border border-red-400 text-red-600 rounded-lg px-2 py-1 flex items-center justify-center gap-1 hover:bg-red-50 transition"
+                              title="Reject"
+                              onClick={() => handleReject(letter)}
+                            >
+                              <X className="w-4 h-4" />
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        <button
+                          className="flex-1 border border-red-400 text-red-600 rounded-lg px-2 py-1 flex items-center justify-center gap-1 hover:bg-red-50 transition"
+                          title="Delete"
+                          onClick={() => handleDelete(letter._id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div>
+                  {currentLetters.map((letter) => (
+                    <div
+                      key={letter._id}
+                      className={`group bg-white rounded-xl shadow-lg p-4 border-l-4 flex items-center justify-between gap-4 mb-4 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:bg-blue-50 hover:-translate-y-1 relative ${
+                        letter.priority === 'urgent'
+                          ? 'border-red-500'
+                          : letter.priority === 'high'
+                          ? 'border-orange-500'
+                          : 'border-blue-600'
+                      }`}
+                    >
+                      <button
+                        className="text-blue-600 hover:text-blue-800 p-1.5 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 mr-3"
+                        title="View"
+                        onClick={() => { setOpenLetter(letter); setViewMode(true); }}
+                      >
+                        <Eye className="w-5 h-5" />
+                      </button>
+                      <div className="flex-grow min-w-0">
+                        <div className="flex items-center gap-3 mb-1">
+                          <span className="font-bold text-lg text-blue-900 group-hover:text-blue-700 truncate">{letter.subject}</span>
+                          {letter.priority && (
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                              letter.priority === 'urgent'
+                                ? 'bg-red-500 text-white'
+                                : letter.priority === 'high'
+                                ? 'bg-orange-500 text-white'
+                                : 'bg-blue-500 text-white'
+                            }`}>
+                              {letter.priority.charAt(0).toUpperCase() + letter.priority.slice(1)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <span>From: <span className="font-semibold text-blue-900">{letter.fromName}</span></span>
+                          <span className="mx-1">|</span>
+                          <span>Dept: <span className="font-semibold text-green-800">{letter.department}</span></span>
+                          <span className="mx-1">|</span>
+                          <span>{new Date(letter.createdAt).toLocaleDateString()}</span>
+                          {letter.attachments && letter.attachments.length > 0 && (
+                            <FaPaperclip className="ml-2 text-gray-400" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
         {currentLetters.length > 0 && (
           <div className="mt-8 flex items-center justify-between">
             <p className="text-sm text-gray-600">
-              {t.inbox.showing}{" "}
+              {t.inbox?.showing || "Showing"}
               <span className="font-semibold text-gray-900">
                 {startIndex + 1}
               </span>{" "}
-              {t.inbox.to}{" "}
+              {t.inbox?.to || "to"}
               <span className="font-semibold text-gray-900">
                 {Math.min(endIndex, filteredLetters.length)}
               </span>{" "}
-              {t.inbox.of}{" "}
+              {t.inbox?.of || "of"}
               <span className="font-semibold text-gray-900">
                 {filteredLetters.length}
               </span>{" "}
-              {t.inbox.letters}
+              {t.inbox?.letters || "letters"}
             </p>
             <div className="flex space-x-2">
               <button
@@ -1001,7 +1159,7 @@ const Inbox = () => {
                     : "text-gray-700"
                 }`}
               >
-                {t.inbox.previous}
+                {t.inbox?.previous || "Previous"}
               </button>
               <button
                 onClick={handleNextPage}
@@ -1012,7 +1170,7 @@ const Inbox = () => {
                     : "text-gray-700"
                 }`}
               >
-                {t.inbox.next}
+                {t.inbox?.next || "Next"}
               </button>
             </div>
           </div>
@@ -1038,13 +1196,13 @@ const Inbox = () => {
                 {openLetter.status === "rejected" && (
                   <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-lg shadow">
                     <h4 className="font-bold text-lg mb-2">
-                      {t.inbox.letterRejected}
+                      {t.inbox?.letterRejected || "Letter Rejected"}
                     </h4>
                     <p>
                       <span className="font-semibold">
-                        {t.inbox.rejectionReason}:
+                        {t.inbox?.rejectionReason || "Rejection Reason:"}:
                       </span>{" "}
-                      {openLetter.rejectionNote}
+                      {openLetter.rejectionReason}
                     </p>
                   </div>
                 )}
@@ -1057,7 +1215,7 @@ const Inbox = () => {
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="bg-gray-100/70 rounded-lg p-3">
                     <div className="text-xs text-gray-500 font-semibold mb-1">
-                      {t.inbox.from}
+                      {t.inbox?.from || "From"}
                     </div>
                     <div className="text-gray-800 font-semibold text-sm truncate">
                       {getSenderDisplayName(openLetter)}
@@ -1065,7 +1223,7 @@ const Inbox = () => {
                   </div>
                   <div className="bg-gray-100/70 rounded-lg p-3">
                     <div className="text-xs text-gray-500 font-semibold mb-1">
-                      {t.inbox.recipient}
+                      {t.inbox?.recipient || "Recipient"}
                     </div>
                     <div className="text-gray-800 font-semibold text-sm truncate">
                       {getRecipientDisplayName(openLetter)}
@@ -1073,7 +1231,7 @@ const Inbox = () => {
                   </div>
                   <div className="bg-gray-100/70 rounded-lg p-3">
                     <div className="text-xs text-gray-500 font-semibold mb-1">
-                      {t.inbox.departmentLabel}
+                      {t.inbox?.departmentLabel || "Department"}
                     </div>
                     <div className="text-gray-800 font-semibold text-sm truncate">
                       {(openLetter.department || "")
@@ -1085,7 +1243,7 @@ const Inbox = () => {
                   </div>
                   <div className="bg-gray-100/70 rounded-lg p-3">
                     <div className="text-xs text-gray-500 font-semibold mb-1">
-                      {t.inbox.date}
+                      {t.inbox?.date || "Date"}
                     </div>
                     <div className="text-gray-800 font-semibold text-sm truncate">
                       {formatDate(openLetter.createdAt)}
@@ -1094,7 +1252,7 @@ const Inbox = () => {
                 </div>
                 <div className="mb-4">
                   <div className="text-xs text-gray-500 font-semibold mb-2">
-                    {t.inbox.contentLabel}
+                    {t.inbox?.contentLabel || "Content"}
                   </div>
                   <div className="bg-blue-50/50 border-l-4 border-blue-400 rounded-md p-4 text-gray-800 whitespace-pre-line text-sm shadow-inner">
                     {openLetter.content}
@@ -1104,7 +1262,7 @@ const Inbox = () => {
                   openLetter.attachments.length > 0 && (
                     <div className="mt-4">
                       <h4 className="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                        <FaPaperclip /> {t.inbox.attachments}
+                        <FaPaperclip /> {t.inbox?.attachments || "Attachments"}
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {openLetter.attachments.map((file, idx) => (
@@ -1165,7 +1323,7 @@ const Inbox = () => {
                                     ? "opacity-50 cursor-not-allowed"
                                     : ""
                                 }`}
-                                title={t.inbox.download}
+                                title={t.inbox?.download || "Download"}
                               >
                                 {isDownloadLoading[file.filename] ? (
                                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-500 border-t-transparent"></div>
@@ -1190,10 +1348,10 @@ const Inbox = () => {
                     {isViewLoading ? (
                       <div className="flex items-center">
                         <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                        {t.inbox.loading}
+                        {t.inbox?.loading || "Loading..."}
                       </div>
                     ) : (
-                      t.inbox.viewButton
+                      t.inbox?.viewButton || "View"
                     )}
                   </button>
                 </div>
@@ -1213,7 +1371,7 @@ const Inbox = () => {
                     onClick={() => setViewMode(false)}
                     className="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700"
                   >
-                    {t.inbox.backButton}
+                    {t.inbox?.backButton || "Back"}
                   </button>
                   <button
                     onClick={() => handlePrint()}
@@ -1232,7 +1390,7 @@ const Inbox = () => {
                         d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
                       />
                     </svg>
-                    {t.inbox.printButton}
+                    {t.inbox?.printButton || "Print"}
                   </button>
                   {/* Only show forward button for non-CC letters */}
                   {!openLetter.isCC && (
@@ -1240,7 +1398,7 @@ const Inbox = () => {
                       onClick={() => setShowForwardModal(true)}
                       className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700"
                     >
-                      {t.inbox.forwardButton}
+                      {t.inbox?.forwardButton || "Forward"}
                     </button>
                   )}
                 </div>
@@ -1369,7 +1527,7 @@ const Inbox = () => {
                 onClick={() => setShowForwardModal(false)}
                 className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm font-semibold"
               >
-                {t.inbox.cancel}
+                {t.inbox?.cancel || "Cancel"}
               </button>
               <button
                 onClick={handleForwardLetter}
@@ -1382,7 +1540,7 @@ const Inbox = () => {
                 {isForwardLoading && (
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
                 )}
-                {t.inbox.forwardButton}
+                {t.inbox?.forwardButton || "Forward"}
               </button>
             </div>
           </div>
@@ -1424,10 +1582,10 @@ const Inbox = () => {
               <div className="text-center p-8">
                 <FileTextIcon className="mx-auto h-16 w-16 text-gray-400 mb-4" />
                 <p className="text-xl text-gray-600 mb-2">
-                  {t.inbox.previewNotAvailable}
+                  {t.inbox?.previewNotAvailable || "Preview not available."}
                 </p>
                 <p className="text-sm text-gray-500">
-                  {t.inbox.downloadToView}
+                  {t.inbox?.downloadToView || "Please download to view."}
                 </p>
               </div>
             )}
@@ -1437,7 +1595,7 @@ const Inbox = () => {
               onClick={handlePreviewClose}
               className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
             >
-              {t.inbox.closeButton}
+              {t.inbox?.closeButton || "Close"}
             </button>
             <button
               onClick={() => {
@@ -1452,11 +1610,40 @@ const Inbox = () => {
               }}
               className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg shadow-md hover:from-blue-700 hover:to-blue-800 transform transition-all duration-200 hover:scale-105"
             >
-              {t.inbox.downloadButton}
+              {t.inbox?.downloadButton || "Download"}
             </button>
           </div>
         </div>
       </Modal>
+      {rejectionModalOpen && (
+        <Modal open={rejectionModalOpen} onClose={() => setRejectionModalOpen(false)} center>
+          <div className="p-4">
+            <h3 className="text-lg font-bold mb-2 text-red-700">Reject Letter</h3>
+            <textarea
+              className="w-full border border-gray-300 rounded-lg p-2 mb-4"
+              rows={4}
+              placeholder="Enter rejection reason (required)"
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-4 py-2 bg-gray-200 rounded-lg font-semibold"
+                onClick={() => setRejectionModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
+                onClick={submitRejection}
+                disabled={!rejectionReason.trim()}
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

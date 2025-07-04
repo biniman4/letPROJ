@@ -12,6 +12,7 @@ import { useSent } from "../../context/SentContext";
 import LoadingSpinner from "../common/LoadingSpinner";
 import { useLetterForm } from "../../context/LetterFormContext";
 import type { LetterData } from "../../types/letter.d";
+import { FaUser, FaBuilding } from 'react-icons/fa';
 
 const NewLetter = () => {
   const { lang, setLang } = useLanguage();
@@ -121,11 +122,68 @@ const NewLetter = () => {
     setLetterData((prev: LetterData) => ({ ...prev, to: recipient }));
   }, [recipient]);
 
-  const filteredUsers = department
-    ? users.filter(
-        (u) => u.departmentOrSector?.toLowerCase() === department.toLowerCase()
-      )
-    : [];
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const isHighPrivilege =
+    currentUser.role === 'director_general' ||
+    currentUser.role === 'deputy_director_general' ||
+    currentUser.role === 'executive_advisor' ||
+    (typeof currentUser.role === 'string' && currentUser.role.endsWith('executive_head'));
+  const isExecutiveHead = currentUser.role === 'executive_head';
+  const isRegularUser = currentUser.role === 'user';
+
+  // Debug: Log current user and all users for filtering
+  console.log('Current user:', currentUser);
+  console.log('All users:', users);
+  let filteredUsers = [];
+  if (isHighPrivilege) {
+    // For high-privilege users: show all users in the selected department
+    const selectedDept = department?.trim().toLowerCase();
+    if (selectedDept) {
+      filteredUsers = users.filter(
+        (u) => u.departmentOrSector?.trim().toLowerCase() === selectedDept
+      );
+    } else {
+      filteredUsers = [];
+    }
+  } else if (isExecutiveHead) {
+    // Executive head: see all users in their sub-sub-category and the head of their sub-category
+    const userDept = currentUser.departmentOrSector?.trim().toLowerCase();
+    const userDeptParts = userDept.split('>').map((s: string) => s.trim());
+    const userSubCategory = userDeptParts.slice(0, 2).join(' > '); // main > sub
+    const userSubSubCategory = userDept; // full path
+
+    filteredUsers = users.filter((u) => {
+      const uDept = u.departmentOrSector?.trim().toLowerCase();
+      const uDeptParts = uDept ? uDept.split('>').map((s: string) => s.trim()) : [];
+      const uSubCategory = uDeptParts.slice(0, 2).join(' > ');
+
+      // All users in the same sub-sub-category (full path), except self
+      const isSameSubSub = uDept === userSubSubCategory && u._id !== currentUser._id;
+
+      // The head of the same sub-category (main > sub), except self
+      const isHeadOfSubCategory = uSubCategory === userSubCategory && u.role === 'executive_head' && u._id !== currentUser._id;
+
+      return isSameSubSub || isHeadOfSubCategory;
+    });
+  } else if (isRegularUser) {
+    // Regular user: only see other users in the same sub-sub-category and the head of their own sub-sub-category
+    const userDept = currentUser.departmentOrSector?.trim().toLowerCase();
+    const userDeptParts = userDept.split('>').map((s: string) => s.trim());
+    const userSubSubCategory = userDept; // full path
+
+    filteredUsers = users.filter((u) => {
+      const uDept = u.departmentOrSector?.trim().toLowerCase();
+      // Same sub-sub-category and not self, and role is user
+      const isSameSubSub = uDept === userSubSubCategory && u._id !== currentUser._id && u.role === 'user';
+      // The head of the same sub-sub-category
+      const isHeadOfSubSub = uDept === userSubSubCategory && u.role === 'executive_head';
+      return isSameSubSub || isHeadOfSubSub;
+    });
+  } else {
+    filteredUsers = [];
+  }
+  // Debug: Log filtered users
+  console.log('Filtered users for recipient:', filteredUsers);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -305,7 +363,7 @@ const NewLetter = () => {
               </label>
               <DepartmentSelector
                 ref={departmentSelectorRef}
-                onChange={setDepartment}
+                onChange={(selection) => setDepartment(selection.fullPath)}
               />
             </div>
             {/* Recipient */}

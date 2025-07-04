@@ -18,6 +18,8 @@ const AdminCreateUser = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState("user");
+  const [departmentSelection, setDepartmentSelection] = useState({ main: '', sub: '', subSub: '', fullPath: '', role: 'user' });
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -26,6 +28,12 @@ const AdminCreateUser = () => {
       ...prev,
       [e.target.name]: e.target.value,
     }));
+  };
+
+  const handleDepartmentChange = (selection: { main: string; sub: string; subSub: string; fullPath: string; role: string }) => {
+    setDepartmentSelection(selection);
+    setFormData((prev) => ({ ...prev, departmentOrSector: selection.fullPath }));
+    if (selection.role) setSelectedRole(selection.role);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,11 +52,23 @@ const AdminCreateUser = () => {
       setIsSubmitting(false);
       return;
     }
+    // Enforce: if sub-category is selected, sub-sub-category must be selected
+    if (departmentSelection.sub && !departmentSelection.subSub) {
+      setError("If a sub-category is selected, you must also select a sub-sub-category.");
+      setIsSubmitting(false);
+      return;
+    }
+    // Enforce: role must be selected
+    if (!departmentSelection.role || departmentSelection.role === "") {
+      setError("Please select a role for the user.");
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const response = await axios.post(
         "http://localhost:5000/api/users/admin/create-user",
-        formData
+        { ...formData, role: selectedRole }
       );
       setSuccess(
         t.signup?.registrationSuccessful ||
@@ -61,6 +81,7 @@ const AdminCreateUser = () => {
         departmentOrSector: "",
         role: "user",
       });
+      setSelectedRole("user");
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
@@ -169,27 +190,9 @@ const AdminCreateUser = () => {
                   {t.sent?.departmentLabel || "Department/Sector"} *
                 </label>
                 <DepartmentSelector
-                  onChange={(val) =>
-                    setFormData((prev) => ({ ...prev, departmentOrSector: val }))
-                  }
+                  onChange={handleDepartmentChange}
                 />
               </div>
-            </div>
-
-            {/* Role */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t.roles?.label || "User Role"}
-              </label>
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
-              >
-                <option value="user">{t.roles?.user || "User"}</option>
-                <option value="admin">{t.roles?.admin || "Admin"}</option>
-              </select>
             </div>
 
             {/* Info Box */}

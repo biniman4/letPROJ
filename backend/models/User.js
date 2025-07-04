@@ -7,7 +7,13 @@ const userSchema = new mongoose.Schema({
   phone: { type: String },
   departmentOrSector: { type: String },
   profileImage: { type: String },
-  role: { type: String, enum: ["user", "admin"], default: "user" },
+  role: { type: String, enum: [
+    "user",
+    "executive_head",
+    "director_general",
+    "deputy_director_general",
+    "executive_advisor"
+  ], default: "user" },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
 });

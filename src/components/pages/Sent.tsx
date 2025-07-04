@@ -44,6 +44,7 @@ interface Letter {
   attachments: Attachment[];
   content: string;
   fromName: string;
+  rejectionReason?: string;
 }
 
 const Sent: React.FC = () => {
@@ -398,6 +399,23 @@ const Sent: React.FC = () => {
       title: t.sent.subjectColumn,
       dataIndex: "subject",
       key: "subject",
+      render: (subject: string, record: Letter) => (
+        <div className="flex items-center gap-2">
+          {/* Status icon before/after admin approval */}
+          {record.status === "pending" && (
+            <span title="Pending" className="text-yellow-500 text-lg">⏳</span>
+          )}
+          {record.status === "approved" && (
+            <span title="Approved" className="text-green-600 text-lg">✔️</span>
+          )}
+          <div className="font-semibold text-base text-gray-800">{subject}</div>
+          {record.status === "rejected" && record.rejectionReason && (
+            <div className="mt-1 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700 font-medium">
+              <span className="font-bold">Rejection Reason:</span> {record.rejectionReason}
+            </div>
+          )}
+        </div>
+      ),
     },
     {
       title: t.sent.toColumn,
@@ -432,6 +450,8 @@ const Sent: React.FC = () => {
               return "bg-purple-100 text-purple-800 border border-purple-300";
             case "rejected":
               return "bg-red-100 text-red-800 border border-red-300";
+            case "approved":
+              return "bg-green-100 text-green-800 border border-green-300";
             default:
               return "bg-gray-100 text-gray-800 border border-gray-300";
           }
@@ -449,6 +469,8 @@ const Sent: React.FC = () => {
               return "👁️";
             case "rejected":
               return "❌";
+            case "approved":
+              return "✔️";
             default:
               return "📄";
           }
@@ -457,7 +479,7 @@ const Sent: React.FC = () => {
         const getStatusText = (status: string) => {
           switch (status) {
             case "pending":
-              return "Pending Approval";
+              return "Pending Decision";
             case "sent":
               return "Sent";
             case "delivered":
@@ -466,6 +488,8 @@ const Sent: React.FC = () => {
               return "Read";
             case "rejected":
               return "Rejected";
+            case "approved":
+              return "Approved";
             default:
               return status.charAt(0).toUpperCase() + status.slice(1);
           }
@@ -480,13 +504,21 @@ const Sent: React.FC = () => {
             >
               {getStatusIcon(status)} {getStatusText(status)}
             </span>
-            {status === "pending" &&
-              record.priority &&
-              ["high", "urgent"].includes(record.priority) && (
-                <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-1 rounded border border-yellow-200">
-                  Admin Review Required
-                </span>
-              )}
+            {status === "pending" && (
+              <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-1 rounded border border-yellow-200 ml-2">
+                Awaiting Decision
+              </span>
+            )}
+            {status === "approved" && (
+              <span className="text-xs text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200 ml-2">
+                Approved by High-Level User
+              </span>
+            )}
+            {status === "rejected" && record.rejectionReason && (
+              <span className="text-xs text-red-700 bg-red-50 px-2 py-1 rounded border border-red-200 ml-2">
+                {record.rejectionReason}
+              </span>
+            )}
           </div>
         );
       },
@@ -1126,42 +1158,22 @@ const Sent: React.FC = () => {
           {filteredLetters.length > 0 && (
             <div className="mt-8 flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                {t.inbox.showing}{" "}
-                <span className="font-semibold text-gray-900">
-                  {startIndex + 1}
-                </span>{" "}
-                {t.inbox.to}{" "}
-                <span className="font-semibold text-gray-900">
-                  {Math.min(endIndex, filteredLetters.length)}
-                </span>{" "}
-                {t.inbox.of}{" "}
-                <span className="font-semibold text-gray-900">
-                  {filteredLetters.length}
-                </span>{" "}
-                {t.inbox.letters}
+                {"Showing"} {startIndex + 1} {"to"} {Math.min(endIndex, filteredLetters.length)} {"of"} {filteredLetters.length} {"letters"}
               </p>
               <div className="flex space-x-2">
                 <button
+                  className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
                   onClick={handlePreviousPage}
                   disabled={currentPage === 1}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm border border-blue-100 bg-white hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-400 ${
-                    currentPage === 1
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "text-gray-700"
-                  }`}
                 >
-                  {t.inbox.previous}
+                  {"Previous"}
                 </button>
                 <button
+                  className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
                   onClick={handleNextPage}
-                  disabled={currentPage === totalPages}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm border border-blue-100 bg-white hover:bg-blue-50 hover:text-blue-700 focus:ring-2 focus:ring-blue-400 ${
-                    currentPage === totalPages
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "text-gray-700"
-                  }`}
+                  disabled={endIndex >= filteredLetters.length}
                 >
-                  {t.inbox.next}
+                  {"Next"}
                 </button>
               </div>
             </div>
@@ -1329,11 +1341,11 @@ const Sent: React.FC = () => {
             {selectedLetter.status === "rejected" && (
               <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-lg shadow">
                 <h4 className="font-bold text-lg mb-2">
-                  {t.inbox.letterRejected}
+                  {"Letter Rejected"}
                 </h4>
                 <p>
                   <span className="font-semibold">
-                    {t.inbox.rejectionReason}:
+                    {"Reason"}:
                   </span>{" "}
                   {selectedLetter.rejectionNote}
                 </p>

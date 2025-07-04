@@ -268,6 +268,22 @@ export const createUserByAdmin = async (req, res) => {
   const { name, email, phone, departmentOrSector, role = "user" } = req.body;
 
   try {
+    // Normalize departmentOrSector and role for uniqueness check
+    const normalizedDept = (departmentOrSector || "").trim().toLowerCase();
+    const normalizedRole = (role || "").trim().toLowerCase();
+
+    // Only allow one person per non-'user' role per departmentOrSector
+    if (normalizedRole !== "user") {
+      const existingRole = await User.findOne({
+        departmentOrSector: normalizedDept,
+        role: normalizedRole
+      });
+      if (existingRole) {
+        return res.status(400).json({
+          message: `There is already a person registered with the role '${role}' for this unit/department. Only one person per role is allowed per unit.`
+        });
+      }
+    }
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -284,8 +300,8 @@ export const createUserByAdmin = async (req, res) => {
       email,
       password: hashedPassword,
       phone,
-      departmentOrSector,
-      role,
+      departmentOrSector: normalizedDept,
+      role: normalizedRole,
       isFirstLogin: true, // Flag to force password change
     });
     await user.save();
