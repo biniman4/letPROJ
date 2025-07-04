@@ -30,6 +30,7 @@
     "statusDelivered": "Delivered",
     "statusRead": "Read",
     "statusPending": "Pending",
+    "statusApproved": "Approved",
     "statusRejected": "Rejected",
     "priorityNormal": "Normal",
     "priorityHigh": "High",

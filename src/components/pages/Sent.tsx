@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Table, Button, Input, Select, Modal, Form } from "antd";
+import { Table, Button, Input, Select, Modal, Form, Tag, Tooltip, Badge } from "antd";
 import {
   SearchOutlined,
   FilterOutlined,
@@ -12,6 +12,11 @@ import {
   MailOutlined,
   AppstoreOutlined,
   BarsOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  ExclamationCircleOutlined,
+  TableOutlined,
 } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -45,13 +50,15 @@ interface Letter {
   content: string;
   fromName: string;
   rejectionReason?: string;
+  rejectedAt?: string;
+  approvedAt?: string;
 }
 
 const Sent: React.FC = () => {
   const { letters, loading, fetchLetters, refresh } = useSent();
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [viewType, setViewType] = useState<"grid" | "list">("list");
+  const [viewType, setViewType] = useState<"grid" | "list" | "table">("table");
   const [composeVisible, setComposeVisible] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>("");
@@ -394,229 +401,221 @@ const Sent: React.FC = () => {
     }
   };
 
-  const columns = [
-    {
-      title: t.sent.subjectColumn,
-      dataIndex: "subject",
-      key: "subject",
-      render: (subject: string, record: Letter) => (
-        <div className="flex items-center gap-2">
-          {/* Status icon before/after admin approval */}
-          {record.status === "pending" && (
-            <span title="Pending" className="text-yellow-500 text-lg">⏳</span>
-          )}
-          {record.status === "approved" && (
-            <span title="Approved" className="text-green-600 text-lg">✔️</span>
-          )}
-          <div className="font-semibold text-base text-gray-800">{subject}</div>
-          {record.status === "rejected" && record.rejectionReason && (
-            <div className="mt-1 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700 font-medium">
-              <span className="font-bold">Rejection Reason:</span> {record.rejectionReason}
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: t.sent.toColumn,
-      dataIndex: "to",
-      key: "to",
-    },
-    {
-      title: t.sent.departmentColumn,
-      dataIndex: "department",
-      key: "department",
-    },
-    {
-      title: t.sent.dateColumn,
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (date: string) => new Date(date).toLocaleDateString(),
-    },
-    {
-      title: t.sent.statusColumn,
-      dataIndex: "status",
-      key: "status",
-      render: (status: string, record: Letter) => {
-        const getStatusClass = (status: string) => {
-          switch (status) {
-            case "pending":
-              return "bg-yellow-100 text-yellow-800 border border-yellow-300";
-            case "sent":
-              return "bg-green-100 text-green-800 border border-green-300";
-            case "delivered":
-              return "bg-blue-100 text-blue-800 border border-blue-300";
-            case "read":
-              return "bg-purple-100 text-purple-800 border border-purple-300";
-            case "rejected":
-              return "bg-red-100 text-red-800 border border-red-300";
-            case "approved":
-              return "bg-green-100 text-green-800 border border-green-300";
-            default:
-              return "bg-gray-100 text-gray-800 border border-gray-300";
-          }
-        };
-
-        const getStatusIcon = (status: string) => {
-          switch (status) {
-            case "pending":
-              return "⏳";
-            case "sent":
-              return "✅";
-            case "delivered":
-              return "📨";
-            case "read":
-              return "👁️";
-            case "rejected":
-              return "❌";
-            case "approved":
-              return "✔️";
-            default:
-              return "📄";
-          }
-        };
-
-        const getStatusText = (status: string) => {
-          switch (status) {
-            case "pending":
-              return "Pending Decision";
-            case "sent":
-              return "Sent";
-            case "delivered":
-              return "Delivered";
-            case "read":
-              return "Read";
-            case "rejected":
-              return "Rejected";
-            case "approved":
-              return "Approved";
-            default:
-              return status.charAt(0).toUpperCase() + status.slice(1);
-          }
-        };
-
-        return (
-          <div className="flex items-center gap-2">
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusClass(
-                status
-              )}`}
-            >
-              {getStatusIcon(status)} {getStatusText(status)}
-            </span>
-            {status === "pending" && (
-              <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-1 rounded border border-yellow-200 ml-2">
-                Awaiting Decision
-              </span>
-            )}
-            {status === "approved" && (
-              <span className="text-xs text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200 ml-2">
-                Approved by High-Level User
-              </span>
-            )}
-            {status === "rejected" && record.rejectionReason && (
-              <span className="text-xs text-red-700 bg-red-50 px-2 py-1 rounded border border-red-200 ml-2">
-                {record.rejectionReason}
-              </span>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      title: t.sent.priorityColumn,
-      dataIndex: "priority",
-      key: "priority",
-      render: (priority: string) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-semibold ${getPriorityClass(
-            priority
-          )}`}
-        >
-          {priority.charAt(0).toUpperCase() + priority.slice(1)}
-        </span>
-      ),
-    },
-    {
-      title: t.sent.attachmentsColumn,
-      key: "attachments",
-      render: (record: Letter) => (
-        <div className="flex gap-2">
-          {record.attachments && record.attachments.length > 0 ? (
-            record.attachments.map((attachment, index) => (
-              <div key={index} className="flex items-center gap-1">
-                <PaperClipOutlined className="text-gray-600" />
-                <span className="text-sm text-gray-600">
-                  {attachment.filename}
-                </span>
-                <Button
-                  type="link"
-                  icon={<EyeOutlined />}
-                  onClick={() =>
-                    handleView(
-                      record._id,
-                      attachment.filename,
-                      attachment.contentType
-                    )
-                  }
-                  size="small"
-                />
-                <Button
-                  type="link"
-                  icon={<DownloadOutlined />}
-                  onClick={() =>
-                    handleDownload(record._id, attachment.filename)
-                  }
-                  size="small"
-                />
-              </div>
-            ))
-          ) : (
-            <span className="text-gray-400">{t.sent.noAttachments}</span>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: t.sent.memoViewColumn,
-      key: "memoView",
-      render: (record: Letter) => (
-        <Button
-          type="link"
-          icon={<FileTextOutlined />}
-          onClick={() => handleMemoView(record)}
-          size="small"
-        >
-          {t.sent.viewMemoButton}
-        </Button>
-      ),
-    },
-  ];
-
+  // Filter letters based on search text and status filter
   const filteredLetters = letters.filter((letter) => {
     const matchesSearch =
       letter.subject.toLowerCase().includes(searchText.toLowerCase()) ||
-      letter.to.toLowerCase().includes(searchText.toLowerCase());
+      letter.to.toLowerCase().includes(searchText.toLowerCase()) ||
+      letter.department.toLowerCase().includes(searchText.toLowerCase()) ||
+      letter.content.toLowerCase().includes(searchText.toLowerCase());
 
-    if (!matchesSearch) return false;
+    const matchesStatus =
+      statusFilter === "all" || letter.status === statusFilter;
 
-    if (statusFilter === "all") {
-      return true;
-    }
-
-    if (statusFilter === "delivered") {
-      return letter.status !== "pending";
-    }
-
-    const isPriorityFilter = ["normal", "high", "urgent"].includes(
-      statusFilter
-    );
-    if (isPriorityFilter) {
-      return letter.priority === statusFilter;
-    }
-
-    return letter.status === statusFilter;
+    return matchesSearch && matchesStatus;
   });
+
+
+
+  // Status tracking functions
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "processing";
+      case "approved":
+        return "success";
+      case "rejected":
+        return "error";
+      case "sent":
+        return "default";
+      case "delivered":
+        return "success";
+      case "read":
+        return "success";
+      default:
+        return "default";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "pending":
+        return <ClockCircleOutlined />;
+      case "approved":
+        return <CheckCircleOutlined />;
+      case "rejected":
+        return <CloseCircleOutlined />;
+      case "sent":
+        return <SendOutlined />;
+      case "delivered":
+        return <CheckCircleOutlined />;
+      case "read":
+        return <CheckCircleOutlined />;
+      default:
+        return <MailOutlined />;
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "Pending Approval";
+      case "approved":
+        return "Approved";
+      case "rejected":
+        return "Rejected";
+      case "sent":
+        return "Sent";
+      case "delivered":
+        return "Delivered";
+      case "read":
+        return "Read";
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+  };
+
+  const getStatusDescription = (letter: Letter) => {
+    switch (letter.status) {
+      case "pending":
+        return "Waiting for higher-level approval";
+      case "approved":
+        return letter.approvedAt 
+          ? `Approved on ${new Date(letter.approvedAt).toLocaleDateString()}`
+          : "Approved";
+      case "rejected":
+        return letter.rejectedAt 
+          ? `Rejected on ${new Date(letter.rejectedAt).toLocaleDateString()}`
+          : "Rejected";
+      case "sent":
+        return "Letter has been sent";
+      case "delivered":
+        return "Letter has been delivered";
+      case "read":
+        return "Letter has been read";
+      default:
+        return "";
+    }
+  };
+
+  // Table columns for status tracking
+  const columns = [
+    {
+      title: "Subject",
+      dataIndex: "subject",
+      key: "subject",
+      render: (text: string, record: Letter) => (
+        <div className="font-medium text-[#003F5D] hover:text-[#C88B3D] cursor-pointer">
+          {text}
+        </div>
+      ),
+    },
+    {
+      title: "Recipient",
+      dataIndex: "to",
+      key: "to",
+      render: (text: string) => (
+        <div className="text-gray-700">{text}</div>
+      ),
+    },
+    {
+      title: "Department",
+      dataIndex: "department",
+      key: "department",
+      render: (text: string) => (
+        <div className="text-gray-600">{text}</div>
+      ),
+    },
+    {
+      title: "Priority",
+      dataIndex: "priority",
+      key: "priority",
+      render: (priority: string) => (
+        <Tag
+          color={
+            priority === "urgent"
+              ? "red"
+              : priority === "high"
+              ? "orange"
+              : "blue"
+          }
+          className="font-medium"
+        >
+          {priority.charAt(0).toUpperCase() + priority.slice(1)}
+        </Tag>
+      ),
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status: string, record: Letter) => (
+        <Tooltip title={getStatusDescription(record)}>
+          <Badge
+            status={getStatusColor(status) as any}
+            text={
+              <span className="font-medium">
+                {getStatusIcon(status)} {getStatusText(status)}
+              </span>
+            }
+          />
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Date",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date: string) => (
+        <div className="text-gray-500">
+          {new Date(date).toLocaleDateString()}
+        </div>
+      ),
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (record: Letter) => (
+        <div className="flex gap-2">
+          {record.attachments && record.attachments.length > 0 && (
+            <Tooltip title="View Attachment">
+              <Button
+                type="text"
+                icon={<EyeOutlined />}
+                size="small"
+                onClick={() =>
+                  handleView(
+                    record._id,
+                    record.attachments[0]?.filename,
+                    record.attachments[0]?.contentType
+                  )
+                }
+              />
+            </Tooltip>
+          )}
+          <Tooltip title="View Memo">
+            <Button
+              type="text"
+              icon={<FileTextOutlined />}
+              size="small"
+              onClick={() => handleMemoView(record)}
+            />
+          </Tooltip>
+          {record.status === "rejected" && record.rejectionReason && (
+            <Tooltip title="View Rejection Reason">
+              <Button
+                type="text"
+                icon={<ExclamationCircleOutlined />}
+                size="small"
+                danger
+                onClick={() => handleRejectionClick(record._id)}
+              />
+            </Tooltip>
+          )}
+        </div>
+      ),
+    },
+  ];
 
   // Pagination logic
   const totalPages = Math.ceil(filteredLetters.length / itemsPerPage);
@@ -764,6 +763,9 @@ const Sent: React.FC = () => {
             <Select.Option value="pending">
               {t.sent.statusPending || "Pending"}
             </Select.Option>
+            <Select.Option value="approved">
+              {t.sent.statusApproved || "Approved"}
+            </Select.Option>
             <Select.Option value="rejected">
               {t.sent.statusRejected || "Rejected"}
             </Select.Option>
@@ -794,6 +796,16 @@ const Sent: React.FC = () => {
               onClick={() => setViewType("list")}
               className={
                 viewType === "list"
+                  ? "text-white bg-[#003F5D]"
+                  : "text-gray-500"
+              }
+            />
+            <Button
+              type="text"
+              icon={<TableOutlined />}
+              onClick={() => setViewType("table")}
+              className={
+                viewType === "table"
                   ? "text-white bg-[#003F5D]"
                   : "text-gray-500"
               }
@@ -997,6 +1009,29 @@ const Sent: React.FC = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          ) : viewType === "table" ? (
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <Table
+                dataSource={filteredLetters}
+                columns={columns}
+                rowKey="_id"
+                pagination={{
+                  current: currentPage,
+                  pageSize: itemsPerPage,
+                  total: filteredLetters.length,
+                  showSizeChanger: false,
+                  showQuickJumper: true,
+                  showTotal: (total, range) =>
+                    `${range[0]}-${range[1]} of ${total} letters`,
+                }}
+                className="sent-letters-table"
+                rowClassName={(record) => {
+                  if (record.status === "pending") return "pending-row";
+                  if (record.status === "rejected") return "rejected-row";
+                  return "";
+                }}
+              />
             </div>
           ) : (
             <div className="space-y-4">
@@ -1366,8 +1401,43 @@ const Sent: React.FC = () => {
   );
 };
 
+// Add CSS styles for table view
+const tableStyles = `
+  .sent-letters-table .ant-table-thead > tr > th {
+    background-color: #f8fafc;
+    color: #1e293b;
+    font-weight: 600;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  
+  .sent-letters-table .ant-table-tbody > tr:hover > td {
+    background-color: #f1f5f9;
+  }
+  
+  .sent-letters-table .pending-row {
+    background-color: #fef3c7;
+  }
+  
+  .sent-letters-table .pending-row:hover {
+    background-color: #fde68a;
+  }
+  
+  .sent-letters-table .rejected-row {
+    background-color: #fee2e2;
+  }
+  
+  .sent-letters-table .rejected-row:hover {
+    background-color: #fecaca;
+  }
+  
+  .sent-letters-table .ant-table-pagination {
+    margin: 16px 0;
+  }
+`;
+
 export default (props: any) => (
   <ErrorBoundary>
+    <style>{tableStyles}</style>
     <Sent {...props} />
   </ErrorBoundary>
 );

@@ -104,6 +104,7 @@
     "statusDelivered": "ደረሰ",
     "statusRead": "ታይቷል",
     "statusPending": "በመጠባበቅ ላይ",
+    "statusApproved": "ጸድቋል",
     "statusRejected": "ውድቅ ተደርጓል",
     "priorityNormal": "መደበኛ",
     "priorityHigh": "ከፍተኛ",
