@@ -126,7 +126,18 @@ const Inbox = () => {
   const [hasNewLetters, setHasNewLetters] = useState(false);
   const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
-  const [pendingActionLetter, setPendingActionLetter] = useState<Letter | null>(null);
+  const [pendingActionLetter, setPendingActionLetter] = useState<Letter | null>(
+    null
+  );
+
+  // Add state for attachment modal
+  const [attachmentModalOpen, setAttachmentModalOpen] = useState(false);
+  const [attachmentFiles, setAttachmentFiles] = useState<Array<{
+    filename: string;
+  }> | null>(null);
+  const [attachmentLetterId, setAttachmentLetterId] = useState<string | null>(
+    null
+  );
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user.email || "";
@@ -331,9 +342,16 @@ const Inbox = () => {
         }
 
         if (newStarredState) {
-          toast.success((t.inbox?.letterStarred && t.inbox.letterStarred(letter.subject)) || `Letter starred: ${letter.subject}`);
+          toast.success(
+            (t.inbox?.letterStarred && t.inbox.letterStarred(letter.subject)) ||
+              `Letter starred: ${letter.subject}`
+          );
         } else {
-          toast.info((t.inbox?.letterUnstarred && t.inbox.letterUnstarred(letter.subject)) || `Letter unstarred: ${letter.subject}`);
+          toast.info(
+            (t.inbox?.letterUnstarred &&
+              t.inbox.letterUnstarred(letter.subject)) ||
+              `Letter unstarred: ${letter.subject}`
+          );
         }
       } catch (error) {
         console.error("Error toggling star:", error);
@@ -350,71 +368,80 @@ const Inbox = () => {
   );
 
   // Remove React.memo from LetterListItem to ensure reactivity to language changes
-  const LetterListItem =
-    ({ letter, onOpen, onStarToggle, isActive }: { letter: Letter; onOpen: (letter: Letter) => void; onStarToggle: (letter: Letter, e: React.MouseEvent) => void; isActive: boolean; }) => {
-      const isUnread = letter.unread;
-      return (
-        <div
-          className={`flex items-center p-3 cursor-pointer border-l-4 ${
-            isActive
-              ? "border-[#C88B3D] bg-yellow-50/80 shadow-md scale-[1.01]"
-              : isUnread
-              ? "border-blue-500 bg-blue-50/70"
-              : "border-transparent"
-          } hover:bg-gray-100 transition-all duration-200 group`}
-          onClick={() => onOpen(letter)}
-          style={{
-            transition: "box-shadow 0.2s, background 0.2s, transform 0.1s",
-          }}
-        >
-          <div className="flex items-center gap-4 w-48 shrink-0">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onStarToggle(letter, e);
-              }}
-              className={`text-xl ${
-                letter.starred ? "text-yellow-400" : "text-gray-300"
-              } hover:text-yellow-400 transition-colors`}
-            >
-              <StarIcon
-                fill={letter.starred ? "currentColor" : "none"}
-                className="w-5 h-5"
-              />
-            </button>
-            <span
-              className={`font-semibold truncate ${
-                isUnread ? "text-gray-800" : "text-gray-600"
-              }`}
-            >
-              {letter.fromName}
-            </span>
-          </div>
-          <div className="flex-grow min-w-0 mx-4">
-            <span
-              className={`font-semibold truncate ${
-                isUnread ? "text-gray-900" : "text-gray-700"
-              }`}
-            >
-              {letter.subject}
-            </span>
-          </div>
-          <div className="flex items-center justify-end gap-4 w-48 shrink-0 ml-auto">
-            {getPriorityBadge(letter.priority)}
-            {letter.attachments && letter.attachments.length > 0 && (
-              <FaPaperclip className="text-gray-400" />
-            )}
-            <span
-              className={`text-sm font-medium whitespace-nowrap ${
-                isUnread ? "text-blue-600" : "text-gray-500"
-              }`}
-            >
-              {new Date(letter.createdAt).toLocaleDateString()}
-            </span>
-          </div>
+  const LetterListItem = ({
+    letter,
+    onOpen,
+    onStarToggle,
+    isActive,
+  }: {
+    letter: Letter;
+    onOpen: (letter: Letter) => void;
+    onStarToggle: (letter: Letter, e: React.MouseEvent) => void;
+    isActive: boolean;
+  }) => {
+    const isUnread = letter.unread;
+    return (
+      <div
+        className={`flex items-center p-3 cursor-pointer border-l-4 ${
+          isActive
+            ? "border-[#C88B3D] bg-yellow-50/80 shadow-md scale-[1.01]"
+            : isUnread
+            ? "border-blue-500 bg-blue-50/70"
+            : "border-transparent"
+        } hover:bg-gray-100 transition-all duration-200 group`}
+        onClick={() => onOpen(letter)}
+        style={{
+          transition: "box-shadow 0.2s, background 0.2s, transform 0.1s",
+        }}
+      >
+        <div className="flex items-center gap-4 w-48 shrink-0">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onStarToggle(letter, e);
+            }}
+            className={`text-xl ${
+              letter.starred ? "text-yellow-400" : "text-gray-300"
+            } hover:text-yellow-400 transition-colors`}
+          >
+            <StarIcon
+              fill={letter.starred ? "currentColor" : "none"}
+              className="w-5 h-5"
+            />
+          </button>
+          <span
+            className={`font-semibold truncate ${
+              isUnread ? "text-gray-800" : "text-gray-600"
+            }`}
+          >
+            {letter.fromName}
+          </span>
         </div>
-      );
-    };
+        <div className="flex-grow min-w-0 mx-4">
+          <span
+            className={`font-semibold truncate ${
+              isUnread ? "text-gray-900" : "text-gray-700"
+            }`}
+          >
+            {letter.subject}
+          </span>
+        </div>
+        <div className="flex items-center justify-end gap-4 w-48 shrink-0 ml-auto">
+          {getPriorityBadge(letter.priority)}
+          {letter.attachments && letter.attachments.length > 0 && (
+            <FaPaperclip className="text-gray-400" />
+          )}
+          <span
+            className={`text-sm font-medium whitespace-nowrap ${
+              isUnread ? "text-blue-600" : "text-gray-500"
+            }`}
+          >
+            {new Date(letter.createdAt).toLocaleDateString()}
+          </span>
+        </div>
+      </div>
+    );
+  };
 
   // Memoize pagination handlers
   const handleNextPage = useCallback(() => {
@@ -874,7 +901,9 @@ const Inbox = () => {
 
   const handleApprove = async (letterId: string) => {
     try {
-      await axios.post("http://localhost:5000/api/letters/approve", { letterId });
+      await axios.post("http://localhost:5000/api/letters/approve", {
+        letterId,
+      });
       toast.success("Letter approved and sent.");
       fetchLetters();
     } catch (error) {
@@ -907,20 +936,20 @@ const Inbox = () => {
 
   // Privilege logic for inbox filter buttons
   const highPrivilegeRoles = [
-    'director_general',
-    'deputy_director_general',
-    'executive_advisor'
+    "director_general",
+    "deputy_director_general",
+    "executive_advisor",
   ];
   const isHighPrivilege =
     highPrivilegeRoles.includes(user.role) ||
-    user.role === 'executive_head' ||
-    (typeof user.role === 'string' && user.role.endsWith('executive_head'));
+    user.role === "executive_head" ||
+    (typeof user.role === "string" && user.role.endsWith("executive_head"));
 
-  console.log('Current user role:', user.role);
+  console.log("Current user role:", user.role);
 
   const inboxButtons = isHighPrivilege
-    ? ['All', 'Unread', 'Starred', 'Urgent', 'Seen', 'Reject', 'Approve']
-    : ['All', 'Unread', 'Starred', 'Urgent', 'Seen'];
+    ? ["All", "Unread", "Starred", "Urgent", "Seen", "Reject", "Approve"]
+    : ["All", "Unread", "Starred", "Urgent", "Seen"];
 
   return (
     <div className="min-h-screen bg-[#FFFFFF] py-8">
@@ -938,7 +967,11 @@ const Inbox = () => {
             {inboxButtons.map((btn) => (
               <button
                 key={btn}
-                className={`px-3 py-1 rounded ${selectedFilter === btn.toLowerCase() ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                className={`px-3 py-1 rounded ${
+                  selectedFilter === btn.toLowerCase()
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700"
+                }`}
                 onClick={() => setSelectedFilter(btn.toLowerCase())}
               >
                 {btn}
@@ -982,7 +1015,9 @@ const Inbox = () => {
                   />
                 </svg>
               )}
-              {isRefreshing ? t.inbox?.refreshing || "Refreshing..." : t.inbox?.refresh || "Refresh"}
+              {isRefreshing
+                ? t.inbox?.refreshing || "Refreshing..."
+                : t.inbox?.refresh || "Refresh"}
               {hasNewLetters && !isRefreshing && (
                 <span className="ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full">
                   New
@@ -1009,9 +1044,9 @@ const Inbox = () => {
             <div className="divide-y divide-gray-100">
               {isHighPrivilege ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 justify-center">
-              {currentLetters.map((letter) => (
+                  {currentLetters.map((letter) => (
                     <div
-                  key={letter._id}
+                      key={letter._id}
                       className="bg-white rounded-2xl shadow-lg max-w-sm mx-auto p-4 mb-6 border-t-4 border-blue-900 flex flex-col gap-2"
                     >
                       <div className="flex items-center justify-between mb-1">
@@ -1019,30 +1054,50 @@ const Inbox = () => {
                           {letter.subject}
                         </h3>
                         {letter.priority && (
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ml-2 ${letter.priority === 'high' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>
-                            {letter.priority.charAt(0).toUpperCase() + letter.priority.slice(1)}
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-bold ml-2 ${
+                              letter.priority === "high"
+                                ? "bg-orange-100 text-orange-700"
+                                : "bg-blue-100 text-blue-700"
+                            }`}
+                          >
+                            {letter.priority.charAt(0).toUpperCase() +
+                              letter.priority.slice(1)}
                           </span>
                         )}
                       </div>
                       <div className="flex items-center justify-between text-sm text-gray-700 mb-1">
                         <span className="text-gray-600 text-xs">
-                          From: <span className="font-semibold text-blue-900">{letter.fromName}</span>
+                          From:{" "}
+                          <span className="font-semibold text-blue-900">
+                            {letter.fromName}
+                          </span>
                           <span className="mx-1">|</span>
-                          <span className="font-semibold text-green-800">{letter.department}</span>
+                          <span className="font-semibold text-green-800">
+                            {letter.department}
+                          </span>
                         </span>
                         <span>{getLetterSentDate(letter.createdAt)}</span>
                       </div>
                       <div className="text-base text-slate-800 mb-1 font-semibold">
-                        <span className="text-gray-600 font-normal mr-1">Subject:</span>{letter.subject}
+                        <span className="text-gray-600 font-normal mr-1">
+                          Subject:
+                        </span>
+                        {letter.subject}
                       </div>
                       <div className="italic text-gray-400 text-sm mb-2">
-                        {letter.attachments && letter.attachments.length > 0 ? null : 'No attachments'}
+                        {letter.attachments && letter.attachments.length > 0
+                          ? null
+                          : "No attachments"}
                       </div>
                       <div className="flex gap-2 mt-2">
                         <button
                           className="flex-1 border border-blue-400 text-blue-600 rounded-lg px-2 py-1 flex items-center justify-center gap-1 hover:bg-blue-50 transition"
                           title="View"
-                          onClick={() => { setOpenLetter(letter); setViewMode(true); }}
+                          onClick={() => {
+                            setOpenLetter(letter);
+                            setViewMode(true);
+                          }}
                         >
                           <Eye className="w-4 h-4" />
                           View
@@ -1085,44 +1140,71 @@ const Inbox = () => {
                     <div
                       key={letter._id}
                       className={`group bg-white rounded-xl shadow-lg p-4 border-l-4 flex items-center justify-between gap-4 mb-4 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:bg-blue-50 hover:-translate-y-1 relative ${
-                        letter.priority === 'urgent'
-                          ? 'border-red-500'
-                          : letter.priority === 'high'
-                          ? 'border-orange-500'
-                          : 'border-blue-600'
+                        letter.priority === "urgent"
+                          ? "border-red-500"
+                          : letter.priority === "high"
+                          ? "border-orange-500"
+                          : "border-blue-600"
                       }`}
+                      onClick={() => {
+                        setOpenLetter(letter);
+                        setViewMode(true);
+                      }}
                     >
-                      <button
-                        className="text-blue-600 hover:text-blue-800 p-1.5 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 mr-3"
-                        title="View"
-                        onClick={() => { setOpenLetter(letter); setViewMode(true); }}
-                      >
-                        <Eye className="w-5 h-5" />
-                      </button>
                       <div className="flex-grow min-w-0">
                         <div className="flex items-center gap-3 mb-1">
-                          <span className="font-bold text-lg text-blue-900 group-hover:text-blue-700 truncate">{letter.subject}</span>
+                          <span className="font-bold text-lg text-blue-900 group-hover:text-blue-700 truncate">
+                            {letter.subject}
+                          </span>
                           {letter.priority && (
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                              letter.priority === 'urgent'
-                                ? 'bg-red-500 text-white'
-                                : letter.priority === 'high'
-                                ? 'bg-orange-500 text-white'
-                                : 'bg-blue-500 text-white'
-                            }`}>
-                              {letter.priority.charAt(0).toUpperCase() + letter.priority.slice(1)}
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                letter.priority === "urgent"
+                                  ? "bg-red-500 text-white"
+                                  : letter.priority === "high"
+                                  ? "bg-orange-500 text-white"
+                                  : "bg-blue-500 text-white"
+                              }`}
+                            >
+                              {letter.priority.charAt(0).toUpperCase() +
+                                letter.priority.slice(1)}
                             </span>
                           )}
+                          {/* New attachment button */}
+                          {letter.attachments &&
+                            letter.attachments.length > 0 && (
+                              <button
+                                className="ml-2 text-blue-500 hover:text-blue-700 p-1 rounded-full border border-blue-200 hover:border-blue-400 bg-blue-50"
+                                title="Show Attachments"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setAttachmentFiles(letter.attachments);
+                                  setAttachmentLetterId(letter._id);
+                                  setAttachmentModalOpen(true);
+                                }}
+                              >
+                                <FaPaperclip className="w-5 h-5" />
+                              </button>
+                            )}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <span>From: <span className="font-semibold text-blue-900">{letter.fromName}</span></span>
+                          <span>
+                            From:{" "}
+                            <span className="font-semibold text-blue-900">
+                              {letter.fromName}
+                            </span>
+                          </span>
                           <span className="mx-1">|</span>
-                          <span>Dept: <span className="font-semibold text-green-800">{letter.department}</span></span>
+                          <span>
+                            Dept:{" "}
+                            <span className="font-semibold text-green-800">
+                              {letter.department}
+                            </span>
+                          </span>
                           <span className="mx-1">|</span>
-                          <span>{new Date(letter.createdAt).toLocaleDateString()}</span>
-                          {letter.attachments && letter.attachments.length > 0 && (
-                            <FaPaperclip className="ml-2 text-gray-400" />
-                          )}
+                          <span>
+                            {new Date(letter.createdAt).toLocaleDateString()}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1235,10 +1317,14 @@ const Inbox = () => {
                     </div>
                     <div className="text-gray-800 font-semibold text-sm truncate">
                       {(openLetter.department || "")
-                        .split(' > ')
-                        .map((dep: string) => t.departments[dep.trim() as keyof typeof t.departments] || dep.trim())
-                        .join(' > ')
-                      }
+                        .split(" > ")
+                        .map(
+                          (dep: string) =>
+                            t.departments[
+                              dep.trim() as keyof typeof t.departments
+                            ] || dep.trim()
+                        )
+                        .join(" > ")}
                     </div>
                   </div>
                   <div className="bg-gray-100/70 rounded-lg p-3">
@@ -1616,9 +1702,15 @@ const Inbox = () => {
         </div>
       </Modal>
       {rejectionModalOpen && (
-        <Modal open={rejectionModalOpen} onClose={() => setRejectionModalOpen(false)} center>
+        <Modal
+          open={rejectionModalOpen}
+          onClose={() => setRejectionModalOpen(false)}
+          center
+        >
           <div className="p-4">
-            <h3 className="text-lg font-bold mb-2 text-red-700">Reject Letter</h3>
+            <h3 className="text-lg font-bold mb-2 text-red-700">
+              Reject Letter
+            </h3>
             <textarea
               className="w-full border border-gray-300 rounded-lg p-2 mb-4"
               rows={4}
@@ -1640,6 +1732,70 @@ const Inbox = () => {
               >
                 Reject
               </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+      {attachmentModalOpen && attachmentFiles && (
+        <Modal
+          open={attachmentModalOpen}
+          onClose={() => setAttachmentModalOpen(false)}
+          center
+        >
+          <div className="p-4">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <FaPaperclip className="w-5 h-5" /> Attachments
+            </h3>
+            <div className="space-y-3">
+              {attachmentFiles.map((file, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between bg-gray-100 p-3 rounded-lg border border-gray-200"
+                >
+                  <span className="text-sm text-gray-800 font-medium truncate">
+                    {file.filename}
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      className="text-blue-600 hover:text-blue-800 text-sm font-semibold"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Guess file type from extension
+                        const ext = file.filename
+                          .split(".")
+                          .pop()
+                          ?.toLowerCase();
+                        let type = "";
+                        if (
+                          ["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(
+                            ext || ""
+                          )
+                        ) {
+                          type = `image/${ext === "jpg" ? "jpeg" : ext}`;
+                        } else if (ext === "pdf") {
+                          type = "application/pdf";
+                        }
+                        if (attachmentLetterId) {
+                          handleView(attachmentLetterId, file.filename, type);
+                        }
+                      }}
+                    >
+                      Preview
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (attachmentLetterId) {
+                          handleDownload(attachmentLetterId, file.filename);
+                        }
+                      }}
+                      className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-gray-200/70 rounded-md transition-colors duration-200"
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </Modal>
