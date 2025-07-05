@@ -73,12 +73,12 @@ export const createLetter = async (req, res) => {
 
     // Determine if recipient is high-level
     const highLevelRoles = [
-      'executive_head',
-      'director_general',
-      'deputy_director_general',
-      'executive_advisor'
+      "executive_head",
+      "director_general",
+      "deputy_director_general",
+      "executive_advisor",
     ];
-    const senderIsRegular = sender.role === 'user';
+    const senderIsRegular = sender.role === "user";
     const recipientIsHighLevel = highLevelRoles.includes(recipient.role);
 
     // Only include fields that exist in the schema (NO "reference" field)
@@ -340,6 +340,13 @@ export const getLetters = async (req, res) => {
     const userEmail = req.query.userEmail || req.headers["user-email"];
     const fetchAll = req.query.all === "true";
 
+    // If fetchAll is true and no userEmail is provided, return all letters (for admin panel)
+    if (fetchAll && !userEmail) {
+      const allLetters = await Letter.find({}).sort({ createdAt: -1 });
+      console.log(`Found ${allLetters.length} letters for admin panel`);
+      return res.status(200).json(allLetters);
+    }
+
     if (!userEmail) {
       return res.status(400).json({ error: "User email is required" });
     }
@@ -351,10 +358,10 @@ export const getLetters = async (req, res) => {
     }
 
     const highLevelRoles = [
-      'executive_head',
-      'director_general',
-      'deputy_director_general',
-      'executive_advisor'
+      "executive_head",
+      "director_general",
+      "deputy_director_general",
+      "executive_advisor",
     ];
     const isHighLevel = highLevelRoles.includes(user.role);
 
@@ -364,10 +371,7 @@ export const getLetters = async (req, res) => {
       letterQuery = {
         $and: [
           {
-            $or: [
-              { toEmail: userEmail },
-              { isCC: true, toEmail: userEmail },
-            ],
+            $or: [{ toEmail: userEmail }, { isCC: true, toEmail: userEmail }],
           },
           // No status filter: include pending
         ],
@@ -377,10 +381,7 @@ export const getLetters = async (req, res) => {
       letterQuery = {
         $and: [
           {
-            $or: [
-              { toEmail: userEmail },
-              { isCC: true, toEmail: userEmail },
-            ],
+            $or: [{ toEmail: userEmail }, { isCC: true, toEmail: userEmail }],
           },
           { status: { $ne: "pending" } },
         ],

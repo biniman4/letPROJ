@@ -57,6 +57,17 @@ const LetterManagement: React.FC<{
   const [acceptedLetters, setAcceptedLetters] = useState<string[]>([]);
   const [letterSearch, setLetterSearch] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
+
+  const handleDepartmentChange = (selection: {
+    main: string;
+    sub: string;
+    subSub: string;
+    fullPath: string;
+    role: string;
+  }) => {
+    setSelectedDepartment(selection.fullPath);
+  };
+
   const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const [openLetter, setOpenLetter] = useState<Letter | null>(null);
   const [viewMode, setViewMode] = useState(false);
@@ -83,46 +94,94 @@ const LetterManagement: React.FC<{
     setLoadingLetters(true);
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const userEmail = user.email;
-    const adminAll = isAdmin ? "&all=true" : "";
-    axios
-      .get(
-        `http://localhost:5000/api/letters?userEmail=${encodeURIComponent(
-          userEmail
-        )}${adminAll}`
-      )
-      .then((res: { data: Letter[] }) => {
-        setLetters(res.data);
-        setLoadingLetters(false);
-      })
-      .catch((error: Error) => {
-        setLetters([]);
-        setLoadingLetters(false);
-      });
-    // Fetch pending letters for admin approval
-    axios
-      .get(
-        `http://localhost:5000/api/letters/pending?userEmail=${encodeURIComponent(
-          userEmail
-        )}${adminAll}`
-      )
-      .then((res: { data: Letter[] }) => {
-        setPendingLetters(res.data);
-      })
-      .catch(() => setPendingLetters([]));
-    // Fetch rejected letters for admin review
-    axios
-      .get(
-        `http://localhost:5000/api/letters?userEmail=${encodeURIComponent(
-          userEmail
-        )}${adminAll}`
-      )
-      .then((res: { data: Letter[] }) => {
-        const rejected = res.data.filter(
-          (letter: Letter) => letter.status === "rejected"
-        );
-        setRejectedLetters(rejected);
-      })
-      .catch(() => setRejectedLetters([]));
+
+    // For admin users, fetch ALL letters without filtering by userEmail
+    if (isAdmin) {
+      // Fetch all letters for admin
+      axios
+        .get(`http://localhost:5000/api/letters?all=true`)
+        .then((res: { data: Letter[] }) => {
+          console.log("Admin fetched letters:", res.data.length);
+          setLetters(res.data);
+          setLoadingLetters(false);
+        })
+        .catch((error: Error) => {
+          console.error("Error fetching letters:", error);
+          setLetters([]);
+          setLoadingLetters(false);
+        });
+
+      // Fetch pending letters for admin approval
+      axios
+        .get(`http://localhost:5000/api/letters/pending`)
+        .then((res: { data: Letter[] }) => {
+          console.log("Admin fetched pending letters:", res.data.length);
+          setPendingLetters(res.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching pending letters:", error);
+          setPendingLetters([]);
+        });
+
+      // For rejected letters, filter from the main letters array
+      axios
+        .get(`http://localhost:5000/api/letters?all=true`)
+        .then((res: { data: Letter[] }) => {
+          const rejected = res.data.filter(
+            (letter: Letter) => letter.status === "rejected"
+          );
+          console.log("Admin fetched rejected letters:", rejected.length);
+          setRejectedLetters(rejected);
+        })
+        .catch((error) => {
+          console.error("Error fetching rejected letters:", error);
+          setRejectedLetters([]);
+        });
+    } else {
+      // For regular users, fetch their own letters
+      const adminAll = isAdmin ? "&all=true" : "";
+      axios
+        .get(
+          `http://localhost:5000/api/letters?userEmail=${encodeURIComponent(
+            userEmail
+          )}${adminAll}`
+        )
+        .then((res: { data: Letter[] }) => {
+          setLetters(res.data);
+          setLoadingLetters(false);
+        })
+        .catch((error: Error) => {
+          setLetters([]);
+          setLoadingLetters(false);
+        });
+
+      // Fetch pending letters for admin approval
+      axios
+        .get(
+          `http://localhost:5000/api/letters/pending?userEmail=${encodeURIComponent(
+            userEmail
+          )}${adminAll}`
+        )
+        .then((res: { data: Letter[] }) => {
+          setPendingLetters(res.data);
+        })
+        .catch(() => setPendingLetters([]));
+
+      // Fetch rejected letters for admin review
+      axios
+        .get(
+          `http://localhost:5000/api/letters?userEmail=${encodeURIComponent(
+            userEmail
+          )}${adminAll}`
+        )
+        .then((res: { data: Letter[] }) => {
+          const rejected = res.data.filter(
+            (letter: Letter) => letter.status === "rejected"
+          );
+          setRejectedLetters(rejected);
+        })
+        .catch(() => setRejectedLetters([]));
+    }
   }, [isAdmin]);
 
   const handleApproveLetter = (id: string) => {
@@ -268,6 +327,256 @@ const LetterManagement: React.FC<{
     setActionLoading((prev) => ({ ...prev, [id]: null }));
   };
 
+  const handlePrint = () => {
+    if (!openLetter) return;
+
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      const printContent = `
+        <html>
+          <head>
+            <title>Memo - ${openLetter.subject}</title>
+            <style>
+              @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;700&display=swap");
+              @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+              
+              body {
+                font-family: 'Roboto', 'Noto Sans Ethiopic', sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f4;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+              }
+              .memo-container {
+                display: flex;
+                flex-direction: column;
+                width: 210mm;
+                height: 297mm;
+                margin: 20px auto;
+                background: white;
+                padding: 20mm;
+                box-sizing: border-box;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+              }
+              .header {
+                text-align: center;
+                flex-shrink: 0;
+              }
+              .logo {
+                height: 60px;
+                margin-bottom: 10px;
+              }
+              .institute-name .amharic {
+                font-family: 'Noto Sans Ethiopic', sans-serif;
+                font-weight: 700;
+                font-size: 18px;
+                color: #003F5D;
+                margin: 0;
+              }
+              .institute-name .english {
+                font-family: 'Roboto', sans-serif;
+                font-weight: 700;
+                font-size: 16px;
+                color: #000;
+                margin-top: 5px;
+                margin-bottom: 0;
+              }
+              .color-bars {
+                display: flex;
+                width: 100%;
+                height: 4px;
+                margin-top: 15px;
+              }
+              .color-bars .bar { flex: 1; }
+              .color-bars .blue { background-color: #005f9e; }
+              .color-bars .brown { background-color: #c88b3d; margin: 0 5px; }
+              .color-bars .red { background-color: #d62e2e; }
+              
+              .memo-title-section {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                border-top: 2px solid #c88b3d;
+                padding-top: 15px;
+                margin-top: 20px;
+                flex-shrink: 0;
+              }
+              .memo-title .amharic {
+                font-family: 'Noto Sans Ethiopic', sans-serif;
+                font-size: 16px;
+                font-weight: 700;
+                margin: 0;
+              }
+              .memo-title .english {
+                font-size: 14px;
+                font-weight: 700;
+                margin-top: 5px;
+              }
+              .memo-date {
+                text-align: right;
+                font-size: 14px;
+              }
+              .memo-date p { margin: 0; }
+              .memo-date .date-label {
+                font-size: 12px;
+                color: #555;
+              }
+              
+              .memo-body {
+                margin-top: 20px;
+                flex-grow: 1;
+                overflow-y: auto;
+              }
+              
+              .signature-section {
+                margin-top: 20px;
+              }
+              .signature-section p {
+                margin: 0;
+              }
+
+              .footer {
+                text-align: center;
+                flex-shrink: 0;
+                margin-top: 20px;
+              }
+              .footer-line {
+                border-top: 2px solid #003F5D;
+              }
+              .footer-content {
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                padding: 10px 0;
+                font-size: 11px;
+              }
+              .footer-item {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+              }
+              .footer-item svg {
+                width: 16px;
+                height: 16px;
+              }
+              .footer-quote {
+                margin-top: 10px;
+                font-family: 'Noto Sans Ethiopic', sans-serif;
+                font-style: italic;
+                font-size: 12px;
+              }
+
+              @media print {
+                body { margin: 0; background-color: white; }
+                .memo-container {
+                  margin: 0;
+                  box-shadow: none;
+                  width: 100%;
+                  height: 100vh;
+                  padding: 15mm;
+                }
+                .memo-body {
+                  overflow-y: visible;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="memo-container">
+                <div class="header">
+                    <img src="/logo.png" alt="SSGI Logo" class="logo">
+                    <div class="institute-name">
+                        <p class="amharic">የኅዋ ሳይንስና ጂኦስፓሻል ኢንስቲዩት</p>
+                        <p class="english">SPACE SCIENCE AND GEOSPATIAL INSTITUTE</p>
+                    </div>
+                    <div class="color-bars">
+                        <div class="bar blue"></div>
+                        <div class="bar brown"></div>
+                        <div class="bar red"></div>
+                    </div>
+                </div>
+
+                <div class="memo-title-section">
+                    <div class="memo-title">
+                        <p class="amharic">የውስጥ ማስታወሻ</p>
+                        <p class="english">OFFICE MEMO</p>
+                    </div>
+                    <div class="memo-date">
+                        <p><strong>${new Date(
+                          openLetter.createdAt
+                        ).toLocaleDateString("en-GB")}</strong></p>
+                        <p class="date-label">Date</p>
+                    </div>
+                </div>
+
+                <div class="memo-body">
+                    <p><strong>Subject:</strong> ${openLetter.subject}</p>
+                    <p><strong>To:</strong> ${
+                      openLetter.to || openLetter.toEmail
+                    }</p>
+                    <br>
+                                         <div class="content-body">${(
+                                           openLetter.content || ""
+                                         ).replace(/\n/g, "<br>")}</div>
+                    <div class="signature-section">
+                        <p>Signature:</p>
+                        <br><br>
+                        <p>${openLetter.fromName || "Unknown"}</p>
+                    </div>
+                </div>
+
+                <div class="footer">
+                    <div class="footer-line"></div>
+                    <div class="footer-content">
+                        <div class="footer-item">
+                          <svg fill="#c88b3d" viewBox="0 0 24 24"><path d="M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z"></path></svg>
+                          <span>+251 118 96 10 50 / 51</span>
+                        </div>
+                        <div class="footer-item">
+                           <svg fill="#c88b3d" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,19.93C7.05,19.44 4,16.08 4,12C4,11.38 4.08,10.78 4.21,10.21L9,15V16A1,1 0 0,0 10,17H14A1,1 0 0,0 15,16V15L19.79,10.21C19.92,10.78 20,11.38 20,12C20,16.08 16.95,19.44 13,19.93V18H11V19.93M17.89,8.11L13,13H11L6.11,8.11C6.5,7.22 7.22,6.5 8.11,6.11L12,10L15.89,6.11C16.78,6.5 17.5,7.22 17.89,8.11Z"></path></svg>
+                          <span>www.ssgi.gov.et</span>
+                        </div>
+                        <div class="footer-item">
+                           <svg fill="#c88b3d" viewBox="0 0 24 24"><path d="M4,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,11L20,6H4L12,11M20,18V8L12,13L4,8V18H20Z"></path></svg>
+                           <span>33679 / 597</span>
+                        </div>
+                         <div class="footer-item">
+                           <svg fill="#c88b3d" viewBox="0 0 24 24"><path d="M4,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M12,11L20,6H4L12,11M20,18V8L12,13L4,8V18H20Z"></path></svg>
+                           <span>info@ssgi.gov.et</span>
+                        </div>
+                    </div>
+                    <div class="footer-quote">
+                        <p>"ከምድር እስከ ህዋ..."</p>
+                    </div>
+                </div>
+            </div>
+            <script>
+              window.onload = function() {
+                setTimeout(function() {
+                  const container = document.querySelector('.memo-container');
+                  const content = document.querySelector('.content-body');
+                  if (container.scrollHeight > container.clientHeight) {
+                    let fontSize = 12;
+                    content.style.fontSize = fontSize + 'px';
+                    while (container.scrollHeight > container.clientHeight && fontSize > 6) {
+                      fontSize -= 0.5;
+                      content.style.fontSize = fontSize + 'px';
+                    }
+                  }
+                  window.print();
+                  window.close();
+                }, 500);
+              };
+            </script>
+          </body>
+        </html>
+      `;
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+    }
+  };
+
   // New simplified reject function for the modal
   const handleRejectLetter = async () => {
     if (!showRejectModal) return;
@@ -288,7 +597,8 @@ const LetterManagement: React.FC<{
       // Show enhanced notification
       setRejectNotification({
         show: true,
-        message: "Letter has been successfully rejected and notification sent to the sender.",
+        message:
+          "Letter has been successfully rejected and notification sent to the sender.",
         letterSubject: showRejectModal.subject,
       });
       setTimeout(
@@ -314,7 +624,11 @@ const LetterManagement: React.FC<{
       );
       setRejectedLetters((prev) => [
         ...prev,
-        { ...showRejectModal, status: "rejected", rejectionReason: rejectComment }
+        {
+          ...showRejectModal,
+          status: "rejected",
+          rejectionReason: rejectComment,
+        },
       ]);
 
       // Refetch letters to ensure UI is updated
@@ -356,7 +670,17 @@ const LetterManagement: React.FC<{
       .includes(letterSearch.toLowerCase());
     const matchesDepartment =
       !selectedDepartment || letter.department === selectedDepartment;
-    return matchesSearch && matchesDepartment;
+
+    // Filter by active filter (all, pending, rejected)
+    let matchesActiveFilter = true;
+    if (activeFilter === "pending") {
+      matchesActiveFilter = letter.status === "pending";
+    } else if (activeFilter === "rejected") {
+      matchesActiveFilter = letter.status === "rejected";
+    }
+    // For "all" filter, we show all letters
+
+    return matchesSearch && matchesDepartment && matchesActiveFilter;
   });
 
   if (loadingLetters) return <LoadingSpinner message="Loading letters..." />;
@@ -366,11 +690,9 @@ const LetterManagement: React.FC<{
       {/* Header Section */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          {t.letterManagement.title}
+          Letter Management
         </h2>
-        <p className="text-gray-600">
-          {t.letterManagement.subtitle}
-        </p>
+        <p className="text-gray-600">Manage all letters in the system</p>
       </div>
 
       {/* Enhanced Notification Bar for Reject & Forward */}
@@ -407,10 +729,11 @@ const LetterManagement: React.FC<{
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div
-            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg ${activeFilter === "pending"
-              ? "bg-yellow-100 border-yellow-400 shadow-lg"
-              : "bg-yellow-50 border-yellow-200 hover:bg-yellow-100"
-              }`}
+            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg ${
+              activeFilter === "pending"
+                ? "bg-yellow-100 border-yellow-400 shadow-lg"
+                : "bg-yellow-50 border-yellow-200 hover:bg-yellow-100"
+            }`}
             onClick={() => setActiveFilter("pending")}
           >
             <div className="flex items-center">
@@ -431,7 +754,7 @@ const LetterManagement: React.FC<{
               </div>
               <div>
                 <p className="text-sm font-medium text-yellow-800">
-                  {t.letterManagement.pendingApproval}
+                  Pending Approval
                 </p>
                 <p className="text-2xl font-bold text-yellow-900">
                   {pendingLetters.length}
@@ -441,10 +764,11 @@ const LetterManagement: React.FC<{
           </div>
 
           <div
-            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg ${activeFilter === "rejected"
-              ? "bg-red-100 border-red-400 shadow-lg"
-              : "bg-red-50 border-red-200 hover:bg-red-100"
-              }`}
+            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg ${
+              activeFilter === "rejected"
+                ? "bg-red-100 border-red-400 shadow-lg"
+                : "bg-red-50 border-red-200 hover:bg-red-100"
+            }`}
             onClick={() => setActiveFilter("rejected")}
           >
             <div className="flex items-center">
@@ -465,7 +789,7 @@ const LetterManagement: React.FC<{
               </div>
               <div>
                 <p className="text-sm font-medium text-red-800">
-                  {t.letterManagement.rejectedLetters}
+                  Rejected Letters
                 </p>
                 <p className="text-2xl font-bold text-red-900">
                   {
@@ -478,10 +802,11 @@ const LetterManagement: React.FC<{
           </div>
 
           <div
-            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg ${activeFilter === "all"
-              ? "bg-blue-100 border-blue-400 shadow-lg"
-              : "bg-blue-50 border-blue-200 hover:bg-blue-100"
-              }`}
+            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-lg ${
+              activeFilter === "all"
+                ? "bg-blue-100 border-blue-400 shadow-lg"
+                : "bg-blue-50 border-blue-200 hover:bg-blue-100"
+            }`}
             onClick={() => setActiveFilter("all")}
           >
             <div className="flex items-center">
@@ -502,7 +827,7 @@ const LetterManagement: React.FC<{
               </div>
               <div>
                 <p className="text-sm font-medium text-blue-800">
-                  {t.letterManagement.totalLetters}
+                  Total Letters
                 </p>
                 <p className="text-2xl font-bold text-blue-900">
                   {letters.length}
@@ -518,16 +843,17 @@ const LetterManagement: React.FC<{
         <div className="bg-white border-b border-gray-200 px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <span className="text-sm text-gray-600 mr-2">{t.letterManagement.showing}</span>
+              <span className="text-sm text-gray-600 mr-2">Showing</span>
               <span
-                className={`px-3 py-1 rounded-full text-sm font-semibold ${activeFilter === "pending"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-red-100 text-red-800"
-                  }`}
+                className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                  activeFilter === "pending"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-red-100 text-red-800"
+                }`}
               >
                 {activeFilter === "pending"
-                  ? t.letterManagement.pendingLetters
-                  : t.letterManagement.rejectedLetters}
+                  ? "Pending Letters"
+                  : "Rejected Letters"}
               </span>
             </div>
             <button
@@ -547,7 +873,7 @@ const LetterManagement: React.FC<{
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                 />
               </svg>
-              {t.letterManagement.showAllLetters}
+              Show All Letters
             </button>
           </div>
         </div>
@@ -578,15 +904,15 @@ const LetterManagement: React.FC<{
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-yellow-800">
-                      {t.letterManagement.pendingHighUrgent}
+                      Pending High/Urgent Letters
                     </h3>
                     <p className="text-yellow-600 text-sm">
-                      {t.letterManagement.requireAdminApproval}
+                      Require Admin Approval
                     </p>
                   </div>
                 </div>
                 <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                  {pendingLetters.length} {t.letterManagement.pending}
+                  {pendingLetters.length} Pending
                 </span>
               </div>
 
@@ -601,10 +927,11 @@ const LetterManagement: React.FC<{
                         {letter.subject}
                       </h4>
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-bold ${letter.priority === "urgent"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-orange-100 text-orange-800"
-                          }`}
+                        className={`px-2 py-1 rounded-full text-xs font-bold ${
+                          letter.priority === "urgent"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-orange-100 text-orange-800"
+                        }`}
                       >
                         {letter.priority}
                       </span>
@@ -626,7 +953,7 @@ const LetterManagement: React.FC<{
                           />
                         </svg>
                         <span>
-                          <strong>{t.letterManagement.from}</strong>{" "}
+                          <strong>From:</strong>{" "}
                           {letter.fromName || letter.fromEmail}
                         </span>
                       </div>
@@ -645,7 +972,7 @@ const LetterManagement: React.FC<{
                           />
                         </svg>
                         <span>
-                          <strong>{t.letterManagement.to}</strong> {letter.to || letter.toEmail}
+                          <strong>To:</strong> {letter.to || letter.toEmail}
                         </span>
                       </div>
                       <div className="flex items-center">
@@ -663,7 +990,7 @@ const LetterManagement: React.FC<{
                           />
                         </svg>
                         <span>
-                          <strong>{t.letterManagement.date}</strong>{" "}
+                          <strong>Date:</strong>{" "}
                           {getLetterSentDate(letter.createdAt)}
                         </span>
                       </div>
@@ -675,7 +1002,7 @@ const LetterManagement: React.FC<{
                           className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors flex items-center justify-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                           onClick={() => handleDetailLetter(letter)}
                         >
-                          <Eye className="w-4 h-4" /> {t.letterManagement.view}
+                          <Eye className="w-4 h-4" /> View
                         </button>
                         <button
                           className="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg shadow hover:bg-green-700 transition-colors flex items-center justify-center gap-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-60"
@@ -687,7 +1014,7 @@ const LetterManagement: React.FC<{
                           ) : (
                             <Check className="w-4 h-4" />
                           )}{" "}
-                          {t.letterManagement.approve}
+                          Approve
                         </button>
                       </div>
                       <button
@@ -703,7 +1030,7 @@ const LetterManagement: React.FC<{
                         ) : (
                           <X className="w-4 h-4" />
                         )}{" "}
-                        {t.letterManagement.reject}
+                        Reject
                       </button>
                     </div>
                   </div>
@@ -735,15 +1062,19 @@ const LetterManagement: React.FC<{
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-red-800">
-                      {t.letterManagement.rejectedLetters}
+                      Rejected Letters
                     </h3>
                     <p className="text-red-600 text-sm">
-                      {t.letterManagement.rejectedSubtitle}
+                      These letters have been rejected by an admin.
                     </p>
                   </div>
                 </div>
                 <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                  {letters.filter((letter) => letter.status === "rejected").length} {t.letterManagement.rejected}
+                  {
+                    letters.filter((letter) => letter.status === "rejected")
+                      .length
+                  }{" "}
+                  Rejected
                 </span>
               </div>
 
@@ -760,7 +1091,7 @@ const LetterManagement: React.FC<{
                           {letter.subject}
                         </h4>
                         <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-bold">
-                          {t.letterManagement.rejected}
+                          Rejected
                         </span>
                       </div>
 
@@ -780,7 +1111,7 @@ const LetterManagement: React.FC<{
                             />
                           </svg>
                           <span>
-                            <strong>{t.letterManagement.from}</strong>{" "}
+                            <strong>From:</strong>{" "}
                             {letter.fromName || letter.fromEmail}
                           </span>
                         </div>
@@ -799,7 +1130,7 @@ const LetterManagement: React.FC<{
                             />
                           </svg>
                           <span>
-                            <strong>{t.letterManagement.to}</strong> {letter.to || letter.toEmail}
+                            <strong>To:</strong> {letter.to || "Unknown"}
                           </span>
                         </div>
                         <div className="flex items-center">
@@ -817,7 +1148,7 @@ const LetterManagement: React.FC<{
                             />
                           </svg>
                           <span>
-                            <strong>{t.letterManagement.date}</strong>{" "}
+                            <strong>Date:</strong>{" "}
                             {getLetterSentDate(letter.createdAt)}
                           </span>
                         </div>
@@ -828,7 +1159,7 @@ const LetterManagement: React.FC<{
                           className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                           onClick={() => handleDetailLetter(letter)}
                         >
-                          <Eye className="w-4 h-4" /> {t.letterManagement.viewContent}
+                          <Eye className="w-4 h-4" /> View Content
                         </button>
                         <button
                           className="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-60"
@@ -870,10 +1201,10 @@ const LetterManagement: React.FC<{
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-gray-800">
-                    {t.letterManagement.allLetters}
+                    All Letters
                   </h3>
                   <p className="text-gray-600 text-sm">
-                    {t.letterManagement.allLettersSubtitle}
+                    View all letters in the system.
                   </p>
                 </div>
               </div>
@@ -883,7 +1214,7 @@ const LetterManagement: React.FC<{
             <div className="bg-gray-50 rounded-xl p-4 mb-6">
               <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
                 <div className="w-full lg:w-64">
-                  <DepartmentSelector onChange={setSelectedDepartment} />
+                  <DepartmentSelector onChange={handleDepartmentChange} />
                 </div>
                 <div className="flex items-center bg-white border border-gray-300 rounded-lg px-4 py-3 shadow-sm flex-1">
                   <Search className="w-5 h-5 text-gray-500" />
@@ -891,13 +1222,13 @@ const LetterManagement: React.FC<{
                     type="text"
                     value={letterSearch}
                     onChange={(e) => setLetterSearch(e.target.value)}
-                    placeholder={t.letterManagement.searchBySubject}
+                    placeholder="Search by subject..."
                     className="ml-3 bg-transparent border-none outline-none w-full text-base"
                   />
                 </div>
                 <span className="text-gray-600 text-base font-medium whitespace-nowrap bg-white px-4 py-3 rounded-lg border border-gray-300">
-                  {filteredLetters.length} {t.letterManagement.letter}
-                  {filteredLetters.length !== 1 ? t.letterManagement.letters : ""}
+                  {filteredLetters.length} letter
+                  {filteredLetters.length !== 1 ? "s" : ""}
                 </span>
               </div>
             </div>
@@ -934,18 +1265,19 @@ const LetterManagement: React.FC<{
                         {letter.subject}
                       </h4>
                       <span
-                        className={`px-3 py-1 text-xs rounded-full font-semibold whitespace-nowrap ${letter.status === "approved"
-                          ? "bg-green-100 text-green-800"
-                          : letter.status === "sent"
+                        className={`px-3 py-1 text-xs rounded-full font-semibold whitespace-nowrap ${
+                          letter.status === "approved"
+                            ? "bg-green-100 text-green-800"
+                            : letter.status === "sent"
                             ? "bg-blue-100 text-blue-800"
                             : letter.status === "rejected"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}
+                            ? "bg-red-100 text-red-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
                       >
                         {letter.status
                           ? letter.status.charAt(0).toUpperCase() +
-                          letter.status.slice(1)
+                            letter.status.slice(1)
                           : "Pending"}
                       </span>
                     </div>
@@ -1046,138 +1378,202 @@ const LetterManagement: React.FC<{
           }}
           center
           classNames={{
-            modal: "max-w-4xl w-full mx-4",
-            overlay: "bg-black bg-opacity-50",
+            modal:
+              "rounded-2xl shadow-2xl max-w-3xl w-full h-auto max-h-[90vh] flex flex-col",
+            overlay: "bg-black/50 backdrop-blur-sm",
           }}
         >
-          {!viewMode ? (
-            <div className="p-6 max-h-[80vh] overflow-y-auto">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">
-                {t.letterManagement.letterDetails}
-              </h3>
-              <div className="space-y-3 text-gray-700">
-                <div>
-                  <strong>{t.letterManagement.subject}</strong> {openLetter.subject}
-                </div>
-                <div>
-                  <strong>{t.letterManagement.to}</strong> {openLetter.to || openLetter.toEmail}
-                </div>
-                <div>
-                  <strong>{t.letterManagement.from}</strong> {openLetter.fromName || openLetter.fromEmail}
-                </div>
-                <div>
-                  <strong>{t.letterManagement.department}</strong> {(openLetter.department || "")
-                    .split(' > ')
-                    .map((dep: string) => t.departments[dep.trim() as keyof typeof t.departments] || dep.trim())
-                    .join(' > ')
-                  }
-                </div>
-                <div>
-                  <strong>{t.letterManagement.priority}</strong>
+          <div className="p-4 overflow-y-auto">
+            {!viewMode ? (
+              <div className="bg-white p-4">
+                {openLetter.status === "rejected" && (
+                  <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-lg shadow">
+                    <h4 className="font-bold text-lg mb-2">Letter Rejected</h4>
+                    <p>
+                      <span className="font-semibold">Rejection Reason:</span>{" "}
+                      {openLetter.rejectionReason}
+                    </p>
+                  </div>
+                )}
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-[#C88B3D] flex-1 truncate">
+                    {openLetter.subject}
+                  </h3>
                   <span
-                    className={`font-bold ${openLetter.priority === "urgent"
-                      ? "text-red-600"
-                      : openLetter.priority === "high"
-                        ? "text-orange-600"
-                        : "text-blue-600"
-                      }`}
+                    className={`px-3 py-1 text-xs rounded-full font-semibold whitespace-nowrap ${
+                      openLetter.priority === "urgent"
+                        ? "bg-red-100 text-red-800"
+                        : openLetter.priority === "high"
+                        ? "bg-orange-100 text-orange-800"
+                        : "bg-blue-100 text-blue-800"
+                    }`}
                   >
-                    {t.letterManagement.priorityValues[openLetter.priority as keyof typeof t.letterManagement.priorityValues] || openLetter.priority}
+                    {openLetter.priority
+                      ? openLetter.priority.charAt(0).toUpperCase() +
+                        openLetter.priority.slice(1)
+                      : "Normal"}
                   </span>
                 </div>
-                <div>
-                  <strong>{t.letterManagement.date}</strong> {getLetterSentDate(openLetter.createdAt)}
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="bg-gray-100/70 rounded-lg p-3">
+                    <div className="text-xs text-gray-500 font-semibold mb-1">
+                      From
+                    </div>
+                    <div className="text-gray-800 font-semibold text-sm truncate">
+                      {openLetter.fromName || openLetter.fromEmail}
+                    </div>
+                  </div>
+                  <div className="bg-gray-100/70 rounded-lg p-3">
+                    <div className="text-xs text-gray-500 font-semibold mb-1">
+                      Recipient
+                    </div>
+                    <div className="text-gray-800 font-semibold text-sm truncate">
+                      {openLetter.to || openLetter.toEmail}
+                    </div>
+                  </div>
+                  <div className="bg-gray-100/70 rounded-lg p-3">
+                    <div className="text-xs text-gray-500 font-semibold mb-1">
+                      Department
+                    </div>
+                    <div className="text-gray-800 font-semibold text-sm truncate">
+                      {openLetter.department || "Unknown"}
+                    </div>
+                  </div>
+                  <div className="bg-gray-100/70 rounded-lg p-3">
+                    <div className="text-xs text-gray-500 font-semibold mb-1">
+                      Date
+                    </div>
+                    <div className="text-gray-800 font-semibold text-sm truncate">
+                      {getLetterSentDate(openLetter.createdAt)}
+                    </div>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <div className="text-xs text-gray-500 font-semibold mb-2">
+                    Content
+                  </div>
+                  <div className="bg-blue-50/50 border-l-4 border-blue-400 rounded-md p-4 text-gray-800 whitespace-pre-line text-sm shadow-inner">
+                    {openLetter.content || "No content available."}
+                  </div>
                 </div>
                 {openLetter.attachments &&
                   openLetter.attachments.length > 0 && (
-                    <div>
-                      <strong>{t.letterManagement.attachments}</strong>
-                      <ul className="mt-2 space-y-1">
+                    <div className="mt-4">
+                      <h4 className="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        📎 Attachments
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {openLetter.attachments.map((file, idx) => (
-                          <li
+                          <div
                             key={idx}
-                            className="flex items-center space-x-2 text-sm"
+                            className="flex items-center justify-between bg-gray-100 p-3 rounded-lg border border-gray-200 hover:border-blue-400 transition-colors duration-200"
                           >
-                            <a
-                              href={`http://localhost:5000/api/letters/download/${openLetter._id
+                            <div className="flex items-center space-x-2 min-w-0">
+                              <svg
+                                className="h-6 w-6 text-gray-500 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                />
+                              </svg>
+                              <span className="text-sm text-gray-800 font-medium truncate">
+                                {file.filename}
+                              </span>
+                            </div>
+                            <div className="flex space-x-2 items-center shrink-0">
+                              <a
+                                href={`http://localhost:5000/api/letters/view/${
+                                  openLetter._id
                                 }/${encodeURIComponent(file.filename)}`}
-                              className="text-blue-600 hover:text-blue-800 underline"
-                              download={file.filename}
-                            >
-                              {t.letterManagement.download}
-                            </a>
-                            <a
-                              href={`http://localhost:5000/api/letters/view/${openLetter._id
+                                className="text-blue-600 hover:text-blue-800 text-sm font-semibold"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                preview
+                              </a>
+                              <a
+                                href={`http://localhost:5000/api/letters/download/${
+                                  openLetter._id
                                 }/${encodeURIComponent(file.filename)}`}
-                              className="text-green-600 hover:text-green-800 underline"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {t.letterManagement.view}
-                            </a>
-                            <span className="text-gray-700">
-                              {file.filename}
-                            </span>
-                          </li>
+                                className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-gray-200/70 rounded-md transition-colors duration-200"
+                                download={file.filename}
+                                title="Download"
+                              >
+                                <svg
+                                  className="h-4 w-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                  />
+                                </svg>
+                              </a>
+                            </div>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     </div>
                   )}
-              </div>
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setViewMode(true)}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  <Eye className="w-4 h-4" /> {t.letterManagement.viewFullContent}
-                </button>
-                <button
-                  onClick={() => {
-                    setOpenLetter(null);
-                    setViewMode(false);
-                  }}
-                  className="bg-gray-600 text-white px-6 py-3 rounded-lg shadow hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  {t.letterManagement.close}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="p-6 max-h-[90vh] overflow-y-auto">
-              <div className="mb-4 flex justify-between items-center">
-                <h3 className="text-xl font-bold text-gray-800">
-                  Letter Content
-                </h3>
-                <div className="flex gap-3">
+                <div className="mt-6 flex space-x-3 justify-end">
                   <button
-                    onClick={() => setViewMode(false)}
-                    className="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    onClick={() => setViewMode(true)}
+                    className="px-5 py-2 bg-[#C88B3D] text-white rounded-lg shadow-md hover:bg-[#D62E2E] transition-all duration-200 font-semibold text-base"
                   >
-                    Back to Details
-                  </button>
-                  <button
-                    onClick={() => {
-                      setOpenLetter(null);
-                      setViewMode(false);
-                    }}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    Close
+                    View Content
                   </button>
                 </div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
+            ) : (
+              <div className="p-4">
                 <TemplateMemoLetter
                   subject={openLetter.subject}
                   date={getLetterSentDate(openLetter.createdAt)}
                   recipient={openLetter.to || openLetter.toEmail}
                   reference={""}
-                  body={openLetter.content}
-                  signature={openLetter.fromName}
+                  body={openLetter.content || "No content available."}
+                  signature={openLetter.fromName || "Unknown"}
                 />
+                <div className="flex space-x-2 mt-4">
+                  <button
+                    onClick={() => setViewMode(false)}
+                    className="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={() => handlePrint()}
+                    className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 flex items-center gap-2"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                      />
+                    </svg>
+                    Print
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </Modal>
       )}
 

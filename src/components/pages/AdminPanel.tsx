@@ -29,7 +29,8 @@ const AdminPanel = () => {
               }
               onClick={() => navigate("/admin/create-user")}
             >
-              <UserPlus className="w-5 h-5" /> {t.sidebar.users || "Create User"}
+              <UserPlus className="w-5 h-5" />{" "}
+              {t.sidebar.users || "Create User"}
             </button>
             <button
               className="flex items-center gap-2 px-5 py-2 rounded-lg font-semibold shadow bg-gray-600 text-white hover:bg-gray-700 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -70,7 +71,7 @@ const AdminPanel = () => {
                     : "text-gray-600 hover:bg-gray-300 hover:text-gray-800"
                 }`}
             >
-              <Mail className="w-5 h-5" /> {t.sent.title || "Letters"}
+              <Mail className="w-5 h-5" /> Letters
             </button>
           </div>
         </div>

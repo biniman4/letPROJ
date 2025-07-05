@@ -403,15 +403,20 @@ const Sent: React.FC = () => {
         <div className="flex items-center gap-2">
           {/* Status icon before/after admin approval */}
           {record.status === "pending" && (
-            <span title="Pending" className="text-yellow-500 text-lg">⏳</span>
+            <span title="Pending" className="text-yellow-500 text-lg">
+              ⏳
+            </span>
           )}
           {record.status === "approved" && (
-            <span title="Approved" className="text-green-600 text-lg">✔️</span>
+            <span title="Approved" className="text-green-600 text-lg">
+              ✔️
+            </span>
           )}
           <div className="font-semibold text-base text-gray-800">{subject}</div>
           {record.status === "rejected" && record.rejectionReason && (
             <div className="mt-1 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700 font-medium">
-              <span className="font-bold">Rejection Reason:</span> {record.rejectionReason}
+              <span className="font-bold">Rejection Reason:</span>{" "}
+              {record.rejectionReason}
             </div>
           )}
         </div>
@@ -767,6 +772,7 @@ const Sent: React.FC = () => {
             <Select.Option value="rejected">
               {t.sent.statusRejected || "Rejected"}
             </Select.Option>
+            <Select.Option value="approved">Approved</Select.Option>
             <Select.Option value="normal">
               {t.sent.priorityNormal || "Normal"}
             </Select.Option>
@@ -829,6 +835,8 @@ const Sent: React.FC = () => {
                       ? "border-yellow-500 hover:border-yellow-600 bg-gradient-to-br from-yellow-50 to-orange-50"
                       : letter.status === "rejected"
                       ? "border-red-500 hover:border-red-600 bg-gradient-to-br from-red-50 to-pink-50"
+                      : letter.status === "approved"
+                      ? "border-green-500 hover:border-green-600 bg-gradient-to-br from-green-50 to-emerald-50"
                       : "border-[#003F5D] hover:border-[#C88B3D]"
                   }`}
                 >
@@ -843,6 +851,13 @@ const Sent: React.FC = () => {
                   {letter.status === "rejected" && (
                     <div className="absolute -top-3 -right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg border-2 border-white">
                       ❌ Rejected
+                    </div>
+                  )}
+
+                  {/* Approved Badge */}
+                  {letter.status === "approved" && (
+                    <div className="absolute -top-3 -right-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg border-2 border-white">
+                      ✔️ Approved
                     </div>
                   )}
 
@@ -1008,6 +1023,8 @@ const Sent: React.FC = () => {
                       ? "border-yellow-500 hover:bg-yellow-50 bg-gradient-to-r from-yellow-50 to-orange-50"
                       : letter.status === "rejected"
                       ? "border-red-500 hover:bg-red-50 bg-gradient-to-r from-red-50 to-pink-50"
+                      : letter.status === "approved"
+                      ? "border-green-500 hover:bg-green-50 bg-gradient-to-r from-green-50 to-emerald-50"
                       : "border-[#003F5D] hover:border-[#C88B3D]"
                   }`}
                 >
@@ -1025,6 +1042,13 @@ const Sent: React.FC = () => {
                     </div>
                   )}
 
+                  {/* Approved Badge for List View */}
+                  {letter.status === "approved" && (
+                    <div className="absolute -top-2 -right-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg border border-white">
+                      ✔️ Approved
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-4 flex-grow">
                     <MailOutlined
                       className={`text-2xl ${
@@ -1032,6 +1056,8 @@ const Sent: React.FC = () => {
                           ? "text-yellow-600"
                           : letter.status === "rejected"
                           ? "text-red-600"
+                          : letter.status === "approved"
+                          ? "text-green-600"
                           : "text-[#003F5D]"
                       }`}
                     />
@@ -1043,6 +1069,8 @@ const Sent: React.FC = () => {
                               ? "text-yellow-800 group-hover:text-yellow-900"
                               : letter.status === "rejected"
                               ? "text-red-800 group-hover:text-red-900"
+                              : letter.status === "approved"
+                              ? "text-green-800 group-hover:text-green-900"
                               : "text-[#003F5D] group-hover:text-[#C88B3D]"
                           }`}
                         >
@@ -1158,7 +1186,9 @@ const Sent: React.FC = () => {
           {filteredLetters.length > 0 && (
             <div className="mt-8 flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                {"Showing"} {startIndex + 1} {"to"} {Math.min(endIndex, filteredLetters.length)} {"of"} {filteredLetters.length} {"letters"}
+                {"Showing"} {startIndex + 1} {"to"}{" "}
+                {Math.min(endIndex, filteredLetters.length)} {"of"}{" "}
+                {filteredLetters.length} {"letters"}
               </p>
               <div className="flex space-x-2">
                 <button
@@ -1340,13 +1370,9 @@ const Sent: React.FC = () => {
           <div className="p-4" ref={memoPrintRef}>
             {selectedLetter.status === "rejected" && (
               <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-lg shadow">
-                <h4 className="font-bold text-lg mb-2">
-                  {"Letter Rejected"}
-                </h4>
+                <h4 className="font-bold text-lg mb-2">{"Letter Rejected"}</h4>
                 <p>
-                  <span className="font-semibold">
-                    {"Reason"}:
-                  </span>{" "}
+                  <span className="font-semibold">{"Reason"}:</span>{" "}
                   {selectedLetter.rejectionNote}
                 </p>
               </div>
